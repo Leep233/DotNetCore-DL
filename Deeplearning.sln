@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deeplearning.Core", "Deeplearning.Core\Deeplearning.Core.csproj", "{6EAC0437-972D-4C32-B730-8AFDF1C8832D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deeplearning.Sample", "Deeplearning.Sample\Deeplearning.Sample.csproj", "{7FA67C9C-9931-452C-A8BA-466DD6B38EE6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6EAC0437-972D-4C32-B730-8AFDF1C8832D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EAC0437-972D-4C32-B730-8AFDF1C8832D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EAC0437-972D-4C32-B730-8AFDF1C8832D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EAC0437-972D-4C32-B730-8AFDF1C8832D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FA67C9C-9931-452C-A8BA-466DD6B38EE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FA67C9C-9931-452C-A8BA-466DD6B38EE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FA67C9C-9931-452C-A8BA-466DD6B38EE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FA67C9C-9931-452C-A8BA-466DD6B38EE6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C0B790F3-99E4-41F3-BADD-1CE98593D25B}
+	EndGlobalSection
+EndGlobal
