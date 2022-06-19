@@ -34,7 +34,7 @@ namespace Deeplearning.Sample.Utils
 
         }
 
-        public static LinearAxis LinearAxisWithGrid(double minimum, double maximum, AxisPosition axisPosition,double majorStep) {
+        public static LinearAxis LinearAxisWithGrid(float minimum, float maximum, AxisPosition axisPosition, float majorStep) {
 
             LinearAxis axis = new LinearAxis();
             axis.IsZoomEnabled = false;
@@ -49,7 +49,7 @@ namespace Deeplearning.Sample.Utils
             return axis;
         }
 
-        public static IEnumerable<ScatterPoint> MatrixToPoints(double[,] matrix)
+        public static IEnumerable<ScatterPoint> MatrixToPoints(float[,] matrix)
         {
 
             for (int i = 0; i < matrix.GetLength(0); i++)

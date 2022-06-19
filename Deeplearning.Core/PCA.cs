@@ -11,33 +11,33 @@ namespace Deeplearning.Core
 
         
 
-        public double[] ArgMin(double [] vector) {
+        public float[] ArgMin(float[] vector) {
            throw  new NotFiniteNumberException();
 
 
         }
 
-        public double[,] Decompression(double [] c) 
+        public float[,] Decompression(float[] c) 
         {
-            double[,] D = BuidleDMatrix(c);
+            float[,] D = BuidleDMatrix(c);
 
             return Linear.Dot(D, c);
         }
 
-        private double[,] BuidleDMatrix(double [] c) 
+        private float[,] BuidleDMatrix(float[] c) 
         {
 
-            double[,] D = new double[Source.GetLength(1), c.Length];
+            float[,] D = new float[Source.GetLength(1), c.Length];
 
             return D;
         }
 
 
-        public double[] Compression() { 
+        public float[] Compression() { 
             
             int count = Source.GetLength(0);
 
-            double [] result = new double[count];
+            float[] result = new float[count];
 
             return result;
         }

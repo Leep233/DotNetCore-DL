@@ -30,7 +30,7 @@ namespace Deeplearning.Sample
 
         public const int MajorStep = 1;
 
-        private double[,] SampleMatrix;
+        private float[,] SampleMatrix;
 
         private ScatterSeries leftScatterSeries;
 
@@ -134,15 +134,15 @@ namespace Deeplearning.Sample
         /// <param name="info"></param>
         /// <param name="range"></param>
         /// <returns></returns>
-        public (DataPoint p1, DataPoint p2) GetTangentLinePoints(Gradient2D.GradientInfo info, double range)
+        public (DataPoint p1, DataPoint p2) GetTangentLinePoints(GradientInfo info, float range)
         {
 
-            double x1 = info.x + range;
-            double y1 = info.k * (x1 - info.x) + info.y;
+            float x1 = info.x + range;
+            float y1 = info.k * (x1 - info.x) + info.y;
             DataPoint p1 = new DataPoint(x1, y1);
 
-            double x2 = info.x - range;
-            double y2 = info.k * (x2 - info.x) + info.y;
+            float x2 = info.x - range;
+            float y2 = info.k * (x2 - info.x) + info.y;
             DataPoint p2 = new DataPoint(x2, y2);
 
             return (p1, p2);
@@ -227,7 +227,7 @@ namespace Deeplearning.Sample
         /// </summary>
         /// <param name="plotPosition"></param>
         /// <param name="matrix"></param>
-        internal void UpdatePointsToPlotView(PlotPosition plotPosition, double[,] matrix)
+        internal void UpdatePointsToPlotView(PlotPosition plotPosition, float[,] matrix)
         {
             switch (plotPosition)
             {
@@ -314,13 +314,9 @@ namespace Deeplearning.Sample
 
             LeftPlotViewModel.InvalidatePlot(true);
 
-            Gradient2D gradient2D = new Gradient2D(orginal);
-
-            gradient2D.GradientChangedEvent += OnGradientChangedCallback;
-
             Message = "computing...";
 
-            await gradient2D.GradientDescentTaskAsync(1000, 0.005d);
+            await Linear.GradientDescentTaskAsync(8, 1000, orginal, OnGradientChangedCallback);
 
             Message = "completed";
         }
@@ -328,16 +324,16 @@ namespace Deeplearning.Sample
         private void ExecuteComputeCommand()
         {
 
-            double[] diagVector = new double[5]
+            float[] diagVector = new float[5]
             {
                2,2,2,2,2
             };
 
-            double[,] diagMatrix = Linear.DiagonalMatrix(diagVector);
+            float[,] diagMatrix = Linear.DiagonalMatrix(diagVector);
 
             Message = diagMatrix.Rank.ToString();
 
-            double[,] matrixT = Linear.Dot(diagMatrix, SampleMatrix);
+            float[,] matrixT = Linear.Dot(diagMatrix, SampleMatrix);
 
             UpdatePointsToPlotView(PlotPosition.Left, SampleMatrix);
 
@@ -355,13 +351,13 @@ namespace Deeplearning.Sample
 
             Random random = new Random();
 
-            SampleMatrix = new double[row, col];
+            SampleMatrix = new float[row, col];
 
             for (int i = 0; i < row; i++)
             {
                 for (int j = 0; j < col; j++)
                 {
-                    double x = random.NextDouble() * random.Next(-10, 10);
+                    float x = (float)random.NextDouble() * random.Next(-10, 10);
                     // double y = random.NextDouble() * random.Next(-10, 10);
                     SampleMatrix[i, j] = x;
                 }
@@ -370,7 +366,7 @@ namespace Deeplearning.Sample
             SourceMatrix = Linear.Print(SampleMatrix);
         }
        
-        private void OnGradientChangedCallback(object sender, Gradient2D.GradientInfo eventArgs)
+        private void OnGradientChangedCallback(GradientInfo eventArgs)
         {
 
             var points = GetTangentLinePoints(eventArgs, 3);
