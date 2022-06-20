@@ -22,10 +22,10 @@ namespace Deeplearning.Core.Math
         public float y;
         public float z;
         public Vector2D grad;
-
+        //斜率/导数：{grad.ToString()}
         public override string ToString()
         {
-            return $"({x.ToString("F4")},{y.ToString("F4")},{z.ToString("F4")}) 斜率/导数：{grad.ToString()}";
+            return $"({x.ToString("F4")},{y.ToString("F4")},{z.ToString("F4")})";
         }
 
     }

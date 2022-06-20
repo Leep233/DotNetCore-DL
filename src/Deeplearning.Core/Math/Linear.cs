@@ -10,7 +10,7 @@ namespace Deeplearning.Core.Math
     {
         public const float MinValue = 0.0001f;
 
-       public static float[,] Transpose(float[,] matrix)
+        public static float[,] Transpose(float[,] matrix)
         {
 
             int row = matrix.GetLength(0);
@@ -29,7 +29,7 @@ namespace Deeplearning.Core.Math
         }
 
         public static float[,] Add(float[,] matrix, float scalar)
-        {       
+        {
             return Add(matrix, scalar);
         }
 
@@ -52,9 +52,9 @@ namespace Deeplearning.Core.Math
 
         public static float[,] Add(float[,] matrix, float[] vector)
         {
-            return Add(vector,matrix);
+            return Add(vector, matrix);
         }
-        
+
         public static float[,] Add(float[] vector, float[,] matrix)
         {
             int col = matrix.GetLength(1);
@@ -75,27 +75,27 @@ namespace Deeplearning.Core.Math
             return result;
         }
 
-        public static float[,] Add(float[,] matrixA, float[,] matrixB) 
-        { 
+        public static float[,] Add(float[,] matrixA, float[,] matrixB)
+        {
             int row = matrixA.GetLength(0);
             int col = matrixA.GetLength(1);
 
             if (row != matrixB.GetLength(0) || col != matrixB.GetLength(1))
                 throw new ArgumentException("matrix's size must be consistent");
 
-            float[,] result = new float[row,col];
+            float[,] result = new float[row, col];
 
             for (int i = 0; i < row; i++)
             {
                 for (int j = 0; j < col; j++)
                 {
-                    result[i, j] = matrixA[i,j] + matrixB[i,j];
+                    result[i, j] = matrixA[i, j] + matrixB[i, j];
                 }
             }
             return result;
         }
 
-        public static float[,] HadamardProduct(float[,] matrixA, float[,] matrixB) 
+        public static float[,] HadamardProduct(float[,] matrixA, float[,] matrixB)
         {
             int row = matrixA.GetLength(0);
             int col = matrixA.GetLength(1);
@@ -136,14 +136,14 @@ namespace Deeplearning.Core.Math
                         sum += matrixA[i, k] * matrixB[k, j];
                     }
                     result[i, j] = sum;
-                    sum =0;
+                    sum = 0;
                 }
             }
             return result;
         }
 
-        public static float[,] Dot(float[,] matrix, float[] vector) 
-        { 
+        public static float[,] Dot(float[,] matrix, float[] vector)
+        {
             int col = vector.Length;
 
             if (col <= matrix.GetLength(1)) throw new ArgumentException("matrix's column  must Greater than or equal to vector's length");
@@ -166,21 +166,23 @@ namespace Deeplearning.Core.Math
             return result;
         }
 
-        public static float Dot(float[] vectorA, float[] vectorB) 
-        { 
+        public static float Dot(float[] vectorA, float[] vectorB)
+        {
             int length = vectorA.Length;
             if (length != vectorB.Length) throw new ArgumentException("vector's size must be consistent");
 
             float sum = 0;
-   
-            for (int i = 0; i < length; i++) {
+
+            for (int i = 0; i < length; i++)
+            {
 
                 sum += vectorA[i] * vectorB[i];
             }
             return sum;
         }
 
-        public static float Norm(float[] vector, float p) {
+        public static float Norm(float[] vector, float p)
+        {
 
             float temp = 0;
 
@@ -191,13 +193,14 @@ namespace Deeplearning.Core.Math
             return temp;
         }
 
-        public static float MaxNorm(float[] vector) {
+        public static float MaxNorm(float[] vector)
+        {
 
             float result = MathF.Abs(vector[0]);
 
             for (int i = 1; i < vector.Length; i++)
             {
-               float temp = vector[i];
+                float temp = vector[i];
 
                 if (MathF.Abs(temp) > result)
                     result = temp;
@@ -205,7 +208,7 @@ namespace Deeplearning.Core.Math
 
             return result;
         }
-        public static float FrobeniusNorm(float[,] matrix) 
+        public static float FrobeniusNorm(float[,] matrix)
         {
             float temp = 0;
 
@@ -221,11 +224,11 @@ namespace Deeplearning.Core.Math
 
         public static float Track(float[,] matrix)
         {
-           int row = matrix.GetLength(0);
-            
+            int row = matrix.GetLength(0);
+
             int col = matrix.GetLength(1);
 
-            int count = row > col? col : row;
+            int count = row > col ? col : row;
 
             float temp = 0;
 
@@ -243,8 +246,9 @@ namespace Deeplearning.Core.Math
         //    return MathF.Sqrt((float)temp);
         //}
 
-        public static float[,] DiagonalMatrix(float[] vector) {
-            
+        public static float[,] DiagonalMatrix(float[] vector)
+        {
+
             int length = vector.Length;
 
             float[,] result = new float[length, length];
@@ -257,16 +261,17 @@ namespace Deeplearning.Core.Math
             return result;
         }
 
-        public static float Det(float[,] matrix) {
+        public static float Det(float[,] matrix)
+        {
 
             return 0;
 
         }
 
-        public static string Print(float[,] matrix,string format = "f2")
+        public static string Print(float[,] matrix, string format = "f2")
         {
 
-            if(matrix is null) return "null";
+            if (matrix is null) return "null";
 
             double row = matrix.GetLength(0);
             double col = matrix.GetLength(1);
@@ -288,13 +293,14 @@ namespace Deeplearning.Core.Math
         }
 
 
-        public static async Task GradientDescentTaskAsync(int step,Action<Gradient3DInfo> gradientChanged) {
+        public static  Task GradientDescentTaskAsync(int step, Func<Vector2D, float> original, Action<Gradient3DInfo> gradientChanged)
+        {
 
-      
 
-         //   return Task.Run(() => {
 
-                Func<Vector2D, float> original = new Func<Vector2D, float>(vector => MathF.Pow(vector.x, 2) + MathF.Pow(vector.y, 2));
+            return Task.Run(() =>
+            {
+
 
                 Random random = new Random();
 
@@ -316,80 +322,77 @@ namespace Deeplearning.Core.Math
 
                 k_Vector.y = 1;
 
+                float doubleLR = (2 * learningRate);
+
                 for (int i = 0; i < step; i++)
                 {
                     Vector2D tempV2;
 
                     Vector2D tempV1;
 
-                    float e_x = learningRate * (k_Vector.x);
+                    z = original(vector2);
 
-                tempV2 = new Vector2D(){
-                    x=vector2.x + e_x,
-                    y = vector2.y 
-                };
+                    tempV2 = new Vector2D()
+                    {
+                        x = vector2.x + learningRate,
+                        y = vector2.y
+                    };
 
-                tempV1 = new Vector2D()
-                {
-                    x = vector2.x - e_x,
-                    y = vector2.y
-                };
-     
-                    float k_x = (original(tempV2) - original(tempV1)) / (2 * e_x);
+                    tempV1 = new Vector2D()
+                    {
+                        x = vector2.x - learningRate,
+                        y = vector2.y
+                    };
 
-                vector2.x -= k_x;
+                    float k_x = (original(tempV2) - original(tempV1)) / doubleLR;
 
-                     float e_y = learningRate * (k_Vector.y);
+                    tempV2 = new Vector2D()
+                    {
+                        x = vector2.x,
+                        y = vector2.y + learningRate
+                    };
 
-                tempV2 = new Vector2D()
-                {
-                    x = vector2.x,
-                    y = vector2.y + e_y
-                };
+                    tempV1 = new Vector2D()
+                    {
+                        x = vector2.x,
+                        y = vector2.y - learningRate
+                    };
 
-                tempV1 = new Vector2D()
-                {
-                    x = vector2.x,
-                    y = vector2.y-e_y
-                };
-
-                float k_y = (original(tempV2) - original(tempV1)) / (2 * e_y);
+                    float k_y = (original(tempV2) - original(tempV1)) / doubleLR;
 
                     k_Vector.x = k_x;
-                    
+
                     k_Vector.y = k_y;
 
-                vector2.y -= k_y;
-
-                if (gradientChanged != null)
+                    if (gradientChanged != null)
                     {
-                    Gradient3DInfo gradient3DInfo = new Gradient3DInfo();
-                    gradient3DInfo.x = vector2.x;
-                    gradient3DInfo.y = vector2.y;
-                    gradient3DInfo.z = z;
-                    gradient3DInfo.grad = k_Vector;
-                
-               
-                        gradientChanged.Invoke(gradient3DInfo);
-                    }
+                        Gradient3DInfo gradient3DInfo = new Gradient3DInfo();
 
+                        gradient3DInfo.x = vector2.x;
+
+                        gradient3DInfo.y = vector2.y;
+
+                        gradient3DInfo.z = z;
+
+                        gradient3DInfo.grad = k_Vector;
+
+                        gradientChanged.Invoke(gradient3DInfo);
+
+                    }
 
                     if (MathF.Abs(k_Vector.x) <= minValue && MathF.Abs(k_Vector.y) <= minValue)
                     {
                         break;
                     }
 
-                    await Task.Delay(330);
-
-                   // vector2 -= k_Vector;
+                    vector2 -= (k_Vector * learningRate);
                 }
-           // }//);
-      
+            });
         }
 
-        public static async Task GradientDescentTaskAsync(float initX, int step, Func<double, double> original,Action<GradientInfo> gradientChanged, float learningRate = 0.01f)
+        public static async Task GradientDescentTaskAsync(float initX, int step, Func<double, double> original, Action<GradientInfo> gradientChanged, float learningRate = 0.01f)
         {
-   
+
             //随机出 开始进行下降的初始点         
             float x = initX;
 
@@ -417,7 +420,7 @@ namespace Deeplearning.Core.Math
 
                     gradientChanged.Invoke(info);
                 }
-                
+
                 //到达可以接受的阈值 跳出函数 说明已经找到了极值
                 if (MathF.Abs(k) <= MinValue)
                 {
@@ -437,7 +440,7 @@ namespace Deeplearning.Core.Math
         /// <param name="gradientChangedEvent">每次下降发生的变化事件</param>
         /// <param name="descRate">下降率</param>
         /// <param name="thresholdValue">阈值</param>
-        public static async Task GradientDescentTaskAsync(float initX, int step,  Func<double, double> original, Func<double, double> derivative, Action<GradientInfo> gradientChanged, float learningRate = 0.01f)
+        public static async Task GradientDescentTaskAsync(float initX, int step, Func<double, double> original, Func<double, double> derivative, Action<GradientInfo> gradientChanged, float learningRate = 0.01f)
         {
             //随机出 开始进行下降的初始点         
             float x = initX;
