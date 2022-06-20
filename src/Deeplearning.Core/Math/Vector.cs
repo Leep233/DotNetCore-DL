@@ -4,29 +4,28 @@ using System.Text;
 
 namespace Deeplearning.Core.Math
 {
-    public struct GradientInfo
+    public struct Vector2D
     {
         public float x;
         public float y;
-        public float k;
 
+        public  static Vector2D operator -(Vector2D v1,Vector2D v2){
+            return new Vector2D() { x = v1.x - v2.x, y = v1.y - v2.y };
+        }
         public override string ToString()
         {
-            return $"({x.ToString("F4")},{y.ToString("F4")}) 斜率/导数：{k.ToString("F4")}";
+            return $"({x.ToString("f2")},{y.ToString("f2")})";
         }
     }
-
-    public struct Gradient3DInfo
-    {
+    public struct Vector3D 
+    { 
         public float x;
         public float y;
         public float z;
-        public Vector2D grad;
 
         public override string ToString()
         {
-            return $"({x.ToString("F4")},{y.ToString("F4")},{z.ToString("F4")}) 斜率/导数：{grad.ToString()}";
+            return $"({x.ToString("f2")},{y.ToString("f2")},{z.ToString("f2")})";
         }
-
     }
 }

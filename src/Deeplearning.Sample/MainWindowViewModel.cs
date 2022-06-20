@@ -67,6 +67,8 @@ namespace Deeplearning.Sample
 
         public DelegateCommand GradientCommand { get; set; }
 
+        public DelegateCommand Gradient3DCommand { get; set; }        
+
 
         public MainWindowViewModel()
         {
@@ -122,6 +124,31 @@ namespace Deeplearning.Sample
             ComputeCommand = new DelegateCommand(ExecuteComputeCommand);
 
             GradientCommand = new DelegateCommand(ExecuteGradientCommand);
+
+            Gradient3DCommand = new DelegateCommand(ExecuteGradient3DCommand);
+        }
+
+        List<Gradient3DInfo> v3Points = new List<Gradient3DInfo>();
+
+        private async void ExecuteGradient3DCommand()
+        {
+            //v3Points.Clear();
+
+           await Linear.GradientDescentTaskAsync(500,OnGradient3DChangedCallback);
+
+            //for (int i = 0; i < v3Points.Count; i++)
+            //{
+            //    Message = v3Points[i].ToString();
+
+            //    await Task.Delay(1000);
+            //}
+           
+        }
+
+        private void OnGradient3DChangedCallback(Gradient3DInfo value)
+        {
+            Message = value.ToString();
+           // v3Points.Add(value);
         }
 
         ~MainWindowViewModel() {

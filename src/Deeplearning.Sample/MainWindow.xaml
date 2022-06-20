@@ -23,6 +23,7 @@
                 <TextBlock Padding="5" TextAlignment="Center" FontWeight="Bold" Background="CornflowerBlue">操作</TextBlock>
                 <Button Margin="3" Command="{Binding ComputeCommand}">对角矩阵与矩阵乘积</Button>
                 <Button Margin="3" Command="{Binding GradientCommand}">梯度下降</Button>
+                <Button Margin="3" Command="{Binding Gradient3DCommand}">3D梯度下降</Button>
             </StackPanel>
         </Border>
 

@@ -287,6 +287,106 @@ namespace Deeplearning.Core.Math
             return stringBuilder.ToString();
         }
 
+
+        public static async Task GradientDescentTaskAsync(int step,Action<Gradient3DInfo> gradientChanged) {
+
+      
+
+         //   return Task.Run(() => {
+
+                Func<Vector2D, float> original = new Func<Vector2D, float>(vector => MathF.Pow(vector.x, 2) + MathF.Pow(vector.y, 2));
+
+                Random random = new Random();
+
+                Vector2D vector2;
+
+                vector2.x = random.Next(-10, 10);
+
+                vector2.y = random.Next(-10, 10);
+
+                float learningRate = 0.05f;
+
+                float minValue = 0.0001f;
+
+                Vector2D k_Vector;
+
+                float z = 0;
+
+                k_Vector.x = 1;
+
+                k_Vector.y = 1;
+
+                for (int i = 0; i < step; i++)
+                {
+                    Vector2D tempV2;
+
+                    Vector2D tempV1;
+
+                    float e_x = learningRate * (k_Vector.x);
+
+                tempV2 = new Vector2D(){
+                    x=vector2.x + e_x,
+                    y = vector2.y 
+                };
+
+                tempV1 = new Vector2D()
+                {
+                    x = vector2.x - e_x,
+                    y = vector2.y
+                };
+     
+                    float k_x = (original(tempV2) - original(tempV1)) / (2 * e_x);
+
+                vector2.x -= k_x;
+
+                     float e_y = learningRate * (k_Vector.y);
+
+                tempV2 = new Vector2D()
+                {
+                    x = vector2.x,
+                    y = vector2.y + e_y
+                };
+
+                tempV1 = new Vector2D()
+                {
+                    x = vector2.x,
+                    y = vector2.y-e_y
+                };
+
+                float k_y = (original(tempV2) - original(tempV1)) / (2 * e_y);
+
+                    k_Vector.x = k_x;
+                    
+                    k_Vector.y = k_y;
+
+                vector2.y -= k_y;
+
+                if (gradientChanged != null)
+                    {
+                    Gradient3DInfo gradient3DInfo = new Gradient3DInfo();
+                    gradient3DInfo.x = vector2.x;
+                    gradient3DInfo.y = vector2.y;
+                    gradient3DInfo.z = z;
+                    gradient3DInfo.grad = k_Vector;
+                
+               
+                        gradientChanged.Invoke(gradient3DInfo);
+                    }
+
+
+                    if (MathF.Abs(k_Vector.x) <= minValue && MathF.Abs(k_Vector.y) <= minValue)
+                    {
+                        break;
+                    }
+
+                    await Task.Delay(330);
+
+                   // vector2 -= k_Vector;
+                }
+           // }//);
+      
+        }
+
         public static async Task GradientDescentTaskAsync(float initX, int step, Func<double, double> original,Action<GradientInfo> gradientChanged, float learningRate = 0.01f)
         {
    
