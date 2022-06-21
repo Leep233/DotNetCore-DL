@@ -7,6 +7,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -38,8 +39,7 @@ namespace Deeplearning.Sample
 
         private LineSeries leftLineSeries;
 
-        private LineSeries rightLineSeries;
-
+        private LineSeries rightLineSeries;       
 
         public PlotModel LeftPlotViewModel { get; set; }
 
@@ -53,7 +53,6 @@ namespace Deeplearning.Sample
             set { message = value; RaisePropertyChanged("Message"); }
         }
 
-
         private string sourceMatrix;
         public string SourceMatrix
         {
@@ -66,6 +65,8 @@ namespace Deeplearning.Sample
         public DelegateCommand ComputeCommand { get; set; }
 
         public DelegateCommand GradientCommand { get; set; }
+
+        public DelegateCommand Gradient3DCommand { get; set; }        
 
 
         public MainWindowViewModel()
@@ -122,6 +123,42 @@ namespace Deeplearning.Sample
             ComputeCommand = new DelegateCommand(ExecuteComputeCommand);
 
             GradientCommand = new DelegateCommand(ExecuteGradientCommand);
+
+            Gradient3DCommand = new DelegateCommand(ExecuteGradient3DCommand);
+        }
+
+        List<Gradient3DInfo> v3Points = new List<Gradient3DInfo>();
+
+        
+        
+
+        private async void ExecuteGradient3DCommand()
+        {
+            //v3Points.Clear();
+
+            Func<Vector2D, float> original = new Func<Vector2D, float>(vector => MathF.Pow(vector.x, 2) + MathF.Pow(vector.y, 2));
+
+            await Linear.GradientDescentTaskAsync(500, original,OnGradient3DChangedCallback);
+
+            using (StreamWriter writer = File.CreateText("point.txt")) {
+
+                
+
+                for (int i = 0; i < v3Points.Count; i++)
+                {
+                    writer.WriteLine(v3Points[i].ToString());
+                }
+
+            }
+
+            Message = "done...";
+
+        }
+
+        private void OnGradient3DChangedCallback(Gradient3DInfo value)
+        {
+            Message = value.ToString();
+            v3Points.Add(value);
         }
 
         ~MainWindowViewModel() {
