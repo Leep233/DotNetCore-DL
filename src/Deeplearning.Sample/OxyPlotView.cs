@@ -12,9 +12,9 @@ namespace Deeplearning.Sample
 
     public class OxyPlotView
     {
-        public const int Minimum = -20;
+        public const int Minimum = -5;
 
-        public const int Maximum = 20;
+        public const int Maximum = 5;
 
         public const int MajorStep = 3;
 
@@ -31,18 +31,19 @@ namespace Deeplearning.Sample
         {
 
             PlotModel = new PlotModel();
+
             //标记xy
             PlotModel.Series.Add(OxyPlotHelper.LineThroughOrigin(Minimum, Maximum, "x"));
             PlotModel.Series.Add(OxyPlotHelper.LineThroughOrigin(Minimum, Maximum, "y"));
 
             //显示网格
-            X_Axis =  OxyPlotHelper.LinearAxisWithGrid(Minimum, Maximum, AxisPosition.Bottom, MajorStep);
+            X_Axis = OxyPlotHelper.LinearAxisWithGrid(Minimum, Maximum, AxisPosition.Bottom, MajorStep);
             Y_Axis = OxyPlotHelper.LinearAxisWithGrid(Minimum, Maximum, AxisPosition.Left, MajorStep);
             PlotModel.Axes.Add(X_Axis);
             PlotModel.Axes.Add(Y_Axis);
 
             //初始化线
-            Line = new LineSeries() { LineStyle = LineStyle.Dot, Color = linColor };
+            Line = new LineSeries() { LineStyle = LineStyle.Dot, Color = linColor};
             PlotModel.Series.Add(Line);
 
             //初始化点

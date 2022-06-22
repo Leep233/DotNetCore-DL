@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Deeplearning.Core.Math
 {
-    public class Probability
+    public class ProbabilityDistribution
     {
         /// <summary>
         /// 正态分布
