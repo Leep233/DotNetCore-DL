@@ -16,13 +16,7 @@ namespace Deeplearning.Sample
     public class MainWindowViewModel : BindableBase
     {
 
-        public const int PointSize = 3;
-
-   
-        public const int MajorStep = 1;
-
         private float[,] SampleMatrix;
-
 
         private string message;
         public string Message
@@ -77,26 +71,34 @@ namespace Deeplearning.Sample
 
         private void ExecuteNormalDistriutionCommand()
         {
-            FunctionSeries series1 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 0.5f, 0.5f), -3, 3, 0.1) { 
-            Color = OxyColors.Red,
-                Title = "正态分布(u=0.5,a=0.5)",
-             };
+            double dx = 0.5f;
 
-            FunctionSeries series2 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 1, 0.5f), -3, 3, 0.1)
+            FunctionSeries series1 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 0.5f, 0.5f), -3, 3, dx)
+            {
+                Color = OxyColors.Red,
+                Title = "正态分布(u=0.5,a=0.5)",
+            };
+
+
+
+            FunctionSeries series2 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 1, 0.5f), -3, 3, dx)
             {
                 Color = OxyColors.Orange,
                 Title = "正态分布(u=1,a=0.5f)"
             };
 
-            FunctionSeries series3 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 0.5f, 1f), -3, 3, 0.1)
+            FunctionSeries series3 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 0.5f, 1f), -3, 3, dx)
             {
                 Color = OxyColors.DeepSkyBlue,
-                Title = "标准正态分布(u=0.5,a=1f)"
+                Title = "正态分布(u=0.5,a=1f)"
             };
 
-            FunctionSeries series4 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 0, 1), -3, 3, 0.1) {
-                Color = OxyColors.Green, Title = "标准正态分布(u=0,a=1)"
+            FunctionSeries series4 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 0, 1), -3, 3, dx)
+            {
+                Color = OxyColors.Green,
+                Title = "标准正态分布(u=0,a=1)"
             };
+
 
             LeftPlotView.AddSeries(series1);
             LeftPlotView.AddSeries(series2);
