@@ -16,34 +16,12 @@ namespace Deeplearning.Sample
     public class MainWindowViewModel : BindableBase
     {
 
-        internal enum PlotPosition
-        {
-            Left,
-            Right,
-            All
-        }
-
         public const int PointSize = 3;
 
-        public const int Minimum = -20;
-
-        public const int Maximum = 20;
-
+   
         public const int MajorStep = 1;
 
         private float[,] SampleMatrix;
-
-        private ScatterSeries leftScatterSeries;
-
-        private ScatterSeries rightScatterSeries;
-
-        private LineSeries leftLineSeries;
-
-        private LineSeries rightLineSeries;       
-
-        public PlotModel LeftPlotViewModel { get; set; }
-
-        public PlotModel RightPlotViewModel { get; set; }
 
 
         private string message;
@@ -60,61 +38,29 @@ namespace Deeplearning.Sample
             set { sourceMatrix = value; RaisePropertyChanged("SourceMatrix"); }
         }
 
+        public OxyPlotView LeftPlotView { get; set; }
+        public OxyPlotView RightPlotView { get; set; }
+
         public DelegateCommand UpdateSourceMatrixCommannd { get; set; }
 
         public DelegateCommand ComputeCommand { get; set; }
 
         public DelegateCommand GradientCommand { get; set; }
 
-        public DelegateCommand Gradient3DCommand { get; set; }        
+        public DelegateCommand Gradient3DCommand { get; set; }
+
+        public DelegateCommand NormalDistriutionCommand { get; set; }
+
 
 
         public MainWindowViewModel()
         {
-            LeftPlotViewModel = new PlotModel();
-            RightPlotViewModel = new PlotModel();
 
-            #region 标注XY轴
 
-            //标记xy
-            LeftPlotViewModel.Series.Add(OxyPlotHelper.LineThroughOrigin(Minimum, Maximum, "x"));
-            LeftPlotViewModel.Series.Add(OxyPlotHelper.LineThroughOrigin(Minimum, Maximum, "y"));
+            LeftPlotView = new OxyPlotView(OxyColors.Orange,OxyColors.DeepPink);
 
-            RightPlotViewModel.Series.Add(OxyPlotHelper.LineThroughOrigin(Minimum, Maximum, "x"));
-            RightPlotViewModel.Series.Add(OxyPlotHelper.LineThroughOrigin(Minimum, Maximum, "y"));
+            RightPlotView = new OxyPlotView(OxyColors.GreenYellow, OxyColors.DodgerBlue);
 
-            #endregion
-
-            #region 显示网格
-            //显示网格
-            LeftPlotViewModel.Axes.Add(OxyPlotHelper.LinearAxisWithGrid(Minimum, Maximum, AxisPosition.Bottom, MajorStep));
-            LeftPlotViewModel.Axes.Add(OxyPlotHelper.LinearAxisWithGrid(Minimum, Maximum, AxisPosition.Left, MajorStep));
-
-            RightPlotViewModel.Axes.Add(OxyPlotHelper.LinearAxisWithGrid(Minimum, Maximum, AxisPosition.Bottom, MajorStep));
-            RightPlotViewModel.Axes.Add(OxyPlotHelper.LinearAxisWithGrid(Minimum, Maximum, AxisPosition.Left, MajorStep));
-            //end
-            #endregion
-
-            #region 设置线
-            //初始化线
-            leftLineSeries = new LineSeries() { LineStyle = LineStyle.Dot, Color = OxyColors.DarkOrange};
-            LeftPlotViewModel.Series.Add(leftLineSeries);
-
-            rightLineSeries = new LineSeries() { LineStyle = LineStyle.Dot, Color = OxyColors.Olive };
-            RightPlotViewModel.Series.Add(rightLineSeries);
-            //end
-            #endregion
-
-            #region 设置点
-
-            //初始化点
-            leftScatterSeries = new ScatterSeries() { MarkerType = MarkerType.Circle, MarkerFill = OxyColors.Green };
-            LeftPlotViewModel.Series.Add(leftScatterSeries);
-
-            rightScatterSeries = new ScatterSeries() { MarkerType = MarkerType.Circle, MarkerFill = OxyColors.Red };
-            RightPlotViewModel.Series.Add(rightScatterSeries);
-            //end
-            #endregion
 
             ExecuteUpdateSourceMatrixCommannd();
 
@@ -125,11 +71,42 @@ namespace Deeplearning.Sample
             GradientCommand = new DelegateCommand(ExecuteGradientCommand);
 
             Gradient3DCommand = new DelegateCommand(ExecuteGradient3DCommand);
+
+            NormalDistriutionCommand = new DelegateCommand(ExecuteNormalDistriutionCommand);
         }
 
-        List<Gradient3DInfo> v3Points = new List<Gradient3DInfo>();
+        private void ExecuteNormalDistriutionCommand()
+        {
+            FunctionSeries series1 = new FunctionSeries(x => Probability.NormalDistriution((float)x, 0.5f, 0.5f), -3, 3, 0.1) { 
+            Color = OxyColors.Red,
+                Title = "正态分布(u=0.5,a=0.5)"
+            };
 
-        
+            FunctionSeries series2 = new FunctionSeries(x => Probability.NormalDistriution((float)x, 1, 0.5f), -3, 3, 0.1)
+            {
+                Color = OxyColors.Orange,
+                Title = "正态分布(u=1,a=0.5f)"
+            };
+
+            FunctionSeries series3 = new FunctionSeries(x => Probability.NormalDistriution((float)x, 0.5f, 1f), -3, 3, 0.1)
+            {
+                Color = OxyColors.DeepSkyBlue,
+                Title = "标准正态分布(u=0.5,a=1f)"
+            };
+
+            FunctionSeries series4 = new FunctionSeries(x => Probability.NormalDistriution((float)x, 0, 1), -3, 3, 0.1) {
+                Color = OxyColors.Green, Title = "标准正态分布(u=0,a=1)"
+            };
+
+            LeftPlotView.AddSeries(series1);
+            LeftPlotView.AddSeries(series2);
+            LeftPlotView.AddSeries(series3);
+            LeftPlotView.AddSeries(series4);
+
+            LeftPlotView.UpdateView();
+        }
+
+        List<Gradient3DInfo> v3Points = new List<Gradient3DInfo>();        
         
 
         private async void ExecuteGradient3DCommand()
@@ -162,7 +139,7 @@ namespace Deeplearning.Sample
         }
 
         ~MainWindowViewModel() {
-            ClearPlotView( PlotPosition.All);
+           
         }
 
         /// <summary>
@@ -185,154 +162,6 @@ namespace Deeplearning.Sample
             return (p1, p2);
         }
      
-        /// <summary>
-        /// 清空视图
-        /// </summary>
-        /// <param name="plotPosition"></param>
-        internal void ClearPlotView(PlotPosition plotPosition)
-        {
-
-            switch (plotPosition)
-            {
-                case PlotPosition.Left:
-                    {
-                        leftLineSeries.Points.Clear();
-                        leftScatterSeries.Points.Clear();
-                        LeftPlotViewModel.InvalidatePlot(true);
-                    }
-
-                    break;
-                case PlotPosition.Right:
-                    {
-                        rightLineSeries.Points.Clear();
-                        rightScatterSeries.Points.Clear();
-                        RightPlotViewModel.InvalidatePlot(true);
-                    }
-                    break;
-                case PlotPosition.All:
-                    {
-                        leftLineSeries.Points.Clear();
-                        leftScatterSeries.Points.Clear();
-                        rightLineSeries.Points.Clear();
-                        rightScatterSeries.Points.Clear();
-                        LeftPlotViewModel.InvalidatePlot(true);
-                        RightPlotViewModel.InvalidatePlot(true);
-                    }
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// 绘制线
-        /// </summary>
-        /// <param name="plotPosition"></param>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        internal void UpdateLineToPlotView(PlotPosition plotPosition, DataPoint p1, DataPoint p2)
-        {
-            switch (plotPosition)
-            {
-                case PlotPosition.Left:
-                    leftLineSeries.Points.Clear();
-                    leftLineSeries.Points.Add(p1);
-                    leftLineSeries.Points.Add(p2);
-                    LeftPlotViewModel.InvalidatePlot(true);
-                    break;
-                case PlotPosition.Right:
-                    rightLineSeries.Points.Clear();
-                    rightLineSeries.Points.Add(p1);
-                    rightLineSeries.Points.Add(p2);
-                    RightPlotViewModel.InvalidatePlot(true);
-                    break;
-                case PlotPosition.All:
-                    {
-                        leftLineSeries.Points.Clear();
-                        leftLineSeries.Points.Add(p1);
-                        leftLineSeries.Points.Add(p2);
-                        rightLineSeries.Points.Clear();
-                        rightLineSeries.Points.Add(p1);
-                        rightLineSeries.Points.Add(p2);
-                        LeftPlotViewModel.InvalidatePlot(true);
-                        RightPlotViewModel.InvalidatePlot(true);
-                    }
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// 绘制点
-        /// </summary>
-        /// <param name="plotPosition"></param>
-        /// <param name="matrix"></param>
-        internal void UpdatePointsToPlotView(PlotPosition plotPosition, float[,] matrix)
-        {
-            switch (plotPosition)
-            {
-                case PlotPosition.Left:
-                    {
-                        leftScatterSeries.Points.Clear();
-                        leftScatterSeries.Points.AddRange(OxyPlotHelper.MatrixToPoints(matrix));
-                        LeftPlotViewModel.InvalidatePlot(true);
-                    }
-                    break;
-                case PlotPosition.Right:
-                    {
-                        rightScatterSeries.Points.Clear();
-                        rightScatterSeries.Points.AddRange(OxyPlotHelper.MatrixToPoints(matrix));
-                        RightPlotViewModel.InvalidatePlot(true);
-                    }
-                    break;
-                case PlotPosition.All:
-                    {
-                        leftScatterSeries.Points.Clear();
-                        leftScatterSeries.Points.AddRange(OxyPlotHelper.MatrixToPoints(matrix));
-                        rightScatterSeries.Points.Clear();
-                        rightScatterSeries.Points.AddRange(OxyPlotHelper.MatrixToPoints(matrix));
-                        LeftPlotViewModel.InvalidatePlot(true);
-                        RightPlotViewModel.InvalidatePlot(true);
-                    }
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// 绘制点
-        /// </summary>
-        /// <param name="plotPosition"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        internal void UpdatePointToPlotView(PlotPosition plotPosition, double x, double y)
-        {
-            switch (plotPosition)
-            {
-                case PlotPosition.Left:
-                    {
-                        leftScatterSeries.Points.Clear();
-                        leftScatterSeries.Points.Add(new ScatterPoint(x, y));
-                        LeftPlotViewModel.InvalidatePlot(true);
-                    }
-                    break;
-                case PlotPosition.Right:
-                    {
-                        rightScatterSeries.Points.Clear();
-                        rightScatterSeries.Points.Add(new ScatterPoint(x, y));
-                        RightPlotViewModel.InvalidatePlot(true);
-                    }
-                    break;
-                case PlotPosition.All:
-                    {
-                        leftScatterSeries.Points.Clear();
-                        leftScatterSeries.Points.Add(new ScatterPoint(x, y));
-                        rightScatterSeries.Points.Clear();
-                        rightScatterSeries.Points.Add(new ScatterPoint(x, y));
-                        LeftPlotViewModel.InvalidatePlot(true);
-                        RightPlotViewModel.InvalidatePlot(true);
-                    }
-                    break;
-            }
-        }
-
-
         private async void ExecuteGradientCommand()
         {
             // y = x^2 +3x -8
@@ -347,9 +176,7 @@ namespace Deeplearning.Sample
                 Color = OxyColors.YellowGreen
             };
 
-            LeftPlotViewModel.Series.Add(functionSeries);
-
-            LeftPlotViewModel.InvalidatePlot(true);
+            LeftPlotView.AddSeries(functionSeries);
 
             Message = "computing...";
 
@@ -372,13 +199,10 @@ namespace Deeplearning.Sample
 
             float[,] matrixT = Linear.Dot(diagMatrix, SampleMatrix);
 
-            UpdatePointsToPlotView(PlotPosition.Left, SampleMatrix);
+            LeftPlotView. UpdatePointsToPlotView(SampleMatrix);
 
-            UpdatePointsToPlotView(PlotPosition.Right, matrixT);
+            RightPlotView. UpdatePointsToPlotView(matrixT);
 
-            RightPlotViewModel.InvalidatePlot(true);
-
-            LeftPlotViewModel.InvalidatePlot(true);
         }
       
         private void ExecuteUpdateSourceMatrixCommannd()
@@ -408,9 +232,9 @@ namespace Deeplearning.Sample
 
             var points = GetTangentLinePoints(eventArgs, 3);
 
-            UpdateLineToPlotView(PlotPosition.Left, points.p1, points.p2);
+           LeftPlotView. UpdateLineToPlotView(points.p1, points.p2);
 
-            UpdatePointToPlotView(PlotPosition.Left, eventArgs.x, eventArgs.y);
+            LeftPlotView. UpdatePointToPlotView(eventArgs.x, eventArgs.y);
 
             Message = eventArgs.ToString();
         }

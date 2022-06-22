@@ -37,7 +37,7 @@ namespace Deeplearning.Sample.Utils
         public static LinearAxis LinearAxisWithGrid(float minimum, float maximum, AxisPosition axisPosition, float majorStep) {
 
             LinearAxis axis = new LinearAxis();
-            axis.IsZoomEnabled = false;
+          //  axis.IsZoomEnabled = false;
             axis.Position = axisPosition;
             axis.Minimum = minimum;
             axis.Maximum = maximum;

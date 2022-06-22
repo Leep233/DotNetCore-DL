@@ -24,13 +24,15 @@
                 <Button Margin="3" Command="{Binding ComputeCommand}">对角矩阵与矩阵乘积</Button>
                 <Button Margin="3" Command="{Binding GradientCommand}">梯度下降</Button>
                 <Button Margin="3" Command="{Binding Gradient3DCommand}">3D梯度下降</Button>
+                <Button Margin="3" Command="{Binding NormalDistriutionCommand}">正态分布</Button>
+                
             </StackPanel>
         </Border>
 
         <GridSplitter Grid.Row="1" Grid.ColumnSpan="2" Height="1.5" HorizontalAlignment="Stretch" Background="Gray"></GridSplitter>
-        
-        <oxy:PlotView  Grid.Row="0" Grid.Column="0"  Model="{Binding LeftPlotViewModel}"></oxy:PlotView>
-        <oxy:PlotView Grid.Row="0" Grid.Column="1" Model="{Binding RightPlotViewModel}"></oxy:PlotView>
+
+        <oxy:PlotView  Grid.Row="0" Grid.Column="0"  Model="{Binding LeftPlotView.PlotModel}"></oxy:PlotView>
+        <oxy:PlotView Grid.Row="0" Grid.Column="1" Model="{Binding RightPlotView.PlotModel}"></oxy:PlotView>
 
         <Border  Grid.Row="2" Grid.ColumnSpan="2">
             <Grid>
