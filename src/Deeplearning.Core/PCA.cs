@@ -7,39 +7,24 @@ namespace Deeplearning.Core
 {
     public class PCA
     {
-        public double[,] Source { get; set; }
+        private float[] source;
+        private float[,] D;
+        public float[] f(float[] x) {
 
-        
+            source = x;
 
-        public float[] ArgMin(float[] vector) {
-           throw  new NotFiniteNumberException();
-
+            float [] c = new float[x.Length];
+            return c;
 
         }
 
-        public float[,] Decompression(float[] c) 
-        {
-            float[,] D = BuidleDMatrix(c);
-
-            return Linear.Dot(D, c);
+        public float[,] g(float[,] c) {
+            return Matrix.Dot(D, c);
         }
 
-        private float[,] BuidleDMatrix(float[] c) 
-        {
+        public float[] argmix(float[] x) {
 
-            float[,] D = new float[Source.GetLength(1), c.Length];
-
-            return D;
-        }
-
-
-        public float[] Compression() { 
-            
-            int count = Source.GetLength(0);
-
-            float[] result = new float[count];
-
-            return result;
+            return x - g(c);
         }
     }
 }

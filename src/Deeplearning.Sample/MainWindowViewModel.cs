@@ -117,7 +117,7 @@ namespace Deeplearning.Sample
 
             Func<Vector2D, float> original = new Func<Vector2D, float>(vector => MathF.Pow(vector.x, 2) + MathF.Pow(vector.y, 2));
 
-            await Linear.GradientDescentTaskAsync(500, original,OnGradient3DChangedCallback);
+            await Matrix.GradientDescentTaskAsync(500, original,OnGradient3DChangedCallback);
 
             using (StreamWriter writer = File.CreateText("point.txt")) {
 
@@ -182,7 +182,7 @@ namespace Deeplearning.Sample
 
             Message = "computing...";
 
-            await Linear.GradientDescentTaskAsync(8, 1000, orginal, OnGradientChangedCallback);
+            await Matrix.GradientDescentTaskAsync(8, 1000, orginal, OnGradientChangedCallback);
 
             Message = "completed";
         }
@@ -195,11 +195,11 @@ namespace Deeplearning.Sample
                2,2,2,2,2
             };
 
-            float[,] diagMatrix = Linear.DiagonalMatrix(diagVector);
+            float[,] diagMatrix = Matrix.DiagonalMatrix(diagVector);
 
             Message = diagMatrix.Rank.ToString();
 
-            float[,] matrixT = Linear.Dot(diagMatrix, SampleMatrix);
+            float[,] matrixT = Matrix.Dot(diagMatrix, SampleMatrix);
 
             LeftPlotView. UpdatePointsToPlotView(SampleMatrix);
 
@@ -226,7 +226,7 @@ namespace Deeplearning.Sample
                 }
             }
 
-            SourceMatrix = Linear.Print(SampleMatrix);
+            SourceMatrix = Matrix.Print(SampleMatrix);
         }
        
         private void OnGradientChangedCallback(GradientInfo eventArgs)
