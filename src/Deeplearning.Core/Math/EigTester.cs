@@ -13,7 +13,7 @@ namespace Deeplearning.Core.Math
     {
         public static async void Eig(Matrix squareMatrix) 
         {
-            if (!squareMatrix.IsSquare()) return;
+            if (!squareMatrix.IsSquare) return;
 
             int size = squareMatrix.Rows;
 

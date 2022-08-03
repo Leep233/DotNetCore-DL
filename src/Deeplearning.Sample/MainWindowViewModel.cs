@@ -16,6 +16,7 @@ namespace Deeplearning.Sample
 {
     public class MainWindowViewModel : BindableBase
     {
+        List<Gradient3DInfo> v3Points = new List<Gradient3DInfo>();
 
         private Matrix SampleMatrix;
 
@@ -46,7 +47,10 @@ namespace Deeplearning.Sample
 
         public DelegateCommand NormalDistriutionCommand { get; set; }
 
+        public DelegateCommand MatrixDetCommand { get; set; }
 
+        public DelegateCommand MatrixAdjugateCommand { get; set; }
+        
 
         public MainWindowViewModel()
         {
@@ -69,18 +73,47 @@ namespace Deeplearning.Sample
 
             NormalDistriutionCommand = new DelegateCommand(ExecuteNormalDistriutionCommand);
 
-            TestEig();
+            MatrixDetCommand = new DelegateCommand(ExecuteMatrixDetCommand);
+
+            MatrixAdjugateCommand = new DelegateCommand(ExecuteMatrixAdjugateCommand);
 
 
         }
-        private void TestDet() {
 
-            float[,] scalars = new float[5, 5] {
-                {1,4,3,6,2},
-                {3,8,5,9,3},
-                {1,3,3,7,5},
-                {7,2,9,1,3},
-                {5,2,7,4,2},
+        private void ExecuteMatrixAdjugateCommand()
+        {
+            float[,] scalars = new float[2, 2] {
+            { -3,4},
+            { 6,2}
+            };
+
+            scalars = new float[3, 3] {
+            { 2,3,1},
+            { 3,4,1},
+            { 3,7,2}
+            };
+
+            scalars = new float[3, 3] {
+            { 2,2,1},
+            { -2,1,2},
+            { 1,-2,2}
+            };
+
+
+
+            Matrix matrix = new Matrix(scalars);
+
+            matrix = matrix* matrix.inverse;
+
+             Message = matrix.ToString();
+        }
+
+        private void ExecuteMatrixDetCommand()
+        {
+            float[,] scalars = new float[3, 3] {
+            {6,1,1 },
+            {4,-2,5 },
+             {2,8,7 }
             };
 
             Matrix matrix = new Matrix(scalars);
@@ -88,34 +121,7 @@ namespace Deeplearning.Sample
 
             Message = matrix.det.ToString("F4");
         }
-        private void TestEig() {
 
-            float[,] scalars = new float[3, 3]
-            {
-                {1,0,2},
-                {0,-1,0 },
-                {0,4,2 }
-            };
-
-            scalars = new float[3, 3]
-            {
-                {4,1,1},
-                {1,2,1 },
-                {3,2,3 }
-            };
-            //scalars = new float[2, 2]
-            //{
-            //    {4,1},
-            //    {1,2}
-            //};
-
-            Matrix matrix = new Matrix(scalars);
-            //  Message =Matrix.Print(Test.MulitEig(matrix));
-
-           EigTest.Eig(matrix);
-
-           // Message = Test.Eig(matrix).ToString("F2");
-        }
 
         private void ExecuteNormalDistriutionCommand()
         {
@@ -156,7 +162,7 @@ namespace Deeplearning.Sample
             LeftPlotView.UpdateView();
         }
 
-        List<Gradient3DInfo> v3Points = new List<Gradient3DInfo>();        
+         
         
 
         private async void ExecuteGradient3DCommand()
@@ -170,7 +176,6 @@ namespace Deeplearning.Sample
             using (StreamWriter writer = File.CreateText("point.txt")) {
 
                 
-
                 for (int i = 0; i < v3Points.Count; i++)
                 {
                     writer.WriteLine(v3Points[i].ToString());
@@ -276,13 +281,13 @@ namespace Deeplearning.Sample
         private void OnGradientChangedCallback(GradientInfo eventArgs)
         {
 
-            var points = GetTangentLinePoints(eventArgs, 3);
+           var points = GetTangentLinePoints(eventArgs, 3);
 
            LeftPlotView. UpdateLineToPlotView(points.p1, points.p2);
 
-            LeftPlotView. UpdatePointToPlotView(eventArgs.x, eventArgs.y);
+           LeftPlotView. UpdatePointToPlotView(eventArgs.x, eventArgs.y);
 
-            Message = eventArgs.ToString();
+           Message = eventArgs.ToString();
         }
 
     }

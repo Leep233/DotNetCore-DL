@@ -25,7 +25,9 @@
                 <Button Margin="3" Command="{Binding GradientCommand}">梯度下降</Button>
                 <Button Margin="3" Command="{Binding Gradient3DCommand}">3D梯度下降</Button>
                 <Button Margin="3" Command="{Binding NormalDistriutionCommand}">正态分布</Button>
-                
+                <Button Margin="3" Command="{Binding MatrixDetCommand}">行列式</Button>
+                <Button Margin="3" Command="{Binding MatrixAdjugateCommand}">伴随矩阵</Button>
+
             </StackPanel>
         </Border>
 
