@@ -1,4 +1,5 @@
 ﻿using Deeplearning.Core.Math;
+using Deeplearning.Core.Math.Models;
 using Deeplearning.Sample.Utils;
 using OxyPlot;
 using OxyPlot.Axes;
@@ -16,7 +17,7 @@ namespace Deeplearning.Sample
     public class MainWindowViewModel : BindableBase
     {
 
-        private float[,] SampleMatrix;
+        private Matrix SampleMatrix;
 
         private string message;
         public string Message
@@ -67,6 +68,53 @@ namespace Deeplearning.Sample
             Gradient3DCommand = new DelegateCommand(ExecuteGradient3DCommand);
 
             NormalDistriutionCommand = new DelegateCommand(ExecuteNormalDistriutionCommand);
+
+            TestEig();
+
+
+        }
+        private void TestDet() {
+
+            float[,] scalars = new float[5, 5] {
+                {1,4,3,6,2},
+                {3,8,5,9,3},
+                {1,3,3,7,5},
+                {7,2,9,1,3},
+                {5,2,7,4,2},
+            };
+
+            Matrix matrix = new Matrix(scalars);
+
+
+            Message = matrix.det.ToString("F4");
+        }
+        private void TestEig() {
+
+            float[,] scalars = new float[3, 3]
+            {
+                {1,0,2},
+                {0,-1,0 },
+                {0,4,2 }
+            };
+
+            scalars = new float[3, 3]
+            {
+                {4,1,1},
+                {1,2,1 },
+                {3,2,3 }
+            };
+            //scalars = new float[2, 2]
+            //{
+            //    {4,1},
+            //    {1,2}
+            //};
+
+            Matrix matrix = new Matrix(scalars);
+            //  Message =Matrix.Print(Test.MulitEig(matrix));
+
+           EigTest.Eig(matrix);
+
+           // Message = Test.Eig(matrix).ToString("F2");
         }
 
         private void ExecuteNormalDistriutionCommand()
@@ -115,9 +163,9 @@ namespace Deeplearning.Sample
         {
             //v3Points.Clear();
 
-            Func<Vector2D, float> original = new Func<Vector2D, float>(vector => MathF.Pow(vector.x, 2) + MathF.Pow(vector.y, 2));
+            Func<Vector, float> original = new Func<Vector, float>(vector => MathF.Pow(vector[0], 2) + MathF.Pow(vector[1], 2));
 
-            await Matrix.GradientDescentTaskAsync(500, original,OnGradient3DChangedCallback);
+            await Linear.GradientDescentTaskAsync(500, original,OnGradient3DChangedCallback);
 
             using (StreamWriter writer = File.CreateText("point.txt")) {
 
@@ -182,7 +230,7 @@ namespace Deeplearning.Sample
 
             Message = "computing...";
 
-            await Matrix.GradientDescentTaskAsync(8, 1000, orginal, OnGradientChangedCallback);
+            await Linear.GradientDescentTaskAsync(8, 1000, orginal, OnGradientChangedCallback);
 
             Message = "completed";
         }
@@ -190,31 +238,27 @@ namespace Deeplearning.Sample
         private void ExecuteComputeCommand()
         {
 
-            float[] diagVector = new float[5]
-            {
-               2,2,2,2,2
-            };
+            Vector v = new Vector(2,2,2,2,2);
 
-            float[,] diagMatrix = Matrix.DiagonalMatrix(diagVector);
+ 
+            Matrix diagMatrix = Matrix.DiagonalMatrix(v);
 
-            Message = diagMatrix.Rank.ToString();
+            Matrix matrixT = diagMatrix * SampleMatrix;
 
-            float[,] matrixT = Matrix.Dot(diagMatrix, SampleMatrix);
+            LeftPlotView.UpdatePointsToPlotView(SampleMatrix);
 
-            LeftPlotView. UpdatePointsToPlotView(SampleMatrix);
-
-            RightPlotView. UpdatePointsToPlotView(matrixT);
+            RightPlotView.UpdatePointsToPlotView(matrixT);
 
         }
       
         private void ExecuteUpdateSourceMatrixCommannd()
         {
-            int row = 5;
-            int col = 2;
+            int row = 3;
+            int col = 3;
 
             Random random = new Random();
 
-            SampleMatrix = new float[row, col];
+            SampleMatrix = new Matrix(row, col);
 
             for (int i = 0; i < row; i++)
             {
@@ -226,7 +270,7 @@ namespace Deeplearning.Sample
                 }
             }
 
-            SourceMatrix = Matrix.Print(SampleMatrix);
+            SourceMatrix = SampleMatrix.ToString();
         }
        
         private void OnGradientChangedCallback(GradientInfo eventArgs)

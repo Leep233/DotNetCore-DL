@@ -1,4 +1,5 @@
-﻿using Deeplearning.Sample.Utils;
+﻿using Deeplearning.Core.Math.Models;
+using Deeplearning.Sample.Utils;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -73,6 +74,17 @@ namespace Deeplearning.Sample
         /// <param name="plotPosition"></param>
         /// <param name="matrix"></param>
         internal void UpdatePointsToPlotView(float[,] matrix)
+        {
+            Scatter.Points.Clear();
+            Scatter.Points.AddRange(OxyPlotHelper.MatrixToPoints(matrix));
+            UpdateView();
+        }
+        /// <summary>
+        /// 绘制点
+        /// </summary>
+        /// <param name="plotPosition"></param>
+        /// <param name="matrix"></param>
+        internal void UpdatePointsToPlotView(Matrix matrix)
         {
             Scatter.Points.Clear();
             Scatter.Points.AddRange(OxyPlotHelper.MatrixToPoints(matrix));

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Deeplearning.Core.Math.Models;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -55,6 +56,20 @@ namespace Deeplearning.Sample.Utils
         {
 
             for (int i = 0; i < matrix.GetLength(0); i++)
+            {
+                var x = matrix[i, 0];
+
+                var y = matrix[i, 1];
+
+                yield return new ScatterPoint(x, y);
+            }
+            yield break;
+        }
+
+        public static IEnumerable<ScatterPoint> MatrixToPoints(Matrix matrix)
+        {
+
+            for (int i = 0; i < 2; i++)
             {
                 var x = matrix[i, 0];
 

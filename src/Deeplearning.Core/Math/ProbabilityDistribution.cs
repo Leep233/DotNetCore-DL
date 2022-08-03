@@ -21,5 +21,15 @@ namespace Deeplearning.Core.Math
 
            return MathF.Sqrt(1/(double_a_2 * MathF.PI))*MathF.Exp(-(1/double_a_2) * MathF.Pow((x-u), 2));
         }
+
+        /// <summary>
+        /// 标准正态分布
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static float StandardNormalDistribution(float x) 
+        {
+            return MathF.Sqrt(1 / (2 * MathF.PI)) * MathF.Exp(-(1 / 2) * MathF.Pow(x, 2));
+        }
     }
 }

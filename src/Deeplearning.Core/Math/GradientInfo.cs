@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Deeplearning.Core.Math.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -21,8 +22,8 @@ namespace Deeplearning.Core.Math
         public float x;
         public float y;
         public float z;
-        public Vector2D grad;
-        //斜率/导数：{grad.ToString()}
+        internal Vector grad;
+
         public override string ToString()
         {
             return $"({x.ToString("F4")},{y.ToString("F4")},{z.ToString("F4")})";

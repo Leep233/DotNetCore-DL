@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Deeplearning.Core.Math.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,84 +9,57 @@ namespace Deeplearning.Core.Math
     public static class Linear
     {
         public const float MinValue = 0.0001f;
-        public static Task GradientDescentTaskAsync(int step, Func<Vector2D, float> original, Action<Gradient3DInfo> gradientChanged)
+        public static Task GradientDescentTaskAsync(int step, Func<Vector, float> original, Action<Gradient3DInfo> gradientChanged)
         {
-
-
-
             return Task.Run(() =>
             {
-
-
-                Random random = new Random();
-
-                Vector2D vector2;
-
-                vector2.x = random.Next(-10, 10);
-
-                vector2.y = random.Next(-10, 10);
+                Vector vector2 = Vector.Random(2,-10, 10);
 
                 float learningRate = 0.05f;
 
                 float minValue = 0.0001f;
 
-                Vector2D k_Vector;
+                Vector k_Vector = Vector.One(2);
 
                 float z = 0;
-
-                k_Vector.x = 1;
-
-                k_Vector.y = 1;
 
                 float doubleLR = (2 * learningRate);
 
                 for (int i = 0; i < step; i++)
                 {
-                    Vector2D tempV2;
+                    Vector tempV2;
 
-                    Vector2D tempV1;
+                    Vector tempV1;
 
                     z = original(vector2);
 
-                    tempV2 = new Vector2D()
-                    {
-                        x = vector2.x + learningRate,
-                        y = vector2.y
-                    };
+                    tempV2 = new Vector(vector2[0] + learningRate, vector2[1]);
 
-                    tempV1 = new Vector2D()
-                    {
-                        x = vector2.x - learningRate,
-                        y = vector2.y
-                    };
+
+                    tempV1 = new Vector(vector2[0] - learningRate, vector2[1]);
+                  
 
                     float k_x = (original(tempV2) - original(tempV1)) / doubleLR;
 
-                    tempV2 = new Vector2D()
-                    {
-                        x = vector2.x,
-                        y = vector2.y + learningRate
-                    };
+                    tempV2 = new Vector(vector2[0], vector2[1] + learningRate);
 
-                    tempV1 = new Vector2D()
-                    {
-                        x = vector2.x,
-                        y = vector2.y - learningRate
-                    };
+
+                    tempV1 = new Vector(vector2[0], vector2[1] - learningRate);
+                   
 
                     float k_y = (original(tempV2) - original(tempV1)) / doubleLR;
 
-                    k_Vector.x = k_x;
+                    k_Vector[0] = k_x;
 
-                    k_Vector.y = k_y;
+                    k_Vector[1] = k_y;
 
                     if (gradientChanged != null)
                     {
                         Gradient3DInfo gradient3DInfo = new Gradient3DInfo();
 
-                        gradient3DInfo.x = vector2.x;
+                        gradient3DInfo.x = vector2[0];
 
-                        gradient3DInfo.y = vector2.y;
+                        gradient3DInfo.y = vector2[1];
 
                         gradient3DInfo.z = z;
 
@@ -95,7 +69,7 @@ namespace Deeplearning.Core.Math
 
                     }
 
-                    if (MathF.Abs(k_Vector.x) <= minValue && MathF.Abs(k_Vector.y) <= minValue)
+                    if (MathF.Abs(vector2[0]) <= minValue && MathF.Abs(vector2[1]) <= minValue)
                     {
                         break;
                     }
