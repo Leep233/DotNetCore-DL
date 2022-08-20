@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Deeplearning.Core.Math.Models
 {
-    public  class Matrix : ICloneable
+    public class Matrix : ICloneable
     {
         public const int MAX_TO_STRING_COUNT = 4;
 
@@ -14,8 +14,8 @@ namespace Deeplearning.Core.Math.Models
 
         public float this[int row, int col]
         {
-            get => scalars[col, row];
-            set => scalars[col, row] = value;
+            get => scalars[row, col];
+            set => scalars[row, col] = value;
         }
 
         public int Rows { get; private set; } = 0;
@@ -24,9 +24,7 @@ namespace Deeplearning.Core.Math.Models
 
         public Matrix T => Transpose(this);
         public float det => Det(this);
-
         public Matrix abj => Adjugate(this);
-
         public Matrix inverse => Inverse(this);
 
         /// <summary>
@@ -36,9 +34,11 @@ namespace Deeplearning.Core.Math.Models
         /// <param name="cols">数量</param>
         public Matrix(int rows, int cols)
         {
-            this.Rows = rows;
-            this.Columns = cols;
-            scalars = new float[Rows, Columns];
+
+            scalars = new float[rows, cols];
+
+            this.Rows = scalars.GetLength(0);
+            this.Columns = scalars.GetLength(1);
         }
 
         public Matrix(float[,] matrix)
@@ -47,22 +47,25 @@ namespace Deeplearning.Core.Math.Models
             this.Columns = matrix.GetLength(1);
             scalars = matrix;
         }
-      
+
         public Matrix(Vector[] vectors)
         {
-            this.Rows = vectors.Length;
-            this.Columns = vectors[0].Length;
+           int col = vectors.Length;
+           int row = vectors[0].Length;
 
-            scalars = new float[Rows, Columns];
+            scalars = new float[row, col];
 
-            for (int i = 0; i < Rows; i++)
+            for (int r = 0; r < row; r++)
             {
-                for (int j = 0; j < Columns; j++)
+                for (int c = 0; c < col; c++)
                 {
-                    scalars[i, j] = vectors[i][j];
+                    scalars[r, c] = vectors[c][r];
                 }
             }
 
+           this.Rows = scalars.GetLength(0);
+
+           this.Columns = scalars.GetLength(1);
         }
 
         private Matrix()
@@ -70,7 +73,34 @@ namespace Deeplearning.Core.Math.Models
 
         }
 
-      
+        public Vector[] Vectors() 
+        {
+            Vector[] vs = new Vector[Columns];
+
+            for (int c = 0; c < Columns; c++)
+            {
+                vs[c] = new Vector(Rows);
+                for (int r = 0; r < Rows; r++)
+                {
+                    vs[c][r] = this[r,c];
+                }
+            }
+
+            return vs;
+        }
+
+        public Vector GetVector(int colIndex) {
+
+            if (Columns <= colIndex) throw new ArgumentOutOfRangeException("越界");
+
+            Vector vector = new Vector(Rows);
+
+            for (int i = 0; i < Rows; i++)
+            {
+                vector[i] = this[i, colIndex];
+            }
+            return vector;
+        }
 
         public float FrobeniusNorm()
         {
@@ -107,7 +137,7 @@ namespace Deeplearning.Core.Math.Models
                     }
                     else
                     {
-                        stringBuilder.Append(this[i, j].ToString("F4"));
+                        stringBuilder.Append(this[i, j].ToString("F8"));
                         stringBuilder.Append(" ");
                     }
 
@@ -216,19 +246,21 @@ namespace Deeplearning.Core.Math.Models
         }
         public static Matrix Transpose(Matrix matrix)
         {
+            int rows = matrix.Columns;
 
-            Matrix result = new Matrix(matrix.Columns, matrix.Rows);
+            int cols = matrix.Rows;
 
-            for (int i = 0; i < result.Columns; i++)
+            Matrix result = new Matrix(rows, cols);
+
+            for (int r = 0; r < rows; r++)
             {
-                for (int j = 0; j < result.Rows; j++)
+                for (int c = 0; c < cols; c++)
                 {
-                    result[j, i] = matrix[i, j];
+                    result[r, c] = matrix[c,r];
                 }
             }
             return result;
         }
-
         public static Matrix HadamardProduct(Matrix m1, Matrix m2)
         {
 
@@ -248,7 +280,6 @@ namespace Deeplearning.Core.Math.Models
             }
             return result;
         }
-
         public static float FrobeniusNorm(Matrix matrix)
         {
             return MathF.Sqrt(Track(matrix * matrix.T));
@@ -415,14 +446,15 @@ namespace Deeplearning.Core.Math.Models
 
         public static Matrix operator +(Matrix m1, Matrix m2)
         {
-            if (m1.Rows != m2.Rows || m1.Columns != m2.Columns)
-                throw new ArgumentException("矩阵大小不一致，无法相加");
+            int rows = (int)MathF.Min(m1.Rows, m2.Rows);
 
-            int rows = m1.Rows;
+            int cols = (int)MathF.Min(m1.Columns, m2.Columns);
 
-            int cols = m1.Columns;
+            int MaxRows = (int)MathF.Max(m1.Rows, m2.Rows);
 
-            Matrix result = new Matrix(rows, cols);
+            int MaxCols = (int)MathF.Max(m1.Columns, m2.Columns);
+
+            Matrix result = new Matrix(MaxRows, MaxCols);
 
             for (int i = 0; i < rows; i++)
             {
@@ -553,15 +585,17 @@ namespace Deeplearning.Core.Math.Models
             return result;
         }
         public static Matrix operator -(Matrix m1, Matrix m2)
-        {
-            if (m1.Rows != m2.Rows || m1.Columns != m2.Columns)
-                throw new ArgumentException("矩阵大小不一致，无法相加");
+        {        
 
-            int rows = m1.Rows;
+            int rows =(int)MathF.Min(m1.Rows, m2.Rows);
 
-            int cols = m1.Columns;
+            int cols = (int)MathF.Min(m1.Columns, m2.Columns);
 
-            Matrix result = new Matrix(rows, cols);
+            int MaxRows = (int)MathF.Max(m1.Rows, m2.Rows);
+
+            int MaxCols = (int)MathF.Max(m1.Columns, m2.Columns);
+
+            Matrix result = new Matrix(MaxRows, MaxCols);
 
             for (int i = 0; i < rows; i++)
             {
@@ -745,7 +779,7 @@ namespace Deeplearning.Core.Math.Models
 
             return result;
         }
-        public static float[] operator *(Matrix m1, Vector vector)
+        public static Vector operator *(Matrix m1, Vector vector)
         {
 
             if (vector.Length != m1.Columns)
@@ -755,7 +789,7 @@ namespace Deeplearning.Core.Math.Models
 
             int cols = m1.Columns;
 
-            float[] result = new float[rows];
+            Vector result = new Vector(rows);
 
             for (int i = 0; i < rows; i++)
             {

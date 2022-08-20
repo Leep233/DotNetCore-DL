@@ -1,19 +1,20 @@
 ﻿using Deeplearning.Core.Math.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Deeplearning.Core.Math
 {
-    public static class Linear
+    public static class LinearAlgebra
     {
         public const float MinValue = 0.0001f;
         public static Task GradientDescentTaskAsync(int step, Func<Vector, float> original, Action<Gradient3DInfo> gradientChanged)
         {
             return Task.Run(() =>
             {
-                Vector vector2 = Vector.Random(2,-10, 10);
+                Vector vector2 = Vector.Random(2, -10, 10);
 
                 float learningRate = 0.05f;
 
@@ -37,7 +38,7 @@ namespace Deeplearning.Core.Math
 
 
                     tempV1 = new Vector(vector2[0] - learningRate, vector2[1]);
-                  
+
 
                     float k_x = (original(tempV2) - original(tempV1)) / doubleLR;
 
@@ -45,7 +46,7 @@ namespace Deeplearning.Core.Math
 
 
                     tempV1 = new Vector(vector2[0], vector2[1] - learningRate);
-                   
+
 
                     float k_y = (original(tempV2) - original(tempV1)) / doubleLR;
 
@@ -170,5 +171,161 @@ namespace Deeplearning.Core.Math
             }
         }
 
+
+        public static (Matrix Q, Matrix R) Householder(Matrix source) 
+        {
+            Matrix matrix = (Matrix)source.Clone();
+
+
+
+            StringBuilder logBuilder = new StringBuilder();
+
+            logBuilder.AppendLine($"===============[Source Matrix]===============");
+            logBuilder.AppendLine($"{matrix}");
+
+            int k = (int)MathF.Min(matrix.Rows, matrix.Columns);
+
+            logBuilder.AppendLine($"k = {k}");
+
+            Matrix E = new Matrix(matrix.Rows, matrix.Columns);
+
+            for (int i = 0; i < k; i++)
+            {
+                E[i, i] = 1;
+            }
+
+
+            for (int i = 0; i < k; i++)
+            {
+                Vector x = matrix.GetVector(0);
+                Vector y = new Vector(x.Length);
+                y[0] = x.Norm(2);
+                Vector z = x - y;
+                Vector w = z / z.Norm(2);
+
+                logBuilder.AppendLine($"===============[{i}]===============");
+                logBuilder.AppendLine($"x = {x},y = {y},w = {w}");
+
+
+                logBuilder.AppendLine($"===============[E Matrix]===============");
+                logBuilder.AppendLine($"{E}");
+
+                Matrix unit = Matrix.UnitMatrix(x.Length);
+
+                Matrix h = unit - (2 * w * w.T);
+                logBuilder.AppendLine($"===============[H Matrix]===============");
+                logBuilder.AppendLine($"{h}");
+                Matrix r = h * matrix;
+                logBuilder.AppendLine($"===============[R Matrix]===============");
+                logBuilder.AppendLine($"{r}");
+
+                matrix = matrix.AlgebraicCofactor(i, i);
+
+                for (int m = 0; m < matrix.Rows; m++)
+                {
+                    for (int n = 0; n < matrix.Columns; n++)
+                    {
+                        E[m + i + 1, n + i + 1] = matrix[m, n];
+                    }
+                }
+
+                logBuilder.AppendLine($"=================================");
+            }
+
+
+     
+            //Matrix R = p * source;
+            //Matrix Q = p.T;
+
+            return (null,null);// (Q,R);    
+          
+        }
+
+        public static void Givens(Matrix source) { }
+        /// <summary>
+        /// 传统格拉姆 斯密特正交
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static (Matrix Q,Matrix R) CGS(Matrix source) {
+
+            Vector[] srcVector = source.Vectors();
+
+            Vector[] bs = new Vector[srcVector.Length];
+
+            int vectorSize = srcVector[0].Length;
+            int vectorCount = srcVector.Length;
+
+            for (int i = 0; i < vectorCount; i++) 
+            { 
+                Vector target = srcVector[i];
+
+                Vector temp = new Vector(vectorSize);
+
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    Vector v = bs[j];          
+                    float value =  (target * v) / (v * v);
+                    temp += value * v;
+                }              
+                bs[i] = target - temp;
+                bs[i] = bs[i]/ bs[i].Norm(2);
+            }
+
+            Matrix Q = new Matrix(bs);
+            Matrix R = Q.T * source;
+
+            return (Q, R);
+        }
+
+        /// <summary>
+        /// 改良Modified Gram-Schmidt
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static (Matrix Q, Matrix R) MGS(Matrix source) {
+
+            Vector[] b_Vectors = source.Vectors();
+
+            int vectorSize = b_Vectors[0].Length;
+
+            int vectorCount = b_Vectors.Length;
+
+            Vector[] e_Vectors =new  Vector[vectorCount];
+      
+            e_Vectors[0] = b_Vectors[0] / b_Vectors[0].Norm(2);
+
+            for (int i = 0; i < vectorCount; i++)
+            {
+                Vector b = b_Vectors[i];
+
+                Vector e = b / b.Norm(2);
+
+                for (int j = i + 1; j < vectorCount; j++)
+                {
+                    b = b_Vectors[j];
+                    b_Vectors[j] = b - (b * e * e);
+                }
+                e_Vectors[i] = e;
+            }
+
+            Matrix Q = new Matrix(e_Vectors);
+
+            Matrix R = Q.T * source;
+
+            return (Q,R);
+        }
+
+
+        public static (Matrix λ, Matrix V) Eig(Matrix source,int count=100) 
+        {
+            Matrix λ = new Matrix(1,1);
+            Matrix V = new Matrix(1,1);
+
+          
+
+
+            return (λ, V);
+        }
     }
 }

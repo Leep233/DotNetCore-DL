@@ -8,6 +8,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,6 +42,8 @@ namespace Deeplearning.Sample
 
         public DelegateCommand ComputeCommand { get; set; }
 
+        public DelegateCommand TransposeCommand{get;set;}
+
         public DelegateCommand GradientCommand { get; set; }
 
         public DelegateCommand Gradient3DCommand { get; set; }
@@ -50,11 +53,13 @@ namespace Deeplearning.Sample
         public DelegateCommand MatrixDetCommand { get; set; }
 
         public DelegateCommand MatrixAdjugateCommand { get; set; }
-        
+
+        public DelegateCommand GramSchmidtCommand { get; set; }
+
+        public DelegateCommand EigenDecompositionCommand{ get; set; }
 
         public MainWindowViewModel()
         {
-
 
             LeftPlotView = new OxyPlotView(OxyColors.Orange,OxyColors.DeepPink);
 
@@ -77,15 +82,122 @@ namespace Deeplearning.Sample
 
             MatrixAdjugateCommand = new DelegateCommand(ExecuteMatrixAdjugateCommand);
 
+            GramSchmidtCommand = new DelegateCommand(ExecuteGramSchmidtCommand);
 
+            EigenDecompositionCommand = new DelegateCommand(ExecuteEigenDecompositionCommand);
+
+            TransposeCommand = new DelegateCommand(ExecuteTransposeCommand);
+        }
+
+        private void ExecuteTransposeCommand()
+        {
+            Vector[] vectors = new Vector[4];
+            vectors[0] = new Vector(1, -1, 0);
+            vectors[1] = new Vector(2, 0, -2);
+            vectors[2] = new Vector(3, -3, 3);
+            vectors[3] = new Vector(1, -1, 1);
+
+            Matrix matrix = new Matrix(vectors);
+
+            Matrix t_Matrix = matrix.T;
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(matrix.ToString());
+            sb.AppendLine(t_Matrix.ToString());
+
+            Message = sb.ToString();
+
+        }
+
+        private async void ExecuteEigenDecompositionCommand()
+        {
+
+            Vector[] vectors = new Vector[4];
+            vectors[0] = new Vector(1, 1, 1, 1);
+            vectors[1] = new Vector(2, 1, 1, 1);
+            vectors[2] = new Vector(3, 2, 1, 1);
+            vectors[3] = new Vector(4, 3, 2, 1);
+            //vectors[3] = new Vector(2, -3, 3);
+
+            Matrix source = new Matrix(vectors);
+
+            Matrix matrix = (Matrix)source.Clone();
+
+            int count = 100;
+
+            int k = (int)MathF.Min(matrix.Rows, matrix.Columns);
+
+            Matrix Q = Matrix.UnitMatrix(k);
+
+       
+
+            Matrix ak = null;
+
+            for (int i = 0; i < count; i++)
+            {
+                var qr =LinearAlgebra.MGS(matrix);
+
+                matrix = qr.R * qr.Q;
+
+                Q = Q * qr.Q;
+
+                ak = qr.Q * qr.R;
+
+                await Task.Delay(500);
+
+                Message = ak.ToString();
+
+            }
+
+            //ak[i][i]
+
+            for (int i = 0; i < ak.Rows; i++)
+            {
+                float value = ak[i,i];
+            }
+
+
+          //  Message = "";
+        }
+
+
+        private void ExecuteGramSchmidtCommand()
+        {
+
+            Vector [] vectors = new Vector[3];
+            vectors[0] = new Vector(1,-1,0);
+            vectors[1] = new Vector(2,0,-2);
+            vectors[2] = new Vector(3, -3, 3);
+            
+
+            Matrix matrix = new Matrix(vectors);      
+
+  
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("============[CGS]=========");
+            var result = LinearAlgebra.CGS(matrix);
+            sb.AppendLine(result.Q.ToString());
+            sb.AppendLine(result.R.ToString());
+
+            sb.AppendLine("============[MGS]==========");
+            result = LinearAlgebra.MGS(matrix);
+            sb.AppendLine(result.Q.ToString());
+            sb.AppendLine(result.R.ToString());
+
+            sb.AppendLine("============[Householder]=========");
+            result = LinearAlgebra.Householder(matrix);
+            sb.AppendLine(result.Q.ToString());
+            sb.AppendLine(result.R.ToString());
+
+            Message = sb.ToString();
         }
 
         private void ExecuteMatrixAdjugateCommand()
         {
             float[,] scalars = new float[2, 2] {
-            { -3,4},
-            { 6,2}
-            };
+            { 4,1},
+            { 3,2}};
 
             scalars = new float[3, 3] {
             { 2,3,1},
@@ -98,8 +210,6 @@ namespace Deeplearning.Sample
             { -2,1,2},
             { 1,-2,2}
             };
-
-
 
             Matrix matrix = new Matrix(scalars);
 
@@ -162,16 +272,14 @@ namespace Deeplearning.Sample
             LeftPlotView.UpdateView();
         }
 
-         
-        
-
+   
         private async void ExecuteGradient3DCommand()
         {
             //v3Points.Clear();
 
             Func<Vector, float> original = new Func<Vector, float>(vector => MathF.Pow(vector[0], 2) + MathF.Pow(vector[1], 2));
 
-            await Linear.GradientDescentTaskAsync(500, original,OnGradient3DChangedCallback);
+            await LinearAlgebra.GradientDescentTaskAsync(500, original,OnGradient3DChangedCallback);
 
             using (StreamWriter writer = File.CreateText("point.txt")) {
 
@@ -235,7 +343,7 @@ namespace Deeplearning.Sample
 
             Message = "computing...";
 
-            await Linear.GradientDescentTaskAsync(8, 1000, orginal, OnGradientChangedCallback);
+            await LinearAlgebra.GradientDescentTaskAsync(8, 1000, orginal, OnGradientChangedCallback);
 
             Message = "completed";
         }

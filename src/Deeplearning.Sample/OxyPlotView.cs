@@ -13,9 +13,9 @@ namespace Deeplearning.Sample
 
     public class OxyPlotView
     {
-        public const int Minimum = -5;
+        public const int Minimum = -15;
 
-        public const int Maximum = 5;
+        public const int Maximum = 15;
 
         public const int MajorStep = 3;
 

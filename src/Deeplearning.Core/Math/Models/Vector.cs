@@ -5,28 +5,24 @@ namespace Deeplearning.Core.Math.Models
 {
     public class Vector:ICloneable {
 
-        private float[,] scalars;
+        private float[] scalars;
 
-        public float this[int index] { get => scalars[index, 0]; set => scalars[index, 0] = value; }
+        public float this[int index] { get => scalars[index]; set => scalars[index] = value; }
 
         public int Length { get; private set; }
 
-        public virtual float[] T =>Transpose(scalars);
+        public virtual float[] T => scalars;// Transpose(scalars);
 
         public Vector(int length)
         {
             Length = length;
-            scalars = new float[Length, 1];
+            scalars = new float[Length];
         }
 
         public Vector(params float [] scalar)
         {
             Length = scalar.Length;
-            scalars = new float[Length, 1];
-            for (int i = 0; i < Length; i++)
-            {
-                scalars[i,0] = scalar[i];
-            }
+            scalars = scalar;          
         }
 
         public float Norm(float p)
@@ -39,7 +35,7 @@ namespace Deeplearning.Core.Math.Models
                     {
                         for (int i = 0; i < Length; i++)
                         {
-                            sum += scalars[i, 0];
+                            sum += scalars[i];
                         }
                     }
                     break;
@@ -47,7 +43,7 @@ namespace Deeplearning.Core.Math.Models
                     {
                         for (int i = 0; i < Length; i++)
                         {
-                            sum += MathF.Pow(scalars[i, 0], p);
+                            sum += MathF.Pow(scalars[i], p);
                         }
                     }
                     break;
@@ -63,7 +59,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < Length; i++)
             {
-                float temp = MathF.Abs(scalars[i, 0]);
+                float temp = MathF.Abs(scalars[i]);
                 if (temp > maxValue)
                 {
                     maxValue = temp;
@@ -77,7 +73,7 @@ namespace Deeplearning.Core.Math.Models
             float sum = 0;
             for (int i = 0; i < Length; i++)
             {
-                sum += MathF.Pow(scalars[i, 0], 2);
+                sum += MathF.Pow(scalars[i], 2);
             }
             return sum;
         }
@@ -96,12 +92,14 @@ namespace Deeplearning.Core.Math.Models
 
         public override string ToString()
         {
-            StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder("[ ");
 
             for (int i = 0; i < Length; i++)
             {
-                stringBuilder.AppendLine(scalars[i, 0].ToString("F4"));
+                stringBuilder.Append($"{scalars[i].ToString("F4")} ");
             }
+
+            stringBuilder.Append(" ]");
 
             return stringBuilder.ToString();
         }
@@ -319,18 +317,23 @@ namespace Deeplearning.Core.Math.Models
             return result;
         }
 
-        public static float operator *(Vector v1, float[] v2) 
+        public static Matrix operator *(Vector v1, float[] v2) 
         {
             if (v1.Length != v2.Length)
                 throw new ArgumentException("向量维度不一致");
 
-            float result = 0;
+            int size = v1.Length;
 
-            for (int i = 0; i < v1.Length; i++)
+            Matrix matrix = new Matrix(size, size);
+
+            for (int r = 0; r < size; r++)
             {
-                result += v1[i] * v2[i];
+                for (int c = 0; c < size; c++)
+                {
+                    matrix[r, c] = v1[r] * v2[c];
+                }
             }
-            return (float)result;
+            return matrix;
 
         }
         public static float operator *(float[] v2,Vector v1)
@@ -362,90 +365,110 @@ namespace Deeplearning.Core.Math.Models
        
         public static Vector operator *(Vector v1, float scalar)
         {
+            Vector result = new Vector(v1.Length);
+
             for (int i = 0; i < v1.Length; i++)
             {
-                v1 *= scalar;
+                result[i] = v1[i] * scalar;
             }
-            return v1;
+            return result;
         }
         public static Vector operator *(float scalar,Vector v1)
         {
+            Vector result = new Vector(v1.Length);
+
             for (int i = 0; i < v1.Length; i++)
             {
-                v1 *= scalar;
+                result[i] = v1[i] * scalar;
             }
-            return v1;
+            return result;
         }
        
         public static Vector operator -(Vector v1, Vector v2)
         {
             int size = v1.Length <= v2.Length ? v1.Length : v2.Length;
 
-            for (int i = 0; i < size; i++)
+            Vector result = new Vector(v1.Length);
+
+            for (int i = 0; i < v1.Length; i++)
             {
-                v1[i] -= v2[i];
+                result[i] = v1[i] - v2[i];
             }
-            return v1;
+            return result;
         }
         public static Vector operator -(Vector v1, float scalar)
         {
+            Vector result = new Vector(v1.Length);
+
             for (int i = 0; i < v1.Length; i++)
             {
-                v1[i] -= scalar;
+                result[i] =  v1[i] -scalar;
             }
-            return v1;
+            return result;
         }
         public static Vector operator -(float scalar, Vector v1)
         {
+            Vector result = new Vector(v1.Length);
+
             for (int i = 0; i < v1.Length; i++)
             {
-                v1[i] = scalar - v1[i];
+                result[i] = scalar- v1[i]  ;
             }
-            return v1;
+            return result;
         }
        
         public static Vector operator +(Vector v1, Vector v2)
         {
             int size = v1.Length <= v2.Length ? v1.Length : v2.Length;
 
+            Vector result = new Vector(size); 
+
             for (int i = 0; i < size; i++)
             {
-                v1[i] += v2[i];
+                result[i] = v1[i] + v2[i];
             }
-            return v1;
+            return result;
         }
         public static Vector operator +(Vector v1, float scalar)
         {
+            Vector result = new Vector(v1.Length);
+
             for (int i = 0; i < v1.Length; i++)
             {
-                v1[i] += scalar;
+                result[i] = v1[i] + scalar;
             }
-            return v1;
+            return result;
         }
         public static Vector operator +(float scalar, Vector v1)
         {
+            Vector result = new Vector(v1.Length);
+
             for (int i = 0; i < v1.Length; i++)
             {
-                v1[i] += scalar;
+                result[i] = v1[i] + scalar;
             }
-            return v1;
+            return result;
         }
        
         public static Vector operator /(Vector v1, float scalar)
         {
+            Vector result = new Vector(v1.Length);
+
             for (int i = 0; i < v1.Length; i++)
             {
-                v1[i] /= scalar;
+                result[i] = v1[i] / scalar;
             }
-            return v1;
+            return result;
         }
         public static Vector operator /(float scalar, Vector v1)
         {
+            Vector result = new Vector(v1.Length);
+
             for (int i = 0; i < v1.Length; i++)
             {
-                v1[i] = scalar/ v1[i];
+                result[i] = scalar/v1[i]  ;
             }
-            return v1;
+            return result;
         }
         public static bool operator ==(Vector v1, Vector v2) 
         {

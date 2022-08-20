@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace Deeplearning.Core.Math
@@ -11,49 +12,44 @@ namespace Deeplearning.Core.Math
     /// </summary>
     public class EigTest
     {
-        public static async void Eig(Matrix squareMatrix) 
+
+        public static  float Eig(Matrix source) 
         {
-            if (!squareMatrix.IsSquare) return;
+            if (!source.IsSquare) throw new Exception("矩阵必须是方阵");
 
-            int size = squareMatrix.Rows;
+            int size = source.Rows;
 
-            int step = 100;
+            int step = 1000;
 
-            Vector v = new Vector(-1,5,3);
+            double e = 10E-8;
 
-            Matrix temp = squareMatrix.Clone() as Matrix;
+            float lr = 0.0001f;
 
-            StringBuilder stringBuilder = new StringBuilder();
+            float λ = 999;
 
-            int []  r = new int[] {1,3,5,10 };
-
-            for (int i = 0; i < r.Length; i++)
+            for (int i = 0; i < step; i++)
             {
-                for (int j = r[i]; 0 < j; j--)
-                {
-                    temp = temp * j;
+                Matrix m = source - Matrix.DiagonalMatrix(λ, size);
 
-                    float[] b = temp * v;
+                float k = (m).det;
 
-                    float sum = 0;
+                if (MathF.Abs(k) == e)
+                    break;
 
-                    for (int k   = 0; k < b.Length; k++)
-                    {
-                        sum += b[k];
-                    }
-
-                    for (int k = 0; k < b.Length; k++)
-                    {
-                        stringBuilder.Append((b[k] / sum).ToString("F8"));
-                    }
-
-                    Debug.WriteLine(stringBuilder.ToString());
-
-                    await System.Threading.Tasks.Task.Delay(500);
-
-                    stringBuilder.Clear();
-                }
+                λ -= lr * k;
             }
+            return λ;
         }
+
+
+        public static float Eigenvalue(Matrix source,Vector eigenVector) 
+        {
+            Vector sv = Vector.Normalize(eigenVector);
+
+            float value = sv.T * source * sv;            
+
+            return value;
+        }
+
     }
 }
