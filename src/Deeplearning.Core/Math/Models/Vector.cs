@@ -5,29 +5,29 @@ namespace Deeplearning.Core.Math.Models
 {
     public class Vector:ICloneable {
 
-        private float[] scalars;
+        private double[] scalars;
 
-        public float this[int index] { get => scalars[index]; set => scalars[index] = value; }
+        public double this[int index] { get => scalars[index]; set => scalars[index] = value; }
 
         public int Length { get; private set; }
 
-        public virtual float[] T => scalars;// Transpose(scalars);
+        public virtual double[] T => scalars;// Transpose(scalars);
 
         public Vector(int length)
         {
             Length = length;
-            scalars = new float[Length];
+            scalars = new double[Length];
         }
 
-        public Vector(params float [] scalar)
+        public Vector(params double[] scalar)
         {
             Length = scalar.Length;
             scalars = scalar;          
         }
 
-        public float Norm(float p)
+        public double Norm(double p)
         {
-            float sum = 0;
+            double sum = 0;
 
             switch (p)
             {
@@ -43,23 +43,23 @@ namespace Deeplearning.Core.Math.Models
                     {
                         for (int i = 0; i < Length; i++)
                         {
-                            sum += MathF.Pow(scalars[i], p);
+                            sum += MathF.Pow((float)scalars[i],(float) p);
                         }
                     }
                     break;
             }
 
 
-            return MathF.Pow(sum, 1 / p);
+            return MathF.Pow((float)sum, (float)(1 / p));
         }
 
-        public float MaxNorm()
+        public double MaxNorm()
         {
-            float maxValue = 0;
+            double maxValue = 0;
 
             for (int i = 0; i < Length; i++)
             {
-                float temp = MathF.Abs(scalars[i]);
+                double temp = MathF.Abs((float)scalars[i]);
                 if (temp > maxValue)
                 {
                     maxValue = temp;
@@ -68,12 +68,12 @@ namespace Deeplearning.Core.Math.Models
             return maxValue;
         }
 
-        public float NoSqrtNorm()
+        public double NoSqrtNorm()
         {
             float sum = 0;
             for (int i = 0; i < Length; i++)
             {
-                sum += MathF.Pow(scalars[i], 2);
+                sum += MathF.Pow((float)scalars[i], 2);
             }
             return sum;
         }
@@ -160,13 +160,13 @@ namespace Deeplearning.Core.Math.Models
 
         public static Vector Normalize(Vector vector) 
         {
-            float m = vector.Norm(2);
+            double m = vector.Norm(2);
 
-            return vector/ m;
+            return vector / m;
         }
-        public static Vector Normalized(float[,] col_vector)
+        public static Vector Normalized(double[,] col_vector)
         {
-            float m = Norm(col_vector,2);
+            double m = Norm(col_vector,2);
 
              int rows =  col_vector.GetLength(0);
 
@@ -179,9 +179,9 @@ namespace Deeplearning.Core.Math.Models
 
             return v1;
         }
-        public static float[] Normalized(float[] row_vector) {
+        public static double[] Normalized(double[] row_vector) {
 
-            float m = Norm(row_vector, 2);
+            double m = Norm(row_vector, 2);
 
             for (int i = 0; i < row_vector.Length; i++)
             {
@@ -190,9 +190,9 @@ namespace Deeplearning.Core.Math.Models
             return row_vector;
         }
 
-        public static float[,] Transpose(float[] row_vector)
+        public static double[,] Transpose(double[] row_vector)
         {
-            float[,] result = new float[row_vector.Length, 1];
+            double[,] result = new double[row_vector.Length, 1];
 
             for (int i = 0; i < row_vector.Length; i++)
             {
@@ -200,9 +200,9 @@ namespace Deeplearning.Core.Math.Models
             }
             return result;
         }
-        public static float[] Transpose(float[,] col_vector) {
+        public static double[] Transpose(double[,] col_vector) {
 
-            float[] result = new float[col_vector.Length];
+            double[] result = new double[col_vector.Length];
 
             for (int i = 0; i < col_vector.Length; i++)
             {
@@ -212,9 +212,9 @@ namespace Deeplearning.Core.Math.Models
             return result;
         }
 
-        public static float Norm(float[,] scalars, float p)
+        public static double Norm(double[,] scalars, float p)
         {
-            float sum = 0;
+            double sum = 0;
 
             switch (p)
             {
@@ -230,18 +230,18 @@ namespace Deeplearning.Core.Math.Models
                     {
                         for (int i = 0; i < scalars.Length; i++)
                         {
-                            sum += MathF.Pow(scalars[i,0], p);
+                            sum += MathF.Pow((float)scalars[i,0],p);
                         }
                     }
                     break;
             }
 
 
-            return MathF.Pow(sum, 1 / p);
+            return MathF.Pow((float)sum, (float)(1 / p));
         }
-        public static float Norm(float[] scalars,float p)
+        public static double Norm(double[] scalars,float p)
         {
-            float sum = 0;
+            double sum = 0;
 
             switch (p)
             {
@@ -257,22 +257,22 @@ namespace Deeplearning.Core.Math.Models
                     {
                         for (int i = 0; i < scalars.Length; i++)
                         {
-                            sum += MathF.Pow(scalars[i], p);
+                            sum += MathF.Pow((float)scalars[i], p);
                         }
                     }
                     break;
             }
 
 
-            return MathF.Pow(sum, 1 / p);
+            return MathF.Pow((float)sum, 1 / p);
         }
-        public static float MaxNorm(float[] scalars)
+        public static double MaxNorm(double[] scalars)
         {
             float maxValue = 0;
 
             for (int i = 0; i < scalars.Length; i++)
             {
-                float temp = MathF.Abs(scalars[i]);
+                float temp = MathF.Abs((float)scalars[i]);
                 if (temp > maxValue)
                 {
                     maxValue = temp;
@@ -280,12 +280,12 @@ namespace Deeplearning.Core.Math.Models
             }
             return maxValue;
         }
-        public static float NoSqrtNorm(float[] scalars)
+        public static double NoSqrtNorm(double[] scalars)
         {
-            float sum = 0;
+            double sum = 0;
             for (int i = 0; i < scalars.Length; i++)
             {
-                sum += MathF.Pow(scalars[i], 2);
+                sum += MathF.Pow((float)scalars[i], 2);
             }
             return sum;
         }
@@ -301,13 +301,13 @@ namespace Deeplearning.Core.Math.Models
 
             if (IsOrthogonal(v1, v2))
             { 
-                if (!float.MinValue.Equals(MathF.Abs(1 - v1.Norm(2))))
+                if (!double.MinValue.Equals(MathF.Abs((float)(1 - v1.Norm(2)))))
                 {
                     result = false;                   
                 }
                 else 
                 {
-                    result = float.MinValue.Equals(MathF.Abs(1 - v2.Norm(2)));                   
+                    result = double.MinValue.Equals(MathF.Abs((float)(1 - v2.Norm(2))));                   
                 }
             }
             else
@@ -317,7 +317,7 @@ namespace Deeplearning.Core.Math.Models
             return result;
         }
 
-        public static Matrix operator *(Vector v1, float[] v2) 
+        public static Matrix operator *(Vector v1, double[] v2) 
         {
             if (v1.Length != v2.Length)
                 throw new ArgumentException("向量维度不一致");
@@ -336,34 +336,34 @@ namespace Deeplearning.Core.Math.Models
             return matrix;
 
         }
-        public static float operator *(float[] v2,Vector v1)
+        public static double operator *(double[] v2,Vector v1)
         {
             if (v1.Length != v2.Length)
                 throw new ArgumentException("向量维度不一致");
 
-            float result = 0;
+            double result = 0;
 
             for (int i = 0; i < v1.Length; i++)
             {
                 result += v1[i] * v2[i];
             }
-            return (float)result;
+            return (double)result;
 
         }
-        public static float operator *(Vector v1, Vector v2) {
+        public static double operator *(Vector v1, Vector v2) {
             if (v1.Length != v2.Length)
                 throw new ArgumentException("向量维度不一致");
 
-            float result = 0;
+            double result = 0;
 
             for (int i = 0; i < v1.Length; i++)
             {
                 result += v1[i] * v2[i];
             }
-            return (float)result;
+            return result;
         }
        
-        public static Vector operator *(Vector v1, float scalar)
+        public static Vector operator *(Vector v1, double scalar)
         {
             Vector result = new Vector(v1.Length);
 
@@ -373,7 +373,7 @@ namespace Deeplearning.Core.Math.Models
             }
             return result;
         }
-        public static Vector operator *(float scalar,Vector v1)
+        public static Vector operator *(double scalar,Vector v1)
         {
             Vector result = new Vector(v1.Length);
 
@@ -396,7 +396,7 @@ namespace Deeplearning.Core.Math.Models
             }
             return result;
         }
-        public static Vector operator -(Vector v1, float scalar)
+        public static Vector operator -(Vector v1, double scalar)
         {
             Vector result = new Vector(v1.Length);
 
@@ -406,7 +406,7 @@ namespace Deeplearning.Core.Math.Models
             }
             return result;
         }
-        public static Vector operator -(float scalar, Vector v1)
+        public static Vector operator -(double scalar, Vector v1)
         {
             Vector result = new Vector(v1.Length);
 
@@ -429,7 +429,7 @@ namespace Deeplearning.Core.Math.Models
             }
             return result;
         }
-        public static Vector operator +(Vector v1, float scalar)
+        public static Vector operator +(Vector v1, double scalar)
         {
             Vector result = new Vector(v1.Length);
 
@@ -439,7 +439,7 @@ namespace Deeplearning.Core.Math.Models
             }
             return result;
         }
-        public static Vector operator +(float scalar, Vector v1)
+        public static Vector operator +(double scalar, Vector v1)
         {
             Vector result = new Vector(v1.Length);
 
@@ -450,7 +450,7 @@ namespace Deeplearning.Core.Math.Models
             return result;
         }
        
-        public static Vector operator /(Vector v1, float scalar)
+        public static Vector operator /(Vector v1, double scalar)
         {
             Vector result = new Vector(v1.Length);
 
@@ -460,7 +460,7 @@ namespace Deeplearning.Core.Math.Models
             }
             return result;
         }
-        public static Vector operator /(float scalar, Vector v1)
+        public static Vector operator /(double scalar, Vector v1)
         {
             Vector result = new Vector(v1.Length);
 

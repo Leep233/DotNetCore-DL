@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Folder Include="Math\Interfaces\" />
+    <Folder Include="Math\LinearAlgebra\" />
   </ItemGroup>
 
 </Project>

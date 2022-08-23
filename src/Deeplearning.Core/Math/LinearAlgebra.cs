@@ -58,9 +58,9 @@ namespace Deeplearning.Core.Math
                     {
                         Gradient3DInfo gradient3DInfo = new Gradient3DInfo();
 
-                        gradient3DInfo.x = vector2[0];
+                        gradient3DInfo.x = (float)vector2[0];
 
-                        gradient3DInfo.y = vector2[1];
+                        gradient3DInfo.y = (float)vector2[1];
 
                         gradient3DInfo.z = z;
 
@@ -70,7 +70,7 @@ namespace Deeplearning.Core.Math
 
                     }
 
-                    if (MathF.Abs(vector2[0]) <= minValue && MathF.Abs(vector2[1]) <= minValue)
+                    if (MathF.Abs((float)vector2[0]) <= minValue && MathF.Abs((float)vector2[1]) <= minValue)
                     {
                         break;
                     }
@@ -171,11 +171,9 @@ namespace Deeplearning.Core.Math
             }
         }
 
-
-        public static (Matrix Q, Matrix R) Householder(Matrix source) 
+        public static (Matrix Q, Matrix R) HouseholderTest(Matrix source)
         {
             Matrix matrix = (Matrix)source.Clone();
-
 
             StringBuilder logBuilder = new StringBuilder();
 
@@ -192,7 +190,6 @@ namespace Deeplearning.Core.Math
             {
                 E[i, i] = 1;
             }
-
 
             for (int i = 0; i < k; i++)
             {
@@ -232,9 +229,85 @@ namespace Deeplearning.Core.Math
             }
 
 
-            return (null,null);// (Q,R);    
+            return (null, null);// (Q,R);    
+
+        }
+        public static (Matrix Q, Matrix R) Householder(Matrix source) 
+        {
+          
+ 
+
+            Vector[] vectors = new Vector[4];
+            vectors[0] = new Vector(1,1,1,1);
+            vectors[1] = new Vector(2,1,1,1);
+            vectors[2] = new Vector(3,2,1,1);
+            vectors[3] = new Vector(4,3,2,1);
+
+            source = new Matrix(vectors);
+
+            Matrix matrix = (Matrix)source.Clone();       
+
+            List<Matrix> qs = new List<Matrix>();
+
+            for (int i = -1; i < matrix.Columns; i++)
+            {
+                matrix = matrix.AlgebraicCofactor(i, i);
+
+                // if(matrix)
+
+                Vector x = matrix.GetVector(0);
+
+                double x_norm = x.Norm(2);
+
+                Vector y = new Vector(x.Length);
+
+                y[0] = x_norm;
+
+                Vector v = x - y;
+
+                Vector w = v / v.Norm(2);
+
+                Matrix I = Matrix.UnitMatrix(x.Length);
+
+                Matrix _h = I - (2 * w * w.T);
+
+                _h *= matrix;
+
+
+                if (qs.Count <= 0)
+                {
+                    qs.Add(_h);
+                }
+                else
+                {
+                    Matrix q = (Matrix)qs[qs.Count - 1].Clone();
+
+                    int index = i + 1;
+
+                    for (int r = 0; r < _h.Rows; r++)
+                    {
+                        for (int c = 0; c < _h.Columns; c++)
+                        {
+                            q[r + index, c + index] = _h[r, c];
+                        }
+                    }
+                    qs.Add(q);
+                }
+            }
+
+            Matrix Q = qs[0];
+
+
+            for (int i = 1; i < qs.Count; i++)
+            {
+                Q *= qs[i];
+            }
+
+            return  (Q,R: Q * source);
           
         }
+
+       
 
         public static void Givens(Matrix source) { }
         /// <summary>
@@ -260,7 +333,7 @@ namespace Deeplearning.Core.Math
                 for (int j = i - 1; j >= 0; j--)
                 {
                     Vector v = bs[j];          
-                    float value =  (target * v) / (v * v);
+                    double value =  (target * v) / (v * v);
                     temp += value * v;
                 }              
                 bs[i] = target - temp;
@@ -268,13 +341,14 @@ namespace Deeplearning.Core.Math
             }
 
             Matrix Q = new Matrix(bs);
+
             Matrix R = Q.T * source;
 
             return (Q, R);
         }
 
 
-        public static (Matrix egin, Matrix vectors) Eig(Matrix source,int step = 100) {
+        public static (Matrix egin, Matrix vectors) Eig(Matrix source,Func<Matrix,(Matrix Q,Matrix R)> qrDecFunction,int step = 100) {
 
             Matrix matrix = (Matrix)source.Clone();
 
@@ -286,7 +360,7 @@ namespace Deeplearning.Core.Math
 
             for (int i = 0; i < step; i++)
             {
-                var qr = MGS(matrix);
+                var qr = qrDecFunction.Invoke(matrix);
 
                 matrix = qr.R * qr.Q;
 
@@ -311,7 +385,7 @@ namespace Deeplearning.Core.Math
                         {
                             if (ak[m, m] < ak[i, i])
                             {
-                                float temp = ak[i, i];
+                                double temp = ak[i, i];
                                 ak[i, i] = ak[m, m];
                                 ak[m, m] = temp;
 
@@ -328,31 +402,7 @@ namespace Deeplearning.Core.Math
 
                 }
             }
-
-
-            /*
-              for (int j = i - 1; j >= 0; j--)
-                    {
-                        if (ak[j, j] < ak[i, i])
-                        {
-                            float temp = ak[i, i];
-                            ak[i, i] = ak[j, j];
-                            ak[j, j] = temp;
-
-                            for (int r = 0; r < Q.Rows; r++)
-                            {
-                                temp = Q[r, i];
-                                Q[r, i] = Q[r, j];
-                                Q[r, j] = temp;
-                            }
-                        }
-                    }
-
-             
-             */
-
-            return (egin: ak, vectors: Q);         
-
+            return (egin: ak, vectors: Q);    
         }
 
         /// <summary>
