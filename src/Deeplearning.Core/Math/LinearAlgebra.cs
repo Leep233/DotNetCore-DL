@@ -177,7 +177,6 @@ namespace Deeplearning.Core.Math
             Matrix matrix = (Matrix)source.Clone();
 
 
-
             StringBuilder logBuilder = new StringBuilder();
 
             logBuilder.AppendLine($"===============[Source Matrix]===============");
@@ -233,10 +232,6 @@ namespace Deeplearning.Core.Math
             }
 
 
-     
-            //Matrix R = p * source;
-            //Matrix Q = p.T;
-
             return (null,null);// (Q,R);    
           
         }
@@ -278,6 +273,88 @@ namespace Deeplearning.Core.Math
             return (Q, R);
         }
 
+
+        public static (Matrix egin, Matrix vectors) Eig(Matrix source,int step = 100) {
+
+            Matrix matrix = (Matrix)source.Clone();
+
+            int k = (int)MathF.Min(matrix.Rows, matrix.Columns);
+
+            Matrix Q = Matrix.UnitMatrix(k);
+
+            Matrix ak = null;
+
+            for (int i = 0; i < step; i++)
+            {
+                var qr = MGS(matrix);
+
+                matrix = qr.R * qr.Q;
+
+                Q = Q * qr.Q;
+
+                ak = qr.Q * qr.R;
+            }
+
+            int size = ak.Rows;            
+
+            for (int i = 0; i < size; i++)
+            {
+                for (int j = 0; j < size; j++)
+                {
+                    if (i != j)
+                    {
+                        ak[i, j] = 0;
+                    }
+                    else {
+
+                        for (int m = i - 1; m >= 0; m--)
+                        {
+                            if (ak[m, m] < ak[i, i])
+                            {
+                                float temp = ak[i, i];
+                                ak[i, i] = ak[m, m];
+                                ak[m, m] = temp;
+
+                                for (int r = 0; r < Q.Rows; r++)
+                                {
+                                    temp = Q[r, i];
+                                    Q[r, i] = Q[r, m];
+                                    Q[r, m] = temp;
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+            }
+
+
+            /*
+              for (int j = i - 1; j >= 0; j--)
+                    {
+                        if (ak[j, j] < ak[i, i])
+                        {
+                            float temp = ak[i, i];
+                            ak[i, i] = ak[j, j];
+                            ak[j, j] = temp;
+
+                            for (int r = 0; r < Q.Rows; r++)
+                            {
+                                temp = Q[r, i];
+                                Q[r, i] = Q[r, j];
+                                Q[r, j] = temp;
+                            }
+                        }
+                    }
+
+             
+             */
+
+            return (egin: ak, vectors: Q);         
+
+        }
+
         /// <summary>
         /// 改良Modified Gram-Schmidt
         /// </summary>
@@ -317,15 +394,6 @@ namespace Deeplearning.Core.Math
         }
 
 
-        public static (Matrix λ, Matrix V) Eig(Matrix source,int count=100) 
-        {
-            Matrix λ = new Matrix(1,1);
-            Matrix V = new Matrix(1,1);
-
-          
-
-
-            return (λ, V);
-        }
+      
     }
 }

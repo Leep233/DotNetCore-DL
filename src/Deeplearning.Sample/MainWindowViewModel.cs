@@ -109,55 +109,35 @@ namespace Deeplearning.Sample
 
         }
 
-        private async void ExecuteEigenDecompositionCommand()
+        private  void ExecuteEigenDecompositionCommand()
         {
 
             Vector[] vectors = new Vector[4];
-            vectors[0] = new Vector(1, 1, 1, 1);
-            vectors[1] = new Vector(2, 1, 1, 1);
-            vectors[2] = new Vector(3, 2, 1, 1);
+            vectors[0] = new Vector(1, 2, 3, 4);
+            vectors[1] = new Vector(2, 1, 2, 3);
+            vectors[2] = new Vector(3, 2, 1, 2);
             vectors[3] = new Vector(4, 3, 2, 1);
-            //vectors[3] = new Vector(2, -3, 3);
-
             Matrix source = new Matrix(vectors);
+    
 
-            Matrix matrix = (Matrix)source.Clone();
+           var result = LinearAlgebra.Eig(source);
 
-            int count = 100;
+            StringBuilder sb = new StringBuilder();
 
-            int k = (int)MathF.Min(matrix.Rows, matrix.Columns);
+            sb.AppendLine("========Source=========");
+            sb.AppendLine(source.ToString());
 
-            Matrix Q = Matrix.UnitMatrix(k);
+            sb.AppendLine("========Eign Matrix=========");
+            sb.AppendLine(result.egin.ToString());
+            sb.AppendLine("========Vectors Matrix=========");
+            sb.AppendLine(result.vectors.ToString());
 
-       
+            sb.AppendLine("========Operation=========");
+            sb.AppendLine((result.vectors * result.egin* result.vectors.T).ToString());
 
-            Matrix ak = null;
+            Message = sb.ToString();
 
-            for (int i = 0; i < count; i++)
-            {
-                var qr =LinearAlgebra.MGS(matrix);
-
-                matrix = qr.R * qr.Q;
-
-                Q = Q * qr.Q;
-
-                ak = qr.Q * qr.R;
-
-                await Task.Delay(500);
-
-                Message = ak.ToString();
-
-            }
-
-            //ak[i][i]
-
-            for (int i = 0; i < ak.Rows; i++)
-            {
-                float value = ak[i,i];
-            }
-
-
-          //  Message = "";
+            //  Message = "";
         }
 
 
