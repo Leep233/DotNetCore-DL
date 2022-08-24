@@ -171,145 +171,64 @@ namespace Deeplearning.Core.Math
             }
         }
 
-        public static (Matrix Q, Matrix R) HouseholderTest(Matrix source)
-        {
-            Matrix matrix = (Matrix)source.Clone();
-
-            StringBuilder logBuilder = new StringBuilder();
-
-            logBuilder.AppendLine($"===============[Source Matrix]===============");
-            logBuilder.AppendLine($"{matrix}");
-
-            int k = (int)MathF.Min(matrix.Rows, matrix.Columns);
-
-            logBuilder.AppendLine($"k = {k}");
-
-            Matrix E = new Matrix(matrix.Rows, matrix.Columns);
-
-            for (int i = 0; i < k; i++)
-            {
-                E[i, i] = 1;
-            }
-
-            for (int i = 0; i < k; i++)
-            {
-                Vector x = matrix.GetVector(0);
-                Vector y = new Vector(x.Length);
-                y[0] = x.Norm(2);
-                Vector z = x - y;
-                Vector w = z / z.Norm(2);
-
-                logBuilder.AppendLine($"===============[{i}]===============");
-                logBuilder.AppendLine($"x = {x},y = {y},w = {w}");
-
-
-                logBuilder.AppendLine($"===============[E Matrix]===============");
-                logBuilder.AppendLine($"{E}");
-
-                Matrix unit = Matrix.UnitMatrix(x.Length);
-
-                Matrix h = unit - (2 * w * w.T);
-                logBuilder.AppendLine($"===============[H Matrix]===============");
-                logBuilder.AppendLine($"{h}");
-                Matrix r = h * matrix;
-                logBuilder.AppendLine($"===============[R Matrix]===============");
-                logBuilder.AppendLine($"{r}");
-
-                matrix = matrix.AlgebraicCofactor(i, i);
-
-                for (int m = 0; m < matrix.Rows; m++)
-                {
-                    for (int n = 0; n < matrix.Columns; n++)
-                    {
-                        E[m + i + 1, n + i + 1] = matrix[m, n];
-                    }
-                }
-
-                logBuilder.AppendLine($"=================================");
-            }
-
-
-            return (null, null);// (Q,R);    
-
-        }
         public static (Matrix Q, Matrix R) Householder(Matrix source) 
-        {
-          
- 
+        {       
 
-            Vector[] vectors = new Vector[4];
-            vectors[0] = new Vector(1,1,1,1);
-            vectors[1] = new Vector(2,1,1,1);
-            vectors[2] = new Vector(3,2,1,1);
-            vectors[3] = new Vector(4,3,2,1);
+            Matrix Q = null;
 
-            source = new Matrix(vectors);
+            Matrix R = (Matrix)source.Clone(); 
 
-            Matrix matrix = (Matrix)source.Clone();       
-
-            List<Matrix> qs = new List<Matrix>();
-
-            for (int i = -1; i < matrix.Columns; i++)
+            for (int i = 0; i < source.Columns-1; i++)
             {
-                matrix = matrix.AlgebraicCofactor(i, i);
-
-                // if(matrix)
+                Matrix matrix = source.Clip(i, i, source.Rows, source.Columns);
 
                 Vector x = matrix.GetVector(0);
 
-                double x_norm = x.Norm(2);
+                double norm = x.Norm(2);
 
                 Vector y = new Vector(x.Length);
 
-                y[0] = x_norm;
+                y[0] = norm;
 
-                Vector v = x - y;
+                Vector z = x - y;
 
-                Vector w = v / v.Norm(2);
+                Vector w = z/z.Norm(2);
 
                 Matrix I = Matrix.UnitMatrix(x.Length);
 
-                Matrix _h = I - (2 * w * w.T);
+                Matrix temp = I - 2 * w * w.T;
 
-                _h *= matrix;
+                if (Q is null) { 
+                
+                    Q = temp;
+                    R = temp * R;
 
+                } else {
 
-                if (qs.Count <= 0)
-                {
-                    qs.Add(_h);
-                }
-                else
-                {
-                    Matrix q = (Matrix)qs[qs.Count - 1].Clone();
+                    Matrix h = Matrix.UnitMatrix(source.Columns);
 
-                    int index = i + 1;
+                    h = h.Replace(temp, i, i, temp.Rows, temp.Columns);
 
-                    for (int r = 0; r < _h.Rows; r++)
-                    {
-                        for (int c = 0; c < _h.Columns; c++)
-                        {
-                            q[r + index, c + index] = _h[r, c];
-                        }
-                    }
-                    qs.Add(q);
+                    Q = h * Q;
+
+                    R = h * R;
                 }
             }
+            Q = Q.T;
 
-            Matrix Q = qs[0];
-
-
-            for (int i = 1; i < qs.Count; i++)
-            {
-                Q *= qs[i];
-            }
-
-            return  (Q,R: Q * source);
-          
+            return (Q,R: R);          
         }
 
        
 
-        public static void Givens(Matrix source) { }
+        public static (Matrix Q, Matrix R) Givens(Matrix source) 
+        {
+            Matrix Q = null;
+            Matrix R = null;
+
+            return (Q,R);
+        
+        }
         /// <summary>
         /// 传统格拉姆 斯密特正交
         /// </summary>
@@ -346,7 +265,6 @@ namespace Deeplearning.Core.Math
 
             return (Q, R);
         }
-
 
         public static (Matrix egin, Matrix vectors) Eig(Matrix source,Func<Matrix,(Matrix Q,Matrix R)> qrDecFunction,int step = 100) {
 

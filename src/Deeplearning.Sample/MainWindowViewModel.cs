@@ -141,11 +141,11 @@ namespace Deeplearning.Sample
 
         private void ExecuteHouseholderCommand()
         {
-            Vector[] vectors = new Vector[3];
-            vectors[0] = new Vector(1, -1, 0);
-            vectors[1] = new Vector(2, 0, -2);
-            vectors[2] = new Vector(3, -3, 3);
-
+            Vector[] vectors = new Vector[4];
+            vectors[0] = new Vector(1, 1, 1, 1);
+            vectors[1] = new Vector(2, 1, 1, 1);
+            vectors[2] = new Vector(3, 2, 1, 1);
+            vectors[3] = new Vector(4, 3, 2, 1);         
 
             Matrix matrix = new Matrix(vectors);
 
@@ -156,7 +156,8 @@ namespace Deeplearning.Sample
             var result = LinearAlgebra.Householder(matrix);
             sb.AppendLine(result.Q?.ToString());
             sb.AppendLine(result.R?.ToString());
-
+            sb.AppendLine("============[Check]=========");
+            sb.AppendLine((result.Q * result.R).ToString());
             Message = sb.ToString();
         }
 
@@ -165,11 +166,6 @@ namespace Deeplearning.Sample
         /// </summary>
         private void ExecuteModifiedGramSchmidtCommand()
         {
-            ////Vector[] vectors = new Vector[3];
-            //vectors[0] = new Vector(1, -1, 0);
-            //vectors[1] = new Vector(2, 0, -2);
-            //vectors[2] = new Vector(3, -3, 3);
-
             Vector[] vectors = new Vector[4];
             vectors[0] = new Vector(1, 1, 1, 1);
             vectors[1] = new Vector(2, 1, 1, 1);
@@ -185,7 +181,8 @@ namespace Deeplearning.Sample
             var result = LinearAlgebra.MGS(matrix);
             sb.AppendLine(result.Q.ToString());
             sb.AppendLine(result.R.ToString());
-
+            sb.AppendLine("============[Check]=========");
+            sb.AppendLine((result.Q * result.R).ToString());
             Message = sb.ToString();
         }
         /// <summary>
@@ -193,13 +190,6 @@ namespace Deeplearning.Sample
         /// </summary>
         private void ExecuteClassicalGramSchmidtCommand()
         {
-
-            //Vector [] vectors = new Vector[3];
-            //vectors[0] = new Vector(1,-1,0);
-            //vectors[1] = new Vector(2,0,-2);
-            //vectors[2] = new Vector(3, -3, 3);
-
-
             Vector[] vectors = new Vector[4];
             vectors[0] = new Vector(1, 1, 1, 1);
             vectors[1] = new Vector(2, 1, 1, 1);
@@ -215,8 +205,9 @@ namespace Deeplearning.Sample
             sb.AppendLine("============[CGS]=========");
             var result = LinearAlgebra.CGS(matrix);
             sb.AppendLine(result.Q.ToString());
-            sb.AppendLine(result.R.ToString()); 
-
+            sb.AppendLine(result.R.ToString());
+            sb.AppendLine("============[Check]=========");
+            sb.AppendLine((result.Q * result.R).ToString());
             Message = sb.ToString();
         }
 

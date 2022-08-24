@@ -383,6 +383,8 @@ namespace Deeplearning.Core.Math.Models
             return detValue;
         }
 
+ 
+
         /// <summary>
         /// 代数余子式
         /// </summary>
