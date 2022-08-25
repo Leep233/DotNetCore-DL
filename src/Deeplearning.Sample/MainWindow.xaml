@@ -19,7 +19,7 @@
         </Grid.RowDefinitions>
 
         <Border MinWidth="140" Margin="0 5 5 5" Grid.Column="2" Grid.RowSpan="3" BorderBrush="gray" BorderThickness="1" >
-            <StackPanel >
+            <StackPanel HorizontalAlignment="Stretch">
                 <TextBlock Padding="5" TextAlignment="Center" FontWeight="Bold" Background="CornflowerBlue">操作</TextBlock>
                 <Button Margin="3" Command="{Binding ComputeCommand}">对角矩阵与矩阵乘积</Button>
                 <Button Margin="3" Command="{Binding TransposeCommand}">矩阵转置</Button>
@@ -28,10 +28,27 @@
                 <Button Margin="3" Command="{Binding NormalDistriutionCommand}">正态分布</Button>
                 <Button Margin="3" Command="{Binding MatrixDetCommand}">行列式</Button>
                 <Button Margin="3" Command="{Binding MatrixAdjugateCommand}">伴随矩阵</Button>
-                <Button Margin="3" Command="{Binding ClassicalGramSchmidtCommand}">经典的GramSchmidt正交化</Button>
-                <Button Margin="3" Command="{Binding ModifiedGramSchmidtCommand}">改进GramSchmidt正交化</Button>
-                <Button Margin="3" Command="{Binding HouseholderCommand}">Householder正交化</Button>
-                <Button Margin="3" Command="{Binding EigenDecompositionCommand}">特征分解</Button>
+
+                <Menu Background="Transparent">
+                    <Menu.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Stretch"></StackPanel>
+                        </ItemsPanelTemplate>
+                    </Menu.ItemsPanel>
+                    
+                    <MenuItem  Margin="3" x:Name="menuItem" Header="正交化" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                        <MenuItem Header="经典的GramSchmidt正交化"  Command="{Binding Decompostion.ClassicalGramSchmidtCommand}"></MenuItem>
+                        <MenuItem Header="改进GramSchmidt正交化"  Command="{Binding Decompostion.ModifiedGramSchmidtCommand}"></MenuItem>
+                        <MenuItem Header="Householder正交化"  Command="{Binding Decompostion.HouseholderCommand}"></MenuItem>
+                    </MenuItem>
+
+                    <MenuItem  Margin="3" Header="特征值分解">
+                        <MenuItem Header="GGS" Margin="3" CommandParameter="0" Command="{Binding Decompostion.EigenDecompositionCommand}"></MenuItem>
+                        <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.EigenDecompositionCommand}"></MenuItem>
+                        <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.EigenDecompositionCommand}"></MenuItem>
+                    </MenuItem>
+                </Menu>
+
             </StackPanel>
         </Border>
 
@@ -55,7 +72,7 @@
                     <ScrollViewer >
                         <TextBlock  Text="{Binding Message}"></TextBlock>
                     </ScrollViewer>
-                </Border>      
+                </Border>
             </Grid>
         </Border>
     </Grid>

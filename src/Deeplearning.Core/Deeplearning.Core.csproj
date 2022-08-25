@@ -5,8 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Math\Interfaces\" />
-    <Folder Include="Math\LinearAlgebra\" />
+    <Compile Remove="Math\Interfaces\**" />
+    <EmbeddedResource Remove="Math\Interfaces\**" />
+    <None Remove="Math\Interfaces\**" />
   </ItemGroup>
 
 </Project>

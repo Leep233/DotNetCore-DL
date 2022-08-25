@@ -45,5 +45,18 @@ namespace Deeplearning.Core.Math
             return soruce;
 
         }
+
+
+        public static Matrix Replace(this Matrix soruce, Vector vector, int colIndex) 
+        {
+            for (int i = 0; i < vector.Length; i++)
+            {
+                soruce[i, colIndex] = vector[i];
+            }
+
+            return soruce;
+        }
+
+       
     }
 }

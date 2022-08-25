@@ -1,6 +1,8 @@
 ﻿using Deeplearning.Core.Math;
+using Deeplearning.Core.Math.LinearAlgebra;
 using Deeplearning.Core.Math.Models;
 using Deeplearning.Sample.Utils;
+using Deeplearning.Sample.ViewModels;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -45,16 +47,17 @@ namespace Deeplearning.Sample
         public DelegateCommand NormalDistriutionCommand { get; set; }
         public DelegateCommand MatrixDetCommand { get; set; }
         public DelegateCommand MatrixAdjugateCommand { get; set; }
-        public DelegateCommand ClassicalGramSchmidtCommand { get; set; }
-        public DelegateCommand ModifiedGramSchmidtCommand { get; set; }
-        public DelegateCommand HouseholderCommand { get; set; }
-        public DelegateCommand EigenDecompositionCommand{ get; set; }
+
+        public MatrixDecomposeOparetion Decompostion { get; set; }
 
         public MainWindowViewModel()
         {
             LeftPlotView = new OxyPlotView(OxyColors.Orange,OxyColors.DeepPink);
 
             RightPlotView = new OxyPlotView(OxyColors.GreenYellow, OxyColors.DodgerBlue);
+
+
+            Decompostion = new MatrixDecomposeOparetion(OnDecomposeCompletedCallback);
 
             ExecuteUpdateSourceMatrixCommannd();
 
@@ -72,15 +75,12 @@ namespace Deeplearning.Sample
 
             MatrixAdjugateCommand = new DelegateCommand(ExecuteMatrixAdjugateCommand);
 
-            ClassicalGramSchmidtCommand = new DelegateCommand(ExecuteClassicalGramSchmidtCommand);
-
-            ModifiedGramSchmidtCommand = new DelegateCommand(ExecuteModifiedGramSchmidtCommand);
-
-            HouseholderCommand = new DelegateCommand(ExecuteHouseholderCommand);
-
-            EigenDecompositionCommand = new DelegateCommand(ExecuteEigenDecompositionCommand);
-
             TransposeCommand = new DelegateCommand(ExecuteTransposeCommand);
+        }
+
+        private void OnDecomposeCompletedCallback(string message)
+        {
+            Message = message;
         }
 
         private void ExecuteTransposeCommand()
@@ -103,114 +103,7 @@ namespace Deeplearning.Sample
 
         }
 
-        /// <summary>
-        /// 特征值分解
-        /// </summary>
-        private  void ExecuteEigenDecompositionCommand()
-        {
-
-            Vector[] vectors = new Vector[4];
-            vectors[0] = new Vector(1, 2, 3, 4);
-            vectors[1] = new Vector(2, 1, 2, 3);
-            vectors[2] = new Vector(3, 2, 1, 2);
-            vectors[3] = new Vector(4, 3, 2, 1);
-            Matrix source = new Matrix(vectors);
-    
-
-           var result = LinearAlgebra.Eig(source,LinearAlgebra.MGS);
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("========Source=========");
-            sb.AppendLine(source.ToString());
-
-            sb.AppendLine("========Eign Matrix=========");
-            sb.AppendLine(result.egin.ToString());
-            sb.AppendLine("========Vectors Matrix=========");
-            sb.AppendLine(result.vectors.ToString());
-
-            sb.AppendLine("========Operation=========");
-            sb.AppendLine((result.vectors * result.egin* result.vectors.T).ToString());
-
-            Message = sb.ToString();
-        }
-
-        /// <summary>
-        /// Householder QR 分解
-        /// </summary>
-
-        private void ExecuteHouseholderCommand()
-        {
-            Vector[] vectors = new Vector[4];
-            vectors[0] = new Vector(1, 1, 1, 1);
-            vectors[1] = new Vector(2, 1, 1, 1);
-            vectors[2] = new Vector(3, 2, 1, 1);
-            vectors[3] = new Vector(4, 3, 2, 1);         
-
-            Matrix matrix = new Matrix(vectors);
-
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("============[Householder]=========");
-            var result = LinearAlgebra.Householder(matrix);
-            sb.AppendLine(result.Q?.ToString());
-            sb.AppendLine(result.R?.ToString());
-            sb.AppendLine("============[Check]=========");
-            sb.AppendLine((result.Q * result.R).ToString());
-            Message = sb.ToString();
-        }
-
-        /// <summary>
-        /// ModifiedGramSchmidt 分解
-        /// </summary>
-        private void ExecuteModifiedGramSchmidtCommand()
-        {
-            Vector[] vectors = new Vector[4];
-            vectors[0] = new Vector(1, 1, 1, 1);
-            vectors[1] = new Vector(2, 1, 1, 1);
-            vectors[2] = new Vector(3, 2, 1, 1);
-            vectors[3] = new Vector(4, 3, 2, 1);
-
-            Matrix matrix = new Matrix(vectors);
-
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("============[MGS]==========");
-            var result = LinearAlgebra.MGS(matrix);
-            sb.AppendLine(result.Q.ToString());
-            sb.AppendLine(result.R.ToString());
-            sb.AppendLine("============[Check]=========");
-            sb.AppendLine((result.Q * result.R).ToString());
-            Message = sb.ToString();
-        }
-        /// <summary>
-        /// Classical Gram-Schmidt 分解
-        /// </summary>
-        private void ExecuteClassicalGramSchmidtCommand()
-        {
-            Vector[] vectors = new Vector[4];
-            vectors[0] = new Vector(1, 1, 1, 1);
-            vectors[1] = new Vector(2, 1, 1, 1);
-            vectors[2] = new Vector(3, 2, 1, 1);
-            vectors[3] = new Vector(4, 3, 2, 1);
-
-
-            Matrix matrix = new Matrix(vectors);      
-
   
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("============[CGS]=========");
-            var result = LinearAlgebra.CGS(matrix);
-            sb.AppendLine(result.Q.ToString());
-            sb.AppendLine(result.R.ToString());
-            sb.AppendLine("============[Check]=========");
-            sb.AppendLine((result.Q * result.R).ToString());
-            Message = sb.ToString();
-        }
-
         private void ExecuteMatrixAdjugateCommand()
         {
             double[,] scalars = new double[2, 2] {
@@ -292,7 +185,7 @@ namespace Deeplearning.Sample
         {
             Func<Vector, float> original = new Func<Vector, float>(vector => MathF.Pow((float)vector[0], 2) + MathF.Pow((float)vector[1], 2));
 
-            await LinearAlgebra.GradientDescentTaskAsync(500, original,OnGradient3DChangedCallback);
+            await Gradient.GradientDescentTaskAsync(500, original,OnGradient3DChangedCallback);
 
             using (StreamWriter writer = File.CreateText("point.txt"))
             {
@@ -353,7 +246,7 @@ namespace Deeplearning.Sample
 
             Message = "computing...";
 
-            await LinearAlgebra.GradientDescentTaskAsync(8, 1000, orginal, OnGradientChangedCallback);
+            await Gradient.GradientDescentTaskAsync(8, 1000, orginal, OnGradientChangedCallback);
 
             Message = "completed";
         }

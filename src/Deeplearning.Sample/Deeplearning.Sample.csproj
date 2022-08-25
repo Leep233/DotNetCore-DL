@@ -15,4 +15,8 @@
     <ProjectReference Include="..\Deeplearning.Core\Deeplearning.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Common\" />
+  </ItemGroup>
+
 </Project>

@@ -195,44 +195,7 @@ namespace Deeplearning.Core.Math.Models
         }
         public bool IsSquare => Rows == Columns;
     
-        public static Matrix DiagonalMatrix(double scalar,int size)
-        {
-    
-            Matrix matrix = new Matrix(size, size);
-
-            for (int i = 0; i < matrix.Rows; i++)
-            {
-                matrix[i, i] = scalar;
-            }
-
-            return matrix;
-        }
-        public static Matrix DiagonalMatrix(double[] array)
-        {
-            int size = array.Length;
-
-            Matrix matrix = new Matrix(size, size);
-
-            for (int i = 0; i < matrix.Rows; i++)
-            {
-                matrix[i, i] = array[i];
-            }
-
-            return matrix;
-        }
-        public static Matrix DiagonalMatrix(Vector vector)
-        {
-            int size = vector.Length;
-
-            Matrix matrix = new Matrix(size, size);
-
-            for (int i = 0; i < size; i++)
-            {
-                matrix[i, i] = vector[i];
-            }
-
-            return matrix;
-        }
+  
         public static Matrix UnitMatrix(int size)
         {
 
@@ -440,6 +403,69 @@ namespace Deeplearning.Core.Math.Models
                 }
             return abjT.T;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scalar"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <returns></returns>
+        public static Matrix DiagonalMatrix(double scalar, int row, int col)
+        {
+
+            Matrix matrix = new Matrix(row, col);
+
+            int count = row < col ? row : col;
+
+
+            for (int i = 0; i < count; i++)
+            {
+                matrix[i, i] = scalar;
+            }
+
+            return matrix;
+        }
+
+        public static Matrix DiagonalMatrix(double scalar, int size)
+        {
+
+            Matrix matrix = new Matrix(size, size);
+
+            for (int i = 0; i < matrix.Rows; i++)
+            {
+                matrix[i, i] = scalar;
+            }
+
+            return matrix;
+        }
+        public static Matrix DiagonalMatrix(double[] array)
+        {
+            int size = array.Length;
+
+            Matrix matrix = new Matrix(size, size);
+
+            for (int i = 0; i < matrix.Rows; i++)
+            {
+                matrix[i, i] = array[i];
+            }
+
+            return matrix;
+        }
+        public static Matrix DiagonalMatrix(Vector vector)
+        {
+            int size = vector.Length;
+
+            Matrix matrix = new Matrix(size, size);
+
+            for (int i = 0; i < size; i++)
+            {
+                matrix[i, i] = vector[i];
+            }
+
+            return matrix;
+        }
+
 
         public static Matrix Inverse(Matrix origin) {
 
@@ -732,7 +758,7 @@ namespace Deeplearning.Core.Math.Models
         public static Matrix operator *(Matrix m1, Matrix m2)
         {
             if (m1.Columns != m2.Rows)
-                throw new ArgumentException("矩阵大小不一致，无法相加");
+                throw new ArgumentException("矩阵大小不一致，无法相乘");
 
             int rows = m1.Rows;
 
