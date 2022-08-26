@@ -48,6 +48,7 @@ namespace Deeplearning.Sample
         public DelegateCommand MatrixDetCommand { get; set; }
         public DelegateCommand MatrixAdjugateCommand { get; set; }
 
+        public DelegateCommand MatrixInverseCommand { get; set; }
         public MatrixDecomposeOparetion Decompostion { get; set; }
 
         public MainWindowViewModel()
@@ -76,6 +77,37 @@ namespace Deeplearning.Sample
             MatrixAdjugateCommand = new DelegateCommand(ExecuteMatrixAdjugateCommand);
 
             TransposeCommand = new DelegateCommand(ExecuteTransposeCommand);
+
+            MatrixInverseCommand = new DelegateCommand(ExecuteMatrixInverseCommand);
+        }
+
+        private void ExecuteMatrixInverseCommand()
+        {
+           Vector [] vectors = new Vector [3];
+           vectors[0] = new Vector(1,2,3);
+           vectors[1] = new Vector (2,2,4);
+           vectors[2] = new Vector (3,1,3);
+
+            Matrix matrix = new Matrix(vectors);
+
+            Vector sourceVector = new Vector(-1,2,-3);
+
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("========Sources========");
+            sb.AppendLine(matrix.ToString());
+            sb.AppendLine("========逆矩阵========");     
+            sb.AppendLine(matrix.inverse.ToString());
+            sb.AppendLine("========检测========");
+            sb.AppendLine((matrix * matrix.inverse).ToString());
+            sb.AppendLine("========检测========");
+            sb.AppendLine(sourceVector.ToString());
+            Vector v = matrix * sourceVector;
+            sb.AppendLine((v).ToString());
+            Vector v2 = matrix.inverse * v;
+            sb.AppendLine(v2.ToString());
+
+            Message = sb.ToString();
         }
 
         private void OnDecomposeCompletedCallback(string message)
@@ -106,27 +138,24 @@ namespace Deeplearning.Sample
   
         private void ExecuteMatrixAdjugateCommand()
         {
-            double[,] scalars = new double[2, 2] {
-            { 4,1},
-            { 3,2}};
+       
 
-            scalars = new double[3, 3] {
-            { 2,3,1},
-            { 3,4,1},
-            { 3,7,2}
-            };
-
-            scalars = new double[3, 3] {
-            { 2,2,1},
-            { -2,1,2},
-            { 1,-2,2}
+            double[,] scalars = new double[3, 3] {
+            { 1,1,1},
+            { 2,1,3},
+            { 1,1,4}
             };
 
             Matrix matrix = new Matrix(scalars);
 
-            matrix = matrix* matrix.inverse;
-
-            Message = matrix.ToString();
+           StringBuilder sb = new StringBuilder();
+            sb.AppendLine("========Sources========");
+            sb.AppendLine(matrix.ToString());
+            sb.AppendLine("========伴随矩阵========");
+            matrix = matrix.abj;
+            sb.AppendLine(matrix.ToString());
+          
+            Message = sb.ToString();
         }
 
         private void ExecuteMatrixDetCommand()

@@ -13,7 +13,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
     public class Orthogonalization
     {
 
-        public static (Matrix Q, Matrix R) Householder(Matrix source)
+        public static QRResult Householder(Matrix source)
         {
 
             Matrix Q = null;
@@ -32,11 +32,13 @@ namespace Deeplearning.Core.Math.LinearAlgebra
 
                 Vector y = new Vector(x.Length);
 
-                y[0] = norm;
+                y[0] = Validator.ZeroValidation(norm);
 
                 Vector z = x - y;
 
-                Vector w = z / z.Norm(2);
+                double m = z.Norm(2);
+
+                Vector w = z / m;
 
                 Matrix I = Matrix.UnitMatrix(x.Length);
 
@@ -64,16 +66,16 @@ namespace Deeplearning.Core.Math.LinearAlgebra
             }
             Q = Q.T;
 
-            return (Q, R: R);
+            return new  QRResult(Q, R);
         }
 
         [Completion(false)]
-        public static (Matrix Q, Matrix R) Givens(Matrix source)
+        public static QRResult Givens(Matrix source)
         {
             Matrix Q = null;
             Matrix R = null;
 
-            return (Q, R);
+            return new QRResult();
 
         }
 
@@ -82,7 +84,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static (Matrix Q, Matrix R) CGS(Matrix source)
+        public static QRResult CGS(Matrix source)
         {
 
             Matrix matrix = (Matrix)source.Clone();
@@ -100,7 +102,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
                 {
                     e = Q.GetVector(j);
                     double temp = a.T * e;
-                    R[j, i] = temp;
+                    R[j, i] = Validator.ZeroValidation(temp);
                     a = a - temp * e;
                     e = Vector.Normalize(a);
                 }
@@ -108,7 +110,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
                 R[i, i] = a.Norm(2);
                 Q = Q.Replace(e, i);
             }
-            return (Q, R);
+            return new QRResult(Q, R);
         }
 
 
@@ -117,7 +119,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static (Matrix Q, Matrix R) MGS(Matrix source)
+        public static QRResult MGS(Matrix source)
         {
             Matrix matrix = (Matrix)source.Clone();
 
@@ -143,14 +145,14 @@ namespace Deeplearning.Core.Math.LinearAlgebra
 
                     double temp = b.T * e;
 
-                    R[i, j] = temp;
+                    R[i, j] = Validator.ZeroValidation(temp);
 
                     b = b - temp * e;
 
                     matrix.Replace(b, j);
                 }              
             }
-            return (Q, R);
+            return new QRResult(Q, R);
         }
 
     }

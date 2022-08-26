@@ -8,7 +8,7 @@ namespace Deeplearning.Core.Math.Models
     {
         public const int MAX_TO_STRING_COUNT = 4;
 
-        public const float MinValue = 0.0001f;
+        public const double MIN_VALUE = 1E-15;
 
         private double[,] scalars;
 
@@ -50,8 +50,8 @@ namespace Deeplearning.Core.Math.Models
 
         public Matrix(Vector[] vectors)
         {
-           int col = vectors.Length;
-           int row = vectors[0].Length;
+            int col = vectors.Length;
+            int row = vectors[0].Length;
 
             scalars = new double[row, col];
 
@@ -63,9 +63,9 @@ namespace Deeplearning.Core.Math.Models
                 }
             }
 
-           this.Rows = scalars.GetLength(0);
+            this.Rows = scalars.GetLength(0);
 
-           this.Columns = scalars.GetLength(1);
+            this.Columns = scalars.GetLength(1);
         }
 
         private Matrix()
@@ -73,7 +73,7 @@ namespace Deeplearning.Core.Math.Models
 
         }
 
-        public Vector[] Vectors() 
+        public Vector[] Vectors()
         {
             Vector[] vs = new Vector[Columns];
 
@@ -82,14 +82,15 @@ namespace Deeplearning.Core.Math.Models
                 vs[c] = new Vector(Rows);
                 for (int r = 0; r < Rows; r++)
                 {
-                    vs[c][r] = this[r,c];
+                    vs[c][r] = this[r, c];
                 }
             }
 
             return vs;
         }
 
-        public Vector GetVector(int colIndex) {
+        public Vector GetVector(int colIndex)
+        {
 
             if (Columns <= colIndex) throw new ArgumentOutOfRangeException("越界");
 
@@ -107,9 +108,9 @@ namespace Deeplearning.Core.Math.Models
             return MathF.Sqrt((float)Track(this * T));
         }
 
-        public double Track() 
-        { 
-               return Track(this);        
+        public double Track()
+        {
+            return Track(this);
         }
 
         public override string ToString()
@@ -137,7 +138,7 @@ namespace Deeplearning.Core.Math.Models
                     }
                     else
                     {
-                        stringBuilder.Append(this[i, j].ToString("F8"));
+                        stringBuilder.Append(this[i, j].ToString("F12"));
                         stringBuilder.Append(" ");
                     }
 
@@ -168,13 +169,16 @@ namespace Deeplearning.Core.Math.Models
                 {
                     for (int j = 0; j < Rows; j++)
                     {
-                        if (this[i, j] != m[i, j]) {
+                       double value = this[i, j] - m[i, j];
+
+                        if (MathF.Abs((float)value) >= MIN_VALUE)
+                        {
                             result = false;
                             break;
                         }
                     }
                 }
-            }          
+            }
             return result;
         }
 
@@ -182,7 +186,7 @@ namespace Deeplearning.Core.Math.Models
         /// 是否正交
         /// </summary>
         /// <returns></returns>
-        public  bool IsOrthogonal() 
+        public bool IsOrthogonal()
         {
             if (!IsSquare)
                 return false;
@@ -194,8 +198,8 @@ namespace Deeplearning.Core.Math.Models
             return unitMatrix.Equals(matrix);
         }
         public bool IsSquare => Rows == Columns;
-    
-  
+
+
         public static Matrix UnitMatrix(int size)
         {
 
@@ -219,7 +223,7 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    result[r, c] = matrix[c,r];
+                    result[r, c] = matrix[c, r];
                 }
             }
             return result;
@@ -292,8 +296,6 @@ namespace Deeplearning.Core.Math.Models
 
         public static Matrix Copy(Matrix source)
         {
-         
-
             Matrix matrix = new Matrix(source.Rows, source.Columns);
 
             for (int i = 0; i < matrix.Rows; i++)
@@ -335,18 +337,16 @@ namespace Deeplearning.Core.Math.Models
                         {
                             double scalarValue = matrix[0, i];
 
-                            Matrix cofactor = matrix.AlgebraicCofactor(0, i);            
+                            Matrix cofactor = matrix.AlgebraicCofactor(0, i);
 
                             detValue += ((i + 2) % 2 == 0 ? 1 : -1) * scalarValue * Det(cofactor);
                         }
                     }
                     break;
             }
-          
-            return detValue;
-        }
 
- 
+            return Validator.ZeroValidation(detValue);
+        }
 
         /// <summary>
         /// 代数余子式
@@ -354,7 +354,7 @@ namespace Deeplearning.Core.Math.Models
         /// <param name="rowIndex">对应元素的行下标</param>
         /// <param name="colIndex">对应元素的列下标</param>
         /// <returns></returns>
-        public Matrix AlgebraicCofactor(int rowIndex, int colIndex) 
+        public Matrix AlgebraicCofactor(int rowIndex, int colIndex)
         {
             int rowCount = rowIndex < 0 ? Rows : Rows - 1;
             int colCount = colIndex < 0 ? Columns : Columns - 1;
@@ -364,7 +364,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < Rows; i++)
             {
-                if (i == colIndex ) continue;
+                if (i == colIndex) continue;
 
                 int r_j = 0;
 
@@ -372,7 +372,7 @@ namespace Deeplearning.Core.Math.Models
                 {
                     if (j == rowIndex) continue;
 
-                    matrix[r_i, r_j] = scalars[i,j];
+                    matrix[r_i, r_j] = scalars[i, j];
 
                     r_j++;
                 }
@@ -381,27 +381,28 @@ namespace Deeplearning.Core.Math.Models
             return matrix;
         }
 
-        public static Matrix Adjugate(Matrix origin) {
+        public static Matrix Adjugate(Matrix origin)
+        {
 
             if (!origin.IsSquare) return null;
 
             int size = origin.Rows;
 
-            Matrix abjT = new Matrix(size, size);
+            Matrix abj = new Matrix(size, size);
 
-       
-                for (int i = 0; i < size; i++)
+
+            for (int i = 0; i < size; i++)
+            {
+                for (int j = 0; j < size; j++)
                 {
-                    for (int j = 0; j < size; j++)
-                    {
-                        Matrix temp = origin.AlgebraicCofactor(i, j);
+                    Matrix temp = origin.AlgebraicCofactor(i, j);
 
-                    double detValue = (((i +j + 2) % 2 == 0 ? 1 : -1)) *temp.det;
-      
-                        abjT[i, j] = detValue;
-                    }
+                    double detValue = (((i + j + 2) % 2 == 0 ? 1 : -1)) * temp.det;
+
+                    abj[i, j] = detValue;
                 }
-            return abjT.T;
+            }
+            return abj;
         }
 
         /// <summary>
@@ -467,9 +468,9 @@ namespace Deeplearning.Core.Math.Models
         }
 
 
-        public static Matrix Inverse(Matrix origin) {
-
-            return  origin.abj / origin.det;
+        public static Matrix Inverse(Matrix origin)
+        {
+            return origin.abj / origin.det;
         }
 
         #region 运算符重载
@@ -490,7 +491,7 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] + m2[i, j];
+                    result[i, j] = Validator.ZeroValidation(m1[i, j] + m2[i, j]);
                 }
             }
             return result;
@@ -511,7 +512,7 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] + scalars[j];
+                    result[i, j] = Validator.ZeroValidation(m1[i, j] + scalars[j]);
                 }
             }
             return result;
@@ -532,7 +533,7 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] + scalars[j];
+                    result[i, j] = Validator.ZeroValidation(m1[i, j] + scalars[j]) ;
                 }
             }
             return result;
@@ -553,7 +554,7 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] + vector[i];
+                    result[i, j] = Validator.ZeroValidation(m1[i, j] + vector[i]);
                 }
             }
             return result;
@@ -574,7 +575,7 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] + vector[i];
+                    result[i, j] = Validator.ZeroValidation(m1[i, j] + vector[i]);
                 }
             }
             return result;
@@ -592,7 +593,7 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] + scalar;
+                    result[i, j] = Validator.ZeroValidation(m1[i, j] + scalar);
                 }
             }
             return result;
@@ -609,15 +610,15 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] + scalar;
+                    result[i, j] = Validator.ZeroValidation(m1[i, j] + scalar);
                 }
             }
             return result;
         }
         public static Matrix operator -(Matrix m1, Matrix m2)
-        {        
+        {
 
-            int rows =(int)MathF.Min(m1.Rows, m2.Rows);
+            int rows = (int)MathF.Min(m1.Rows, m2.Rows);
 
             int cols = (int)MathF.Min(m1.Columns, m2.Columns);
 
@@ -631,7 +632,9 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] - m2[i, j];
+                  //  double value = m1[i, j] - m2[i, j];
+
+                    result[i, j] = Validator.ZeroValidation(m1[i, j] - m2[i, j]); //MathF.Abs((float)value) <=MIN_VALUE?0:value;
                 }
             }
             return result;
@@ -652,7 +655,9 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = scalars[j] - m1[i, j];
+                  // double value = scalars[j] - m1[i, j];
+                   
+                    result[i, j] = Validator.ZeroValidation(scalars[j] - m1[i, j]); //MathF.Abs((float)value) <= MIN_VALUE ? 0 : value;
                 }
             }
             return result;
@@ -672,8 +677,8 @@ namespace Deeplearning.Core.Math.Models
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
-                {
-                    result[i, j] = m1[i, j] - scalars[j];
+                {      
+                    result[i, j] = Validator.ZeroValidation(m1[i, j] - scalars[j]);
                 }
             }
             return result;
@@ -694,7 +699,8 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = vector[i] - m1[i, j];
+                   
+                    result[i, j] = Validator.ZeroValidation(vector[i] - m1[i, j]);
                 }
             }
             return result;
@@ -715,7 +721,9 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] - vector[i];
+                   // double value =  m1[i, j] - vector[i];                  
+
+                    result[i, j] = Validator.ZeroValidation(m1[i, j] - vector[i]); //MathF.Abs((float)value) <= MIN_VALUE ? 0 : value;
                 }
             }
             return result;
@@ -733,7 +741,8 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = scalar - m1[i, j];
+                    //double value =scalar - m1[i, j]; 
+                    result[i, j] = Validator.ZeroValidation(scalar - m1[i, j]);// MathF.Abs((float)value) <= MIN_VALUE ? 0 : value; 
                 }
             }
             return result;
@@ -750,7 +759,8 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] - scalar;
+                   // double value = m1[i, j] - scalar; 
+                    result[i, j] = Validator.ZeroValidation(m1[i, j] - scalar);// MathF.Abs((float)value) <= MIN_VALUE ? 0 : value;
                 }
             }
             return result;
@@ -778,9 +788,10 @@ namespace Deeplearning.Core.Math.Models
 
                     for (int k = 0; k < same; k++)
                     {
-                        temp += m1[i, k] * m2[k, j];
+                        // double value = m1[i, k] * m2[k, j];
+                        temp += m1[i, k] * m2[k, j]; //MathF.Abs((float)value) <= MIN_VALUE ? 0 : value;
                     }
-                    result[i, j] = temp;
+                    result[i, j] = Validator.ZeroValidation(temp);
                 }
             }
             return result;
@@ -802,9 +813,11 @@ namespace Deeplearning.Core.Math.Models
                 double temp = 0;
                 for (int j = 0; j < rows; j++)
                 {
-                    temp += m1[j, i] * scalars[j];
+                    //  double value = m1[j, i] * scalars[j];
+
+                    temp += m1[j, i] * scalars[j]; //MathF.Abs((float)value) <= MIN_VALUE ? 0 : value;
                 }
-                result[i] = temp;
+                result[i] = Validator.ZeroValidation(temp);
             }
 
             return result;
@@ -826,9 +839,11 @@ namespace Deeplearning.Core.Math.Models
                 double temp = 0;
                 for (int j = 0; j < cols; j++)
                 {
-                    temp += m1[i, j] * vector[j];
+                    //double value = m1[i, j] * vector[j];                    
+
+                    temp += m1[i, j] * vector[j];// MathF.Abs((float)value) <= MIN_VALUE ? 0 : value;
                 }
-                result[i] = temp;
+                result[i] = Validator.ZeroValidation(temp); 
             }
             return result;
         }
@@ -844,7 +859,8 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = scalar * m1[i, j];
+                    //double value = scalar * m1[i, j];
+                    result[i, j] = Validator.ZeroValidation(scalar * m1[i, j]); //MathF.Abs((float)value) <= MIN_VALUE ? 0 : value;
                 }
             }
             return result;
@@ -861,7 +877,8 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] * scalar;
+                   // double value = m1[i, j] * scalar; 
+                    result[i, j] = Validator.ZeroValidation(scalar * m1[i, j]); //MathF.Abs((float)value) <= MIN_VALUE ? 0 : value; 
                 }
             }
             return result;
@@ -878,7 +895,8 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] / scalar;
+
+                    result[i, j] = Validator.ZeroValidation(scalar) == 0 ? scalar : m1[i, j] / scalar;
                 }
             }
             return result;
@@ -909,6 +927,6 @@ namespace Deeplearning.Core.Math.Models
             return !m1.Equals(m2);
         }
         #endregion
-   
+
     }
 }

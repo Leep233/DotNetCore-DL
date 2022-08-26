@@ -5,6 +5,8 @@ namespace Deeplearning.Core.Math.Models
 {
     public class Vector:ICloneable {
 
+        public const double MIN_VALUE = 1E-15;
+
         private double[] scalars;
 
         public double this[int index] { get => scalars[index]; set => scalars[index] = value; }
@@ -43,7 +45,9 @@ namespace Deeplearning.Core.Math.Models
                     {
                         for (int i = 0; i < Length; i++)
                         {
-                            sum += MathF.Pow((float)scalars[i],(float) p);
+
+                            sum += MathF.Pow((float)scalars[i], (float)p);
+                     
                         }
                     }
                     break;
@@ -121,7 +125,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < length; i++)
             {
-                if (!this[i].Equals(v2[i]))
+                if (Validator.ZeroValidation(this[i] - v2[i])!=0)
                 {
                     result = false;
                     break;
@@ -160,13 +164,14 @@ namespace Deeplearning.Core.Math.Models
 
         public static Vector Normalize(Vector vector) 
         {
-            double m = vector.Norm(2);
+            double  m= vector.Norm(2);
 
-            return vector / m;
+            return m <= MIN_VALUE ? new Vector(vector.Length) : vector / m;
+     
         }
         public static Vector Normalized(double[,] col_vector)
         {
-            double m = Norm(col_vector,2);
+             double m = Norm(col_vector,2);
 
              int rows =  col_vector.GetLength(0);
 
@@ -174,7 +179,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < rows; i++)
             {
-                v1[i] = col_vector[i, 0] / m;
+                v1[i] = m <= MIN_VALUE ?0: col_vector[i, 0] / m;
             }
 
             return v1;
@@ -184,8 +189,8 @@ namespace Deeplearning.Core.Math.Models
             double m = Norm(row_vector, 2);
 
             for (int i = 0; i < row_vector.Length; i++)
-            {
-                row_vector[i] /= m;
+            {//row_vector[i] /= m;
+                row_vector[i] = m <= MIN_VALUE ? 0 : row_vector[i] / m;
             }
             return row_vector;
         }
@@ -292,7 +297,7 @@ namespace Deeplearning.Core.Math.Models
 
         public static bool IsOrthogonal(Vector v1, Vector v2) 
         {
-           return float.MinValue.Equals(v1 * v2);
+           return Validator.ZeroValidation(v1 * v2)==0;
         }
 
         public static bool IsOrthogormal(Vector v1, Vector v2) {
@@ -330,7 +335,7 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int c = 0; c < size; c++)
                 {
-                    matrix[r, c] = v1[r] * v2[c];
+                    matrix[r, c] = Validator.ZeroValidation(v1[r] * v2[c]);
                 }
             }
             return matrix;
@@ -345,7 +350,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result += v1[i] * v2[i];
+                result += Validator.ZeroValidation(v1[i] * v2[i]); 
             }
             return (double)result;
 
@@ -358,9 +363,10 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result += v1[i] * v2[i];
+                result += Validator.ZeroValidation(v1[i] * v2[i]); 
             }
-            return result;
+
+            return result <= MIN_VALUE ? 0 : result;
         }
        
         public static Vector operator *(Vector v1, double scalar)
@@ -369,7 +375,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = v1[i] * scalar;
+                result[i] = Validator.ZeroValidation(v1[i] * scalar); 
             }
             return result;
         }
@@ -379,11 +385,12 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = v1[i] * scalar;
+                result[i] = Validator.ZeroValidation(v1[i] * scalar);
             }
             return result;
         }
-       
+         
+
         public static Vector operator -(Vector v1, Vector v2)
         {
             int size = v1.Length <= v2.Length ? v1.Length : v2.Length;
@@ -392,7 +399,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = v1[i] - v2[i];
+                result[i] = Validator.ZeroValidation(v1[i] - v2[i]);
             }
             return result;
         }
@@ -402,7 +409,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] =  v1[i] -scalar;
+                result[i] = Validator.ZeroValidation(v1[i] - scalar); 
             }
             return result;
         }
@@ -412,7 +419,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = scalar- v1[i]  ;
+                result[i] = Validator.ZeroValidation(scalar - v1[i]);
             }
             return result;
         }
@@ -425,7 +432,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < size; i++)
             {
-                result[i] = v1[i] + v2[i];
+                result[i] = Validator.ZeroValidation(v1[i] + v2[i]); 
             }
             return result;
         }
@@ -435,7 +442,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = v1[i] + scalar;
+                result[i] = Validator.ZeroValidation(v1[i] + scalar);
             }
             return result;
         }
@@ -445,7 +452,7 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = v1[i] + scalar;
+                result[i] = Validator.ZeroValidation(v1[i] + scalar);
             }
             return result;
         }
@@ -456,7 +463,9 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = v1[i] / scalar;
+                scalar = Validator.ZeroValidation(scalar);
+
+                result[i] = scalar == 0 ? scalar : v1[i] / scalar;
             }
             return result;
         }

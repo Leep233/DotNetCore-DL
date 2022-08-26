@@ -2,7 +2,7 @@
 using Deeplearning.Core.Math.Models;
 using Prism.Commands;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Deeplearning.Sample.ViewModels
@@ -14,6 +14,8 @@ namespace Deeplearning.Sample.ViewModels
         public DelegateCommand ClassicalGramSchmidtCommand { get; set; }
         public DelegateCommand ModifiedGramSchmidtCommand { get; set; }
         public DelegateCommand HouseholderCommand { get; set; }
+
+        public DelegateCommand<object> SVDDecompositionCommand { get; set; }        
         public DelegateCommand<object> EigenDecompositionCommand { get; set; }
 
         private event Action<string> DecomposeCompleted;
@@ -36,8 +38,40 @@ namespace Deeplearning.Sample.ViewModels
             HouseholderCommand = new DelegateCommand(ExecuteHouseholderCommand);
 
             EigenDecompositionCommand = new DelegateCommand<object>(ExecuteEigenDecompositionCommand);
+
+            SVDDecompositionCommand = new DelegateCommand<object>(ExecuteSVDDecompositionCommand);
+
+
         }
 
+        private void ExecuteSVDDecompositionCommand(object decType)
+        {
+
+            int.TryParse(decType.ToString(), out int type);
+
+
+            Vector[] vectors = new Vector[] {
+                new Vector(2,0,1),
+                new Vector(0,2,1),
+            };
+
+            Matrix matrix = new Matrix(vectors);// (Matrix)Source.Clone();// new Matrix(vectors);
+
+            var result = MatrixDecomposition.SVD(matrix, GetOrthogonalizationFunction(type));
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("========Source=========");
+            sb.AppendLine(Source.ToString());
+            sb.AppendLine("========SVD=========");
+            sb.AppendLine(result.ToString());
+
+            sb.AppendLine("========检测=========");
+
+            sb.AppendLine((result.U * result.D * result.V.T).ToString());
+
+            DecomposeCompleted?.Invoke(sb.ToString());
+        }
 
         public MatrixDecomposeOparetion(Action<string> onDecomposeComleted)
         {
@@ -60,16 +94,13 @@ namespace Deeplearning.Sample.ViewModels
 
             EigenDecompositionCommand = new DelegateCommand<object>(ExecuteEigenDecompositionCommand);
 
+            SVDDecompositionCommand = new DelegateCommand<object>(ExecuteSVDDecompositionCommand);
+
         }
-        /// <summary>
-        /// 特征值分解
-        /// </summary>
-        private void ExecuteEigenDecompositionCommand(object decType)
-        {
 
-            int.TryParse(decType.ToString(), out int type);
 
-            Func<Matrix, (Matrix Q, Matrix R)> function = Orthogonalization.Householder;
+        private Func<Matrix, QRResult> GetOrthogonalizationFunction(int type) {
+            Func<Matrix, QRResult> function = Orthogonalization.Householder;
 
             switch (type)
             {
@@ -79,26 +110,33 @@ namespace Deeplearning.Sample.ViewModels
                 case 1:
                     function = Orthogonalization.MGS;
                     break;
-                case 2:  
+                case 2:
                 default:
                     function = Orthogonalization.Householder;
                     break;
             }
 
-            var result = MatrixDecomposition.Eig(Source, function);
+            return function;    
+        }
+
+        /// <summary>
+        /// 特征值分解
+        /// </summary>
+        private void ExecuteEigenDecompositionCommand(object decType)
+        {
+
+            int.TryParse(decType.ToString(), out int type);
+            
+
+            var result = MatrixDecomposition.Eig(Source, GetOrthogonalizationFunction(type));
 
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine("========Source=========");
-            sb.AppendLine(Source.ToString());
-
-            sb.AppendLine("========Eign Matrix=========");
-            sb.AppendLine(result.egin.ToString());
-            sb.AppendLine("========Vectors Matrix=========");
-            sb.AppendLine(result.vectors.ToString());
-
+            sb.AppendLine(Source.ToString());     
+            sb.AppendLine(result.ToString());
             sb.AppendLine("========Operation=========");
-            sb.AppendLine((result.vectors * result.egin * result.vectors.T).ToString());
+            sb.AppendLine((result.Vectors * result.Eigen * result.Vectors.T).ToString());
 
             DecomposeCompleted?.Invoke(sb.ToString());
 
@@ -111,6 +149,12 @@ namespace Deeplearning.Sample.ViewModels
 
         private void ExecuteHouseholderCommand()
         {
+
+            Vector[] vectors = new Vector[3];
+            vectors[0] = new Vector(2,1,1);
+            vectors[1] = new Vector(1,1,0);
+            vectors[2] = new Vector(1,0,1);
+
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine("============[Householder]=========");
