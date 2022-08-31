@@ -10,109 +10,37 @@ namespace Deeplearning.Core.Math.LinearAlgebra
     public class MatrixDecomposition
     {
 
+        public static SVDResult SVD(Matrix source, Func<Matrix, QRResult> decompose, int step = 100)
+        {   
+            EigResult A_Eig = Eig(source.T * source, decompose, step);
+    
+            Matrix V = A_Eig.Vectors;
 
-        public static SVDResult SVD01(Matrix source, Func<Matrix, QRResult> decompose, int step = 500)
-        {
+            EigResult B_Eig = Eig(source * source.T, decompose, step);
+ 
+            Matrix U = B_Eig.Vectors;
 
+            float[] eigens = A_Eig.Eigen.DiagonalVector();
 
-            Matrix matrix = source;
-            //step1;
-            Matrix step1Matrix = matrix * matrix.T;
+            int r = U.Column;
 
-            Matrix step2Matrix = matrix.T * matrix;
+            int c = V.Column;
 
-            Debug.WriteLine("=====================");
+            Matrix D = new Matrix(r, c);
 
-            Debug.WriteLine(step1Matrix.ToString());
+            int l = (int)MathF.Min(r, c);
 
+            l = (int)MathF.Min(l,eigens.Length);
 
-
-            Debug.WriteLine(step2Matrix.ToString());
-
-            Debug.WriteLine("=====================");
-
-            var step1EigResult = Eig(step1Matrix, decompose, step);
-
-            int eignValueCount = step1EigResult.Eigen.Rows <= step1EigResult.Eigen.Columns ? step1EigResult.Eigen.Rows : step1EigResult.Eigen.Columns;
-
-            Matrix D = new Matrix(eignValueCount, eignValueCount);
-
-            for (int i = 0; i < eignValueCount; i++)
+            for (int i = 0; i < l; i++)
             {
-                D[i, i] = MathF.Sqrt((float)step1EigResult.Eigen[i, i]);
+                float value = Validator.ZeroValidation(eigens[i]);
+                 
+                D[i, i] = value==0?0: MathF.Sqrt((float)value);
             }
-
-            //step1 end;
-            //step2
-            Debug.WriteLine(step1EigResult.ToString());
-
-            //Debug.WriteLine("============[Matrix.T * Matrix]===========");
-
-
-            Debug.WriteLine("=====================");
-            var step2EigResult = Eig(step2Matrix, decompose, step);
-
-            Matrix V = new Matrix(matrix.Columns, D.Rows);
-
-            for (int i = 0; i < V.Columns; i++)
-            {
-                for (int j = 0; j < V.Rows; j++)
-                {
-                    V[j, i] = step2EigResult.Vectors[j, i];
-                }
-            }
-            //  Debug.WriteLine(step2EigResult.ToString());
-
-            Debug.WriteLine(step2EigResult.ToString());
-            //step1 end;
-
-            return new SVDResult(step1EigResult.Vectors, D, V);
+            return new SVDResult(U,D,V);
         }
 
-
-        public static SVDResult SVD(Matrix source, Func<Matrix, QRResult> decompose, int step = 500) 
-        {
-
-            Matrix matrix = source.T * source;
-
-            EigResult result = Eig(matrix,decompose,step);
-
-
-            Matrix v = result.Vectors;
-
-            int r = result.Eigen.Columns;
-
-            Matrix d = new Matrix(r, r);
-
-            for (int i = 0; i < r; i++) 
-            {
-                d[i, i] = MathF.Sqrt((float)result.Eigen[i,i]);
-            }
-
-            matrix = source * source.T;
-
-            result = Eig(matrix, decompose, step);
-
-            r = result.Eigen.Rows;
-
-            List<Vector> vectors = new List<Vector>();
-
-            for (int i = 0; i < r-1; i++)
-            {
-               double value = result.Eigen[i, i];
-
-               // if (value == 0||double.MinValue>=value) continue;
-
-              vectors.Add(result.Vectors.GetVector(i));
-
-            }
-
-            Debug.WriteLine(result);
-
-            Matrix u = new Matrix(vectors.ToArray());
-
-            return new SVDResult(u, d, v);// new SVDResult(step1EigResult.Vectors,D, V);
-        }
 
 
         [Completion(false)]
@@ -128,58 +56,29 @@ namespace Deeplearning.Core.Math.LinearAlgebra
 
             Matrix matrix = (Matrix)source.Clone();
 
-            int k = (int)MathF.Min(matrix.Rows, matrix.Columns);
+            int k = (int)MathF.Min(matrix.Row, matrix.Column);
 
             Matrix Q = Matrix.UnitMatrix(k);
 
-            Matrix ak = null;
-
             for (int i = 0; i < step; i++)
             {
-                var qr = qrDecFunction.Invoke(matrix);
+                QRResult result = qrDecFunction(matrix);
 
-                matrix = qr.R * qr.Q;
+                matrix = result.R * result.Q;
 
-                Q = Q * qr.Q;
-
-                ak = qr.Q * qr.R;
+                Q = Q * result.Q;
             }
 
-            int size = ak.Rows;
-
-            for (int i = 0; i < size; i++)
+            for (int i = 0; i < matrix.Row; i++)
             {
-                for (int j = 0; j < size; j++)
+                for (int j = 0; j < matrix.Column; j++)
                 {
-                    if (i != j)
-                    {
-                        ak[i, j] = 0;
-                    }
-                    else
-                    {
-
-                        for (int m = i - 1; m >= 0; m--)
-                        {
-                            if (ak[m, m] < ak[i, i])
-                            {
-                                double temp = ak[i, i];
-                                ak[i, i] = ak[m, m];
-                                ak[m, m] = temp;
-
-                                for (int r = 0; r < Q.Rows; r++)
-                                {
-                                    temp = Q[r, i];
-                                    Q[r, i] = Q[r, m];
-                                    Q[r, m] = temp;
-                                }
-                            }
-                        }
-
-                    }
-
+                    if (i == j) continue;
+                    matrix[i, j] = 0;
                 }
             }
-            return new EigResult(ak,  Q);
+
+            return new EigResult(matrix, Q).Sort();
         }
 
     }

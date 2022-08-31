@@ -29,6 +29,8 @@
                 <Button Margin="3" Command="{Binding MatrixDetCommand}">行列式</Button>
                 <Button Margin="3" Command="{Binding MatrixAdjugateCommand}">伴随矩阵</Button>
                 <Button Margin="3" Command="{Binding MatrixInverseCommand}">逆矩阵</Button>
+                <Button Margin="3" Command="{Binding VarianceMatrixCommand}">方差矩阵</Button>
+                <Button Margin="3" Command="{Binding CovarianceMatrixCommand}">协方差矩阵</Button>
                 <Menu Background="Transparent">
                     <Menu.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -37,9 +39,9 @@
                     </Menu.ItemsPanel>
                     
                     <MenuItem  Margin="3" x:Name="menuItem" Header="正交化" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-                        <MenuItem Header="经典的GramSchmidt正交化"  Command="{Binding Decompostion.ClassicalGramSchmidtCommand}"></MenuItem>
-                        <MenuItem Header="改进GramSchmidt正交化"  Command="{Binding Decompostion.ModifiedGramSchmidtCommand}"></MenuItem>
-                        <MenuItem Header="Householder正交化"  Command="{Binding Decompostion.HouseholderCommand}"></MenuItem>
+                        <MenuItem Header="GGS" Margin="3" CommandParameter="0" Command="{Binding Decompostion.OrthogonalizationCommand}"></MenuItem>
+                        <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.OrthogonalizationCommand}"></MenuItem>
+                        <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.OrthogonalizationCommand}"></MenuItem>
                     </MenuItem>
 
                     <MenuItem  Margin="3" Header="特征值分解">
@@ -52,6 +54,12 @@
                         <MenuItem Header="GGS" Margin="3" CommandParameter="0" Command="{Binding Decompostion.SVDDecompositionCommand}"></MenuItem>
                         <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.SVDDecompositionCommand}"></MenuItem>
                         <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.SVDDecompositionCommand}"></MenuItem>
+                    </MenuItem>
+
+                    <MenuItem  Margin="3" Header="伪逆">
+                        <MenuItem Header="GGS" Margin="3" CommandParameter="0" Command="{Binding Decompostion.PseudoInverseCommand}"></MenuItem>
+                        <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.PseudoInverseCommand}"></MenuItem>
+                        <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.PseudoInverseCommand}"></MenuItem>
                     </MenuItem>
                 </Menu>
 

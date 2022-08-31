@@ -1,4 +1,5 @@
-﻿using Deeplearning.Core.Math.LinearAlgebra;
+﻿using Deeplearning.Core.Math;
+using Deeplearning.Core.Math.LinearAlgebra;
 using Deeplearning.Core.Math.Models;
 using Prism.Commands;
 using System;
@@ -11,36 +12,77 @@ namespace Deeplearning.Sample.ViewModels
     {
         public Matrix Source { get; set; }
 
-        public DelegateCommand ClassicalGramSchmidtCommand { get; set; }
-        public DelegateCommand ModifiedGramSchmidtCommand { get; set; }
-        public DelegateCommand HouseholderCommand { get; set; }
-
-        public DelegateCommand<object> SVDDecompositionCommand { get; set; }        
+        /// <summary>
+        /// 正交化命令
+        /// </summary>
+        public DelegateCommand<object> OrthogonalizationCommand { get; set; }
+        public DelegateCommand<object> SVDDecompositionCommand { get; set; }
         public DelegateCommand<object> EigenDecompositionCommand { get; set; }
+        public DelegateCommand<object> PseudoInverseCommand { get; set; }
 
         private event Action<string> DecomposeCompleted;
 
         public MatrixDecomposeOparetion()
         {
 
-            Vector[] vectors = new Vector[4];
-            vectors[0] = new Vector(1, 2, 3, 4);
-            vectors[1] = new Vector(2, 1, 2, 3);
-            vectors[2] = new Vector(3, 2, 1, 2);
-            vectors[3] = new Vector(4, 3, 2, 1);
+            OnCreate();
+        }
+
+        private void OnCreate()
+        {
+            Vector[] vectors = new Vector[3]
+            {
+                new  Vector(1, 1, 1,1),
+                new Vector(1, 2, 7,0),
+                new Vector(1, 3, 100,0),
+            };
+            vectors = new Vector[4] {
+                new Vector(1, 2, 3, 4),
+                new Vector(2, 1, 2, 3),
+                new Vector(3, 2, 1, 2),
+                new Vector(4, 3, 2, 1),
+            };
 
             Source = new Matrix(vectors);
 
-            ClassicalGramSchmidtCommand = new DelegateCommand(ExecuteClassicalGramSchmidtCommand);
-
-            ModifiedGramSchmidtCommand = new DelegateCommand(ExecuteModifiedGramSchmidtCommand);
-
-            HouseholderCommand = new DelegateCommand(ExecuteHouseholderCommand);
+            OrthogonalizationCommand = new DelegateCommand<object>(ExecuteOrthogonalizationCommand);
 
             EigenDecompositionCommand = new DelegateCommand<object>(ExecuteEigenDecompositionCommand);
 
             SVDDecompositionCommand = new DelegateCommand<object>(ExecuteSVDDecompositionCommand);
 
+            PseudoInverseCommand = new DelegateCommand<object>(ExecutePseudoInverseCommand);
+        }
+
+        public MatrixDecomposeOparetion(Action<string> onDecomposeComleted)
+        {
+            DecomposeCompleted = new Action<string>(onDecomposeComleted);
+            OnCreate();
+        }
+
+
+        private void ExecutePseudoInverseCommand(object decType)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+
+            int.TryParse(decType.ToString(), out int type);
+
+            var OrthogonalizationFunction = GetOrthogonalizationFunction(type);
+
+            Matrix pInvMatrix = Source.PInv(OrthogonalizationFunction);
+
+            Matrix ans2 = Source * pInvMatrix * Source;
+            stringBuilder.AppendLine(Source.ToString());
+            stringBuilder.AppendLine(ans2.ToString());
+
+            DecomposeCompleted.Invoke(stringBuilder.ToString());
+        }
+
+        private void ExecuteOrthogonalizationCommand(object decType)
+        {
+            int.TryParse(decType.ToString(), out int type);
+            var OrthogonalizationFunction = GetOrthogonalizationFunction(type);
+            DecomposeCompleted.Invoke(OrthogonalizationFunction(Source).ToString());
 
         }
 
@@ -49,57 +91,25 @@ namespace Deeplearning.Sample.ViewModels
 
             int.TryParse(decType.ToString(), out int type);
 
+            var OrthogonalizationFunction = GetOrthogonalizationFunction(type);
 
-            Vector[] vectors = new Vector[] {
-                new Vector(2,0,1),
-                new Vector(0,2,1),
-            };
+            Matrix matrix = Source;
 
-            Matrix matrix = new Matrix(vectors);// (Matrix)Source.Clone();// new Matrix(vectors);
-
-            var result = MatrixDecomposition.SVD(matrix, GetOrthogonalizationFunction(type));
+            SVDResult result = MatrixDecomposition.SVD(matrix, OrthogonalizationFunction);
 
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine("========Source=========");
-            sb.AppendLine(Source.ToString());
-            sb.AppendLine("========SVD=========");
             sb.AppendLine(result.ToString());
 
-            sb.AppendLine("========检测=========");
+            sb.AppendLine(matrix.ToString());
 
-            sb.AppendLine((result.U * result.D * result.V.T).ToString());
+            sb.AppendLine((result.U * result.S * result.V.T).ToString());
 
             DecomposeCompleted?.Invoke(sb.ToString());
         }
 
-        public MatrixDecomposeOparetion(Action<string> onDecomposeComleted)
+        private Func<Matrix, QRResult> GetOrthogonalizationFunction(int type)
         {
-            DecomposeCompleted = new Action<string>(onDecomposeComleted);
-
-
-            Vector[] vectors = new Vector[4];
-            vectors[0] = new Vector(1, 2, 3, 4);
-            vectors[1] = new Vector(2, 1, 2, 3);
-            vectors[2] = new Vector(3, 2, 1, 2);
-            vectors[3] = new Vector(4, 3, 2, 1);
-
-            Source = new Matrix(vectors);
-
-            ClassicalGramSchmidtCommand = new DelegateCommand(ExecuteClassicalGramSchmidtCommand);
-
-            ModifiedGramSchmidtCommand = new DelegateCommand(ExecuteModifiedGramSchmidtCommand);
-
-            HouseholderCommand = new DelegateCommand(ExecuteHouseholderCommand);
-
-            EigenDecompositionCommand = new DelegateCommand<object>(ExecuteEigenDecompositionCommand);
-
-            SVDDecompositionCommand = new DelegateCommand<object>(ExecuteSVDDecompositionCommand);
-
-        }
-
-
-        private Func<Matrix, QRResult> GetOrthogonalizationFunction(int type) {
             Func<Matrix, QRResult> function = Orthogonalization.Householder;
 
             switch (type)
@@ -116,7 +126,7 @@ namespace Deeplearning.Sample.ViewModels
                     break;
             }
 
-            return function;    
+            return function;
         }
 
         /// <summary>
@@ -126,14 +136,16 @@ namespace Deeplearning.Sample.ViewModels
         {
 
             int.TryParse(decType.ToString(), out int type);
-            
+            var OrthogonalizationFunction = GetOrthogonalizationFunction(type);
 
-            var result = MatrixDecomposition.Eig(Source, GetOrthogonalizationFunction(type));
+            Matrix matrix = Source;//new Matrix(vectors);
+
+            var result = MatrixDecomposition.Eig(matrix, OrthogonalizationFunction, 500);
 
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine("========Source=========");
-            sb.AppendLine(Source.ToString());     
+            sb.AppendLine(matrix.ToString());
             sb.AppendLine(result.ToString());
             sb.AppendLine("========Operation=========");
             sb.AppendLine((result.Vectors * result.Eigen * result.Vectors.T).ToString());
@@ -143,72 +155,6 @@ namespace Deeplearning.Sample.ViewModels
 
         }
 
-        /// <summary>
-        /// Householder QR 分解
-        /// </summary>
 
-        private void ExecuteHouseholderCommand()
-        {
-
-            Vector[] vectors = new Vector[3];
-            vectors[0] = new Vector(2,1,1);
-            vectors[1] = new Vector(1,1,0);
-            vectors[2] = new Vector(1,0,1);
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("============[Householder]=========");
-            var result = Orthogonalization.Householder(Source);
-            sb.AppendLine(result.Q?.ToString());
-            sb.AppendLine(result.R?.ToString());
-            sb.AppendLine("============[source]=========");
-            sb.AppendLine(Source.ToString());
-            sb.AppendLine("============[Check]=========");
-            sb.AppendLine((result.Q * result.R).ToString());
-
-            DecomposeCompleted?.Invoke(sb.ToString());
-
-        }
-
-        /// <summary>
-        /// ModifiedGramSchmidt 分解
-        /// </summary>
-        private void ExecuteModifiedGramSchmidtCommand()
-        {
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("============[MGS]==========");
-            var result = Orthogonalization.MGS(Source);
-            sb.AppendLine("========= Q ===========");
-            sb.AppendLine(result.Q.ToString());
-            sb.AppendLine("========= R ===========");
-            sb.AppendLine(result.R.ToString());
-            sb.AppendLine("============[source]=========");
-            sb.AppendLine(Source.ToString());
-            sb.AppendLine("============[Check]=========");
-            sb.AppendLine((result.Q * result.R).ToString());
-
-            DecomposeCompleted?.Invoke(sb.ToString());
-            //  Message = sb.ToString();
-        }
-        /// <summary>
-        /// Classical Gram-Schmidt 分解
-        /// </summary>
-        private void ExecuteClassicalGramSchmidtCommand()
-        {       
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("============[CGS]=========");
-            var result = Orthogonalization.CGS(Source);
-            sb.AppendLine(result.Q.ToString());
-            sb.AppendLine(result.R.ToString());
-            sb.AppendLine("============[source]=========");
-            sb.AppendLine(Source.ToString());
-            sb.AppendLine("============[Check]=========");
-            sb.AppendLine((result.Q * result.R).ToString());
-            DecomposeCompleted?.Invoke(sb.ToString());
-        }
     }
 }

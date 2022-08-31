@@ -5,31 +5,30 @@ namespace Deeplearning.Core.Math.Models
 {
     public class Vector:ICloneable {
 
-        public const double MIN_VALUE = 1E-15;
 
-        private double[] scalars;
+        private float[] scalars;
 
-        public double this[int index] { get => scalars[index]; set => scalars[index] = value; }
+        public float this[int index] { get => scalars[index]; set => scalars[index] = value; }
 
         public int Length { get; private set; }
 
-        public virtual double[] T => scalars;// Transpose(scalars);
+        public virtual float[] T => scalars;// Transpose(scalars);
 
         public Vector(int length)
         {
             Length = length;
-            scalars = new double[Length];
+            scalars = new float[Length];
         }
 
-        public Vector(params double[] scalar)
+        public Vector(params float[] scalar)
         {
             Length = scalar.Length;
             scalars = scalar;          
         }
 
-        public double Norm(double p)
+        public float Norm(float p)
         {
-            double sum = 0;
+            float sum = 0;
 
             switch (p)
             {
@@ -45,9 +44,8 @@ namespace Deeplearning.Core.Math.Models
                     {
                         for (int i = 0; i < Length; i++)
                         {
-
-                            sum += MathF.Pow((float)scalars[i], (float)p);
-                     
+                            float value = MathF.Pow((float)scalars[i], (float)p);
+                            sum += value;                     
                         }
                     }
                     break;
@@ -63,7 +61,8 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < Length; i++)
             {
-                double temp = MathF.Abs((float)scalars[i]);
+                double temp = Validator.ZeroValidation(MathF.Abs((float)scalars[i]));
+
                 if (temp > maxValue)
                 {
                     maxValue = temp;
@@ -74,10 +73,10 @@ namespace Deeplearning.Core.Math.Models
 
         public double NoSqrtNorm()
         {
-            float sum = 0;
+            double sum = 0;
             for (int i = 0; i < Length; i++)
             {
-                sum += MathF.Pow((float)scalars[i], 2);
+                sum += Validator.ZeroValidation(MathF.Pow((float)scalars[i], 2));
             }
             return sum;
         }
@@ -164,14 +163,14 @@ namespace Deeplearning.Core.Math.Models
 
         public static Vector Normalize(Vector vector) 
         {
-            double  m= vector.Norm(2);
+            float m = vector.Norm(2);
 
-            return m <= MIN_VALUE ? new Vector(vector.Length) : vector / m;
+            return  Validator.ZeroValidation(m)==0 ? new Vector(vector.Length) : vector / m;
      
         }
-        public static Vector Normalized(double[,] col_vector)
+        public static Vector Normalized(float[,] col_vector)
         {
-             double m = Norm(col_vector,2);
+            float m = Norm(col_vector,2);
 
              int rows =  col_vector.GetLength(0);
 
@@ -179,25 +178,25 @@ namespace Deeplearning.Core.Math.Models
 
             for (int i = 0; i < rows; i++)
             {
-                v1[i] = m <= MIN_VALUE ?0: col_vector[i, 0] / m;
+                v1[i] = m == 0 ? 0 : col_vector[i, 0] / m;
             }
 
             return v1;
         }
-        public static double[] Normalized(double[] row_vector) {
+        public static float[] Normalized(float[] row_vector) {
 
-            double m = Norm(row_vector, 2);
+            float m = Norm(row_vector, 2);
 
             for (int i = 0; i < row_vector.Length; i++)
-            {//row_vector[i] /= m;
-                row_vector[i] = m <= MIN_VALUE ? 0 : row_vector[i] / m;
+            {
+                row_vector[i] = row_vector[i] / m;
             }
             return row_vector;
         }
 
-        public static double[,] Transpose(double[] row_vector)
+        public static float[,] Transpose(float[] row_vector)
         {
-            double[,] result = new double[row_vector.Length, 1];
+            float[,] result = new float[row_vector.Length, 1];
 
             for (int i = 0; i < row_vector.Length; i++)
             {
@@ -205,9 +204,9 @@ namespace Deeplearning.Core.Math.Models
             }
             return result;
         }
-        public static double[] Transpose(double[,] col_vector) {
+        public static float[] Transpose(float[,] col_vector) {
 
-            double[] result = new double[col_vector.Length];
+            float[] result = new float[col_vector.Length];
 
             for (int i = 0; i < col_vector.Length; i++)
             {
@@ -217,7 +216,7 @@ namespace Deeplearning.Core.Math.Models
             return result;
         }
 
-        public static double Norm(double[,] scalars, float p)
+        public static float Norm(float[,] scalars, float p)
         {
             double sum = 0;
 
@@ -244,9 +243,9 @@ namespace Deeplearning.Core.Math.Models
 
             return MathF.Pow((float)sum, (float)(1 / p));
         }
-        public static double Norm(double[] scalars,float p)
+        public static float Norm(float[] scalars,float p)
         {
-            double sum = 0;
+            float sum = 0;
 
             switch (p)
             {
@@ -271,23 +270,21 @@ namespace Deeplearning.Core.Math.Models
 
             return MathF.Pow((float)sum, 1 / p);
         }
-        public static double MaxNorm(double[] scalars)
+        public static float MaxNorm(float[] scalars)
         {
             float maxValue = 0;
 
             for (int i = 0; i < scalars.Length; i++)
             {
                 float temp = MathF.Abs((float)scalars[i]);
-                if (temp > maxValue)
-                {
-                    maxValue = temp;
-                }
+
+                maxValue = MathF.Max(maxValue, temp);
             }
             return maxValue;
         }
-        public static double NoSqrtNorm(double[] scalars)
+        public static float NoSqrtNorm(float[] scalars)
         {
-            double sum = 0;
+            float sum = 0;
             for (int i = 0; i < scalars.Length; i++)
             {
                 sum += MathF.Pow((float)scalars[i], 2);
@@ -295,34 +292,8 @@ namespace Deeplearning.Core.Math.Models
             return sum;
         }
 
-        public static bool IsOrthogonal(Vector v1, Vector v2) 
-        {
-           return Validator.ZeroValidation(v1 * v2)==0;
-        }
 
-        public static bool IsOrthogormal(Vector v1, Vector v2) {
-
-            bool result = true;
-
-            if (IsOrthogonal(v1, v2))
-            { 
-                if (!double.MinValue.Equals(MathF.Abs((float)(1 - v1.Norm(2)))))
-                {
-                    result = false;                   
-                }
-                else 
-                {
-                    result = double.MinValue.Equals(MathF.Abs((float)(1 - v2.Norm(2))));                   
-                }
-            }
-            else
-            {
-                result = false;
-            }
-            return result;
-        }
-
-        public static Matrix operator *(Vector v1, double[] v2) 
+        public static Matrix operator *(Vector v1, float[] v2) 
         {
             if (v1.Length != v2.Length)
                 throw new ArgumentException("向量维度不一致");
@@ -335,57 +306,57 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int c = 0; c < size; c++)
                 {
-                    matrix[r, c] = Validator.ZeroValidation(v1[r] * v2[c]);
+                    matrix[r, c] = v1[r] * v2[c];
                 }
             }
             return matrix;
-
         }
-        public static double operator *(double[] v2,Vector v1)
+
+        public static float operator *(float[] v2,Vector v1)
         {
             if (v1.Length != v2.Length)
                 throw new ArgumentException("向量维度不一致");
 
-            double result = 0;
+            float result = 0;
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result += Validator.ZeroValidation(v1[i] * v2[i]); 
+                result += v1[i] * v2[i]; 
             }
-            return (double)result;
+            return Validator.ZeroValidation(result);
 
         }
-        public static double operator *(Vector v1, Vector v2) {
+        public static float operator *(Vector v1, Vector v2) {
             if (v1.Length != v2.Length)
                 throw new ArgumentException("向量维度不一致");
 
-            double result = 0;
+            float result = 0;
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result += Validator.ZeroValidation(v1[i] * v2[i]); 
+                result += v1[i] * v2[i]; 
             }
 
-            return result <= MIN_VALUE ? 0 : result;
+            return Validator.ZeroValidation( result);
         }
        
-        public static Vector operator *(Vector v1, double scalar)
+        public static Vector operator *(Vector v1, float scalar)
         {
             Vector result = new Vector(v1.Length);
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = Validator.ZeroValidation(v1[i] * scalar); 
+                result[i] = v1[i] * scalar; 
             }
             return result;
         }
-        public static Vector operator *(double scalar,Vector v1)
+        public static Vector operator *(float scalar,Vector v1)
         {
             Vector result = new Vector(v1.Length);
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = Validator.ZeroValidation(v1[i] * scalar);
+                result[i] = v1[i] * scalar;
             }
             return result;
         }
@@ -393,89 +364,90 @@ namespace Deeplearning.Core.Math.Models
 
         public static Vector operator -(Vector v1, Vector v2)
         {
-            int size = v1.Length <= v2.Length ? v1.Length : v2.Length;
 
-            Vector result = new Vector(v1.Length);
+            int size = (int)MathF.Min(v1.Length, v2.Length);
 
-            for (int i = 0; i < v1.Length; i++)
+            Vector result = new Vector(size);
+
+            for (int i = 0; i < size; i++)
             {
-                result[i] = Validator.ZeroValidation(v1[i] - v2[i]);
+                result[i] = v1[i] - v2[i];
             }
             return result;
         }
-        public static Vector operator -(Vector v1, double scalar)
+        public static Vector operator -(Vector v1, float scalar)
         {
             Vector result = new Vector(v1.Length);
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = Validator.ZeroValidation(v1[i] - scalar); 
+                result[i] = v1[i] - scalar;
             }
             return result;
         }
-        public static Vector operator -(double scalar, Vector v1)
+        public static Vector operator -(float scalar, Vector v1)
         {
             Vector result = new Vector(v1.Length);
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = Validator.ZeroValidation(scalar - v1[i]);
+                result[i] = scalar - v1[i];
             }
             return result;
         }
        
         public static Vector operator +(Vector v1, Vector v2)
         {
-            int size = v1.Length <= v2.Length ? v1.Length : v2.Length;
+            int size = (int)MathF.Min(v1.Length, v2.Length);
 
             Vector result = new Vector(size); 
 
             for (int i = 0; i < size; i++)
             {
-                result[i] = Validator.ZeroValidation(v1[i] + v2[i]); 
+                result[i] = v1[i] + v2[i]; 
             }
             return result;
         }
-        public static Vector operator +(Vector v1, double scalar)
+        public static Vector operator +(Vector v1, float scalar)
         {
             Vector result = new Vector(v1.Length);
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = Validator.ZeroValidation(v1[i] + scalar);
+                result[i] = v1[i] + scalar;
             }
             return result;
         }
-        public static Vector operator +(double scalar, Vector v1)
+        public static Vector operator +(float scalar, Vector v1)
         {
             Vector result = new Vector(v1.Length);
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = Validator.ZeroValidation(v1[i] + scalar);
+                result[i] = v1[i] + scalar;
             }
             return result;
         }
        
-        public static Vector operator /(Vector v1, double scalar)
+        public static Vector operator /(Vector v1, float scalar)
         {
             Vector result = new Vector(v1.Length);
 
             for (int i = 0; i < v1.Length; i++)
             {
-                scalar = Validator.ZeroValidation(scalar);
-
-                result[i] = scalar == 0 ? scalar : v1[i] / scalar;
+                result[i] = scalar == 0 ? 0 : v1[i] / scalar;
             }
             return result;
         }
-        public static Vector operator /(double scalar, Vector v1)
+        public static Vector operator /(float scalar, Vector v1)
         {
             Vector result = new Vector(v1.Length);
 
             for (int i = 0; i < v1.Length; i++)
             {
-                result[i] = scalar/v1[i]  ;
+                float value = v1[i];
+
+                result[i] = value == 0 ? 0 : scalar / value;
             }
             return result;
         }

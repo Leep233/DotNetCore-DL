@@ -8,7 +8,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
     public class SVDResult
     {
         public Matrix U { get; set; }
-        public Matrix D { get; set; }
+        public Matrix S { get; set; }
 
         public Matrix V { get; set; }
 
@@ -20,7 +20,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
         public SVDResult(Matrix u, Matrix d , Matrix v)
         {
             this.U = u;
-            this.D = d;
+            this.S = d;
             this.V = v;
         }
 
@@ -28,15 +28,14 @@ namespace Deeplearning.Core.Math.LinearAlgebra
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-
+            sb.AppendLine("============[ SVD ]===========");
             sb.AppendLine("============Matrix.U===========");
             sb.AppendLine(U?.ToString());
             sb.AppendLine("============Matrix.D===========");
-            sb.AppendLine(D?.ToString());
-
+            sb.AppendLine(S?.ToString());
             sb.AppendLine("============Matrix.V===========");
             sb.AppendLine(V?.ToString());
-
+   
             return sb.ToString();
         }
 

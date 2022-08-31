@@ -1,6 +1,7 @@
 ﻿using Deeplearning.Core.Math;
 using Deeplearning.Core.Math.LinearAlgebra;
 using Deeplearning.Core.Math.Models;
+using Deeplearning.Core.Math.Probability;
 using Deeplearning.Sample.Utils;
 using Deeplearning.Sample.ViewModels;
 using OxyPlot;
@@ -49,18 +50,24 @@ namespace Deeplearning.Sample
         public DelegateCommand MatrixAdjugateCommand { get; set; }
 
         public DelegateCommand MatrixInverseCommand { get; set; }
-        public MatrixDecomposeOparetion Decompostion { get; set; }
+        public MatrixDecomposeOparetion Decompostion { get; set; }  
+        public DelegateCommand VarianceMatrixCommand { get; set; }
+        public DelegateCommand CovarianceMatrixCommand { get; set; }
+
 
         public MainWindowViewModel()
         {
             LeftPlotView = new OxyPlotView(OxyColors.Orange,OxyColors.DeepPink);
 
-            RightPlotView = new OxyPlotView(OxyColors.GreenYellow, OxyColors.DodgerBlue);
-
+            RightPlotView = new OxyPlotView(OxyColors.GreenYellow, OxyColors.DodgerBlue);          
 
             Decompostion = new MatrixDecomposeOparetion(OnDecomposeCompletedCallback);
 
             ExecuteUpdateSourceMatrixCommannd();
+
+            VarianceMatrixCommand = new DelegateCommand(ExecuteVarianceMatrixCommand);
+
+            CovarianceMatrixCommand = new DelegateCommand(ExecuteCovarianceMatrixCommand);
 
             UpdateSourceMatrixCommannd = new DelegateCommand(ExecuteUpdateSourceMatrixCommannd);
 
@@ -79,6 +86,42 @@ namespace Deeplearning.Sample
             TransposeCommand = new DelegateCommand(ExecuteTransposeCommand);
 
             MatrixInverseCommand = new DelegateCommand(ExecuteMatrixInverseCommand);
+          
+        }
+
+     
+
+        private void ExecuteCovarianceMatrixCommand()
+        {
+            Vector[]vectors = new Vector[3]
+                { 
+                new Vector(1,3),
+                new Vector(2,1),
+                new Vector(3,1)
+                };
+
+            Matrix matrix = new Matrix(vectors);
+
+            matrix = matrix.CovarianceMatrix();
+
+            Message = matrix.ToString();
+        }
+
+        private void ExecuteVarianceMatrixCommand()
+        {
+            Vector[] vectors = new Vector[3]
+            {
+                new Vector(1,3),
+                new Vector(2,1),
+                new Vector(3,1)
+            };
+
+            Matrix matrix = new Matrix(vectors);
+
+
+            matrix = matrix.VarianceMatrix();
+
+            Message = matrix.ToString();
         }
 
         private void ExecuteMatrixInverseCommand()
@@ -138,9 +181,9 @@ namespace Deeplearning.Sample
   
         private void ExecuteMatrixAdjugateCommand()
         {
-       
 
-            double[,] scalars = new double[3, 3] {
+
+            float[,] scalars = new float[3, 3] {
             { 1,1,1},
             { 2,1,3},
             { 1,1,4}
@@ -160,10 +203,10 @@ namespace Deeplearning.Sample
 
         private void ExecuteMatrixDetCommand()
         {
-            double[,] scalars = new double[3, 3] {
+            float[,] scalars = new float[3, 3] {
             {6,1,1 },
             {4,-2,5 },
-             {2,8,7 }
+            {2,8,7 }
             };
 
             Matrix matrix = new Matrix(scalars);

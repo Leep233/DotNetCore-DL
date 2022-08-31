@@ -11,5 +11,10 @@ namespace Deeplearning.Core
         {
             return MathF.Abs((float)value) <= MIN_VALUE ? 0 : value;
         }
+
+        public static float ZeroValidation(float value)
+        {
+            return MathF.Abs(value) <= MIN_VALUE ? 0 : value;
+        }
     }
 }

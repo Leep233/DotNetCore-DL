@@ -2,6 +2,7 @@
 using Deeplearning.Core.Math.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Deeplearning.Core.Math.LinearAlgebra
@@ -13,61 +14,53 @@ namespace Deeplearning.Core.Math.LinearAlgebra
     public class Orthogonalization
     {
 
+        public static Matrix HouseholderMatrix(Vector vector) 
+        {
+            Vector w = Vector.Normalize(vector);
+
+            Matrix I = Matrix.UnitMatrix(w.Length);
+
+            return I - 2 * w * w.T;
+        }
+
+
         public static QRResult Householder(Matrix source)
         {
 
-            Matrix Q = null;
+            int size = (int)MathF.Min(source.Row, source.Column);
 
-            Matrix R = (Matrix)source.Clone();
+            Matrix Q = Matrix.UnitMatrix(size);
 
-            for (int i = 0; i < source.Columns - 1; i++)
+            Matrix R = (Matrix)source.Clone();           
+
+            for (int i = 0; i < source.Column - 1; i++)
             {
-                // Matrix matrix = source.Clip(i, i, source.Rows, source.Columns);
+                Matrix subMatrix = R.Clip(i, i, R.Row, R.Row);
 
-                Matrix matrix = source.Clip(i, i, source.Rows, source.Rows);
-
-                Vector x = matrix.GetVector(0);
-
-                double norm = x.Norm(2);
+                Vector x = subMatrix.GetVector(0);
 
                 Vector y = new Vector(x.Length);
 
-                y[0] = Validator.ZeroValidation(norm);
+                y[0] = - MathF.Sign((float)x[0]) * x.Norm(2);
 
-                Vector z = x - y;
+                Vector z = y - x;
 
-                double m = z.Norm(2);
+                Matrix temp = HouseholderMatrix(z);
 
-                Vector w = z / m;
+                Matrix h = Matrix.UnitMatrix(source.Row);               
 
-                Matrix I = Matrix.UnitMatrix(x.Length);
+                h = h.Replace(temp, i, i, temp.Row, temp.Column);
 
-                Matrix temp = I - 2 * w * w.T;
-
-                if (i==0)
-                {
-                    Q= temp;
-
-                    R = Q * R;
-                }
-                else
-                {
-
-                    Matrix h = Matrix.UnitMatrix(source.Rows);
-
-                   // Matrix h = Matrix.DiagonalMatrix(1,source.Rows,source.Columns);
-
-                    h = h.Replace(temp, i, i, temp.Rows, temp.Columns);
-
-                    Q = h * Q;
-
-                    R = h * R;
-                }
+                Matrix a_1 = h * R;
+                R = a_1;
+                Q = Q * h;
             }
-            Q = Q.T;
+           
 
-            return new  QRResult(Q, R);
+            return new QRResult(Q, R);
         }
+
+      
 
         [Completion(false)]
         public static QRResult Givens(Matrix source)
@@ -91,9 +84,9 @@ namespace Deeplearning.Core.Math.LinearAlgebra
 
             Matrix Q = (Matrix)source.Clone();
 
-            Matrix R = new Matrix(source.Columns, source.Columns);
+            Matrix R = new Matrix(source.Column, source.Column);
 
-            for (int i = 0; i < matrix.Columns; i++)
+            for (int i = 0; i < matrix.Column; i++)
             {
                 Vector a = matrix.GetVector(i);
                 Vector e = Vector.Normalize(a);
@@ -101,8 +94,8 @@ namespace Deeplearning.Core.Math.LinearAlgebra
                 for (int j = i - 1; j >= 0; j--)
                 {
                     e = Q.GetVector(j);
-                    double temp = a.T * e;
-                    R[j, i] = Validator.ZeroValidation(temp);
+                    float temp = a.T * e;
+                    R[j, i] = temp;
                     a = a - temp * e;
                     e = Vector.Normalize(a);
                 }
@@ -123,9 +116,9 @@ namespace Deeplearning.Core.Math.LinearAlgebra
         {
             Matrix matrix = (Matrix)source.Clone();
 
-            int vectorCount = source.Columns;
+            int vectorCount = source.Column;
 
-            Matrix Q = new Matrix(source.Rows, source.Columns);
+            Matrix Q = new Matrix(source.Row, source.Column);
 
             Matrix R = new Matrix(vectorCount, vectorCount);
 
@@ -143,9 +136,9 @@ namespace Deeplearning.Core.Math.LinearAlgebra
                 {
                     b = matrix.GetVector(j);
 
-                    double temp = b.T * e;
+                    float temp = b.T * e;
 
-                    R[i, j] = Validator.ZeroValidation(temp);
+                    R[i, j] = temp;
 
                     b = b - temp * e;
 
