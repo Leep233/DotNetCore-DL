@@ -42,12 +42,18 @@ namespace Deeplearning.Core.Math.LinearAlgebra
         }
 
 
-
+        /// <summary>
+        /// 主成分分析（Principal Component Analysis，PCA）
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
         [Completion(false)]
-        public static (Matrix egin, Matrix vectors) PCA(Matrix source)
+        public static PCAResult PCA(Matrix source,int r)
         {
+            Matrix matrix =   source.Normalized();
 
-            throw new NotImplementedException();
+            return new PCAResult();
         }
 
 

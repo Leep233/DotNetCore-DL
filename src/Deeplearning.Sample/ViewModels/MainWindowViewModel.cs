@@ -20,6 +20,10 @@ namespace Deeplearning.Sample
 {
     public class MainWindowViewModel : BindableBase
     {
+        public const int SampleMatrixRow = 2;
+        public const int SampleMatrixColumn = 3;
+
+
         List<Gradient3DInfo> v3Points = new List<Gradient3DInfo>();
 
         private Matrix SampleMatrix;
@@ -54,7 +58,10 @@ namespace Deeplearning.Sample
         public DelegateCommand VarianceMatrixCommand { get; set; }
         public DelegateCommand CovarianceMatrixCommand { get; set; }
 
+        public DelegateCommand MatrixNormalizedCommand { get; set; }
 
+        public DelegateCommand PCACommand { get; set; }
+        public DelegateCommand TestCommand { get; set; }
         public MainWindowViewModel()
         {
             LeftPlotView = new OxyPlotView(OxyColors.Orange,OxyColors.DeepPink);
@@ -86,18 +93,95 @@ namespace Deeplearning.Sample
             TransposeCommand = new DelegateCommand(ExecuteTransposeCommand);
 
             MatrixInverseCommand = new DelegateCommand(ExecuteMatrixInverseCommand);
-          
+
+            TestCommand = new DelegateCommand(ExecuteTestCommand);
+
+            MatrixNormalizedCommand = new DelegateCommand(ExecuteMatrixNormalizedCommand);
+
+            PCACommand = new DelegateCommand(ExecutePCACommand);
         }
 
-     
+        private async void ExecutePCACommand()
+        {
+
+           // Matrix matrix = (Matrix)SampleMatrix.Clone();
+
+            Vector[] vectors = new Vector[3] { 
+            
+                new Vector(-1,-1,0,2,1),
+                new Vector(2,0,0,-1,-1),
+                new Vector(2,0,1,1,0),
+
+            };
+            Matrix matrix = new Matrix(vectors).T;
+            Matrix m1 = new Matrix(vectors).T;
+            LeftPlotView.UpdatePointsToPlotView(matrix);
+
+            StringBuilder stringBuilder = new StringBuilder();
+
+            stringBuilder.AppendLine(matrix.ToString());
+            //1.中心化
+            Matrix origin = matrix.Centralized();
+            await Task.Delay(1000);
+            LeftPlotView.UpdatePointsToPlotView(origin);
+            //   //计算协方差矩阵
+            Matrix covMatrix = origin.CovarianceMatrix();
+
+            EigResult eigInfo =  MatrixDecomposition.Eig(covMatrix,Orthogonalization.Householder);
+            stringBuilder.AppendLine(eigInfo.ToString());
+            Matrix eigen = eigInfo.Eigen;
+            Matrix v = eigInfo.Vectors;
+
+
+            Vector[] foctors = new Vector[2];
+
+            for (int i = 0; i < 2; i++)
+            {
+                foctors[i]= v.GetVector(i);
+            }
+
+            Matrix vV = new Matrix(foctors);
+            stringBuilder.AppendLine(vV.ToString());
+          Matrix T =   m1 * vV;
+           stringBuilder.AppendLine(T.ToString());
+            Message = stringBuilder.ToString();
+        }
+
+        private void ExecuteMatrixNormalizedCommand()
+        {
+            Message = SampleMatrix.Normalized().ToString();
+        }
+
+        private void ExecuteTestCommand()
+        {
+
+            StringBuilder stringBuilder = new StringBuilder();  
+
+
+
+            Vector x = new Vector(10, 9, 8);
+            Vector p = new Vector(0.1f, 0.8f, 0.1f);
+            Vector p2 = new Vector(0.3f, 0.4f, 0.3f);
+            stringBuilder.AppendLine($"exp={ ProbabilityDistribution.Exp(x, p)}");
+            stringBuilder.AppendLine($"Var1={ ProbabilityDistribution.Var(x, p, ProbabilityDistributionMode.Discrete)}");
+            stringBuilder.AppendLine($"Var2={ ProbabilityDistribution.Var(x, p2, ProbabilityDistributionMode.Discrete)}");
+
+            x = new Vector(5, 20, 40, 80, 100);
+            Vector y = new Vector(10, 24, 33, 54, 10);
+
+
+            stringBuilder.AppendLine($"exp={ ProbabilityDistribution.Cov(x, y)}"); 
+
+            Message = stringBuilder.ToString();
+        }
 
         private void ExecuteCovarianceMatrixCommand()
         {
             Vector[]vectors = new Vector[3]
                 { 
-                new Vector(1,3),
-                new Vector(2,1),
-                new Vector(3,1)
+                new Vector(-1,1),
+                new Vector(0.5f,-0.5f),  
+                 new Vector(1,-1),
                 };
 
             Matrix matrix = new Matrix(vectors);
@@ -341,22 +425,22 @@ namespace Deeplearning.Sample
       
         private void ExecuteUpdateSourceMatrixCommannd()
         {
-            int row = 3;
-            int col = 3;
 
             Random random = new Random();
 
-            SampleMatrix = new Matrix(row, col);
+            SampleMatrix = new Matrix(SampleMatrixRow, SampleMatrixColumn);
 
-            for (int i = 0; i < row; i++)
+            for (int i = 0; i < SampleMatrixRow; i++)
             {
-                for (int j = 0; j < col; j++)
+                for (int j = 0; j < SampleMatrixColumn; j++)
                 {
-                    float x = (float)random.NextDouble() * random.Next(-10, 10);
+                    float x = (float)random.NextDouble() * random.Next(0, 20);
                     // double y = random.NextDouble() * random.Next(-10, 10);
                     SampleMatrix[i, j] = x;
                 }
-            }
+            } 
+
+            LeftPlotView.UpdatePointsToPlotView(SampleMatrix);
 
             SourceMatrix = SampleMatrix.ToString();
         }

@@ -21,7 +21,9 @@
         <Border MinWidth="140" Margin="0 5 5 5" Grid.Column="2" Grid.RowSpan="3" BorderBrush="gray" BorderThickness="1" >
             <StackPanel HorizontalAlignment="Stretch">
                 <TextBlock Padding="5" TextAlignment="Center" FontWeight="Bold" Background="CornflowerBlue">操作</TextBlock>
+                <Button Margin="3" Command="{Binding TestCommand}">测试</Button>
                 <Button Margin="3" Command="{Binding ComputeCommand}">对角矩阵与矩阵乘积</Button>
+                <Button Margin="3" Command="{Binding MatrixNormalizedCommand}">矩阵标准化</Button>
                 <Button Margin="3" Command="{Binding TransposeCommand}">矩阵转置</Button>
                 <Button Margin="3" Command="{Binding GradientCommand}">梯度下降</Button>
                 <Button Margin="3" Command="{Binding Gradient3DCommand}">3D梯度下降</Button>
@@ -31,6 +33,7 @@
                 <Button Margin="3" Command="{Binding MatrixInverseCommand}">逆矩阵</Button>
                 <Button Margin="3" Command="{Binding VarianceMatrixCommand}">方差矩阵</Button>
                 <Button Margin="3" Command="{Binding CovarianceMatrixCommand}">协方差矩阵</Button>
+                <Button Margin="3" Command="{Binding PCACommand}">主成分分析</Button>
                 <Menu Background="Transparent">
                     <Menu.ItemsPanel>
                         <ItemsPanelTemplate>

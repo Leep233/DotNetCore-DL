@@ -30,17 +30,12 @@ namespace Deeplearning.Sample.ViewModels
 
         private void OnCreate()
         {
-            Vector[] vectors = new Vector[3]
+            Vector[] vectors = new Vector[4]
             {
                 new  Vector(1, 1, 1,1),
                 new Vector(1, 2, 7,0),
                 new Vector(1, 3, 100,0),
-            };
-            vectors = new Vector[4] {
-                new Vector(1, 2, 3, 4),
-                new Vector(2, 1, 2, 3),
-                new Vector(3, 2, 1, 2),
-                new Vector(4, 3, 2, 1),
+                new Vector(1, 5, -9,0),
             };
 
             Source = new Matrix(vectors);

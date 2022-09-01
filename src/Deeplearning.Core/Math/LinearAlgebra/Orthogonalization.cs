@@ -16,7 +16,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
 
         public static Matrix HouseholderMatrix(Vector vector) 
         {
-            Vector w = Vector.Normalize(vector);
+            Vector w = Vector.Standardized(vector);
 
             Matrix I = Matrix.UnitMatrix(w.Length);
 
@@ -89,7 +89,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
             for (int i = 0; i < matrix.Column; i++)
             {
                 Vector a = matrix.GetVector(i);
-                Vector e = Vector.Normalize(a);
+                Vector e = Vector.Standardized(a);
 
                 for (int j = i - 1; j >= 0; j--)
                 {
@@ -97,7 +97,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
                     float temp = a.T * e;
                     R[j, i] = temp;
                     a = a - temp * e;
-                    e = Vector.Normalize(a);
+                    e = Vector.Standardized(a);
                 }
 
                 R[i, i] = a.Norm(2);
@@ -126,7 +126,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
             {
                 Vector b = matrix.GetVector(i);
 
-                Vector e = Vector.Normalize(b);
+                Vector e = Vector.Standardized(b);
 
                 Q = Q.Replace(e, i);
 

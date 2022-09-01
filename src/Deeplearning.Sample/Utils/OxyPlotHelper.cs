@@ -69,14 +69,20 @@ namespace Deeplearning.Sample.Utils
         public static IEnumerable<ScatterPoint> MatrixToPoints(Matrix matrix)
         {
 
-            for (int i = 0; i < 2; i++)
+            int vectorCount = matrix.Column;
+
+            for (int j = 0; j < vectorCount; j++)
             {
-                var x = matrix[i, 0];
+               
+                    float x = matrix[0, j];
 
-                var y = matrix[i, 1];
+                    float y = matrix[1, j];
 
-                yield return new ScatterPoint(x, y);
+                    yield return new ScatterPoint(x, y);
+                
             }
+
+           
             yield break;
         }
 

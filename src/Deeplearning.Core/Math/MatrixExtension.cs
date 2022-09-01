@@ -87,6 +87,39 @@ namespace Deeplearning.Core.Math
 
         }
 
+        /// <summary>
+        /// 中心化（零均值化）：是指变量减去它的均值。其实就是一个平移的过程，平移后所有数据的中心是（0，0）
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static Matrix Centralized(this Matrix source) 
+        {
+            int vectorCount = source.Column;
+            int vectorLength = source.Row;
+
+            float[] avgs = new float[vectorLength];
+
+            for (int r = 0; r < vectorLength; r++)
+            {
+                float sum = 0;
+                for (int c = 0; c < vectorCount; c++)
+                {
+                    sum += source[r, c];
+                }
+                avgs[r] = sum / vectorCount;
+            }
+
+            for (int r = 0; r < vectorLength; r++)
+            {
+                for (int c = 0; c < vectorCount; c++)
+                {
+                     source[r, c] -= avgs[r];
+                }          
+            }
+
+            return source;
+
+        }
 
         public static Matrix Replace(this Matrix source, Vector vector, int colIndex) 
         {
@@ -104,62 +137,25 @@ namespace Deeplearning.Core.Math
         /// <param name="source"></param>
         /// <param name="mode">0，将所有列向量归一，其他将行向量归一</param>
         /// <returns></returns>
-        public static Matrix Normalize(this Matrix source, int mode = 0) 
+        public static Matrix Normalized(this Matrix source) 
         {
+            Matrix matrix = new Matrix(source.Row,source.Column);
 
-            int rowCount = source.Row;
-
-            int colCount = source.Column;
-
-            switch (mode)
+            for (int c = 0; c < source.Column; c++)
             {
-                case 0:
-                    {
-                        for (int c = 0; c < colCount; c++)
-                        {
-                            float sum = 0;
+                float sum = 0;
 
-                            for (int r = 0; r < rowCount; r++)
-                            {
-                                sum += MathF.Pow((float)source[r, c], 2);
-                            }
+                for (int r = 0; r < source.Row; r++)
+                {
+                    sum += source[r, c];
+                }
 
-                            float norm = Validator.ZeroValidation(MathF.Sqrt((float)sum));
-
-                            for (int r = 0; r < rowCount; r++)
-                            {
-                                float value = source[r, c];
-
-                                source[r, c] = norm == 0 ? 0 : value / norm;
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    {
-                        for (int r = 0; r < rowCount; r++)
-                           
-                        {
-                            float sum = 0;
-
-                            for (int c = 0; c < colCount; c++)
-                            {
-                                sum += MathF.Pow((float)source[r, c], 2);
-                            }
-
-                            float norm = Validator.ZeroValidation(MathF.Sqrt((float)sum));
-
-                            for (int c = 0; c < colCount; c++)
-                            {
-                                float value = source[r, c];
-                                source[r, c] = norm == 0 ? 0 : value / norm;
-                            }
-                        }
-                    }
-                    break;
+                for (int r = 0; r < source.Row; r++)
+                {
+                    matrix[r, c] = sum == 0?0 : source[r, c] / sum;
+                }
             }
-
-            return source;
+            return matrix;
         }
 
         /// <summary>
@@ -213,30 +209,13 @@ namespace Deeplearning.Core.Math
         public static Matrix CovarianceMatrix(this Matrix source) {
             int vectorCount = source.Column;
             int elementCount = source.Row;
-
-            Matrix matrix = new Matrix(elementCount, vectorCount);
+  
    
 
             float m = elementCount - 1;
 
-            for (int i = 0; i < vectorCount; i++)
-            {
-                float sum = 0;
-
-                for (int j = 0; j < elementCount; j++)
-                {
-                    sum += source[j, i];
-                }
-                for (int j = 0; j < elementCount; j++)
-                {
-                    float value = source[j, i];
-
-                    value /= sum;
-
-                    matrix[j, i] = MathF.Pow((float)value, 2)/ m;
-                }
-            }
-            return matrix;
+        
+            return (source.T * source) / m; ;
         }
 
         public static Matrix PInv(this Matrix source,Func<Matrix,QRResult> orthogonaliztionFunction=null) {

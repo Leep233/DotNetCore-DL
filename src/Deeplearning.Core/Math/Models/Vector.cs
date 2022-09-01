@@ -161,38 +161,72 @@ namespace Deeplearning.Core.Math.Models
             return vector;
         }
 
-        public static Vector Normalize(Vector vector) 
+        public static Vector Normalized(Vector vector) { 
+
+            float minValue = vector[0];
+
+            float maxValue = minValue;
+
+            for (int i = 1; i < vector.Length; i++)
+            {
+                float temp = vector[i];
+
+                if (temp > minValue) {
+                    maxValue = temp;
+                }
+                if (temp < minValue)
+                {
+                    minValue = temp;
+                }
+            }
+
+            return (vector - minValue) / (maxValue - minValue);
+
+        }
+
+        public static Vector Standardized(Vector vector) 
         {
             float m = vector.Norm(2);
 
             return  Validator.ZeroValidation(m)==0 ? new Vector(vector.Length) : vector / m;
      
         }
-        public static Vector Normalized(float[,] col_vector)
+        public static float Min(float[] v)
         {
-            float m = Norm(col_vector,2);
-
-             int rows =  col_vector.GetLength(0);
-
-            Vector v1 = new Vector(rows);
-
-            for (int i = 0; i < rows; i++)
+            float value = v[0];
+            for (int i = 1; i < v.Length; i++)
             {
-                v1[i] = m == 0 ? 0 : col_vector[i, 0] / m;
+                if (value > v[i]) value = v[i];
             }
-
-            return v1;
+            return value;
         }
-        public static float[] Normalized(float[] row_vector) {
-
-            float m = Norm(row_vector, 2);
-
-            for (int i = 0; i < row_vector.Length; i++)
+        public static float Max(float[] v)
+        {
+            float value = v[0];
+            for (int i = 1; i < v.Length; i++)
             {
-                row_vector[i] = row_vector[i] / m;
+                if (value < v[i]) value = v[i];
             }
-            return row_vector;
+            return value;
         }
+        public static float Min(Vector v)
+        {
+            float value = v[0];
+            for (int i = 1; i < v.Length; i++)
+            {
+                if (value > v[i]) value = v[i];
+            }
+            return value;
+        }
+        public static float Max(Vector v)
+        {
+            float value = v[0];
+            for (int i = 1; i < v.Length; i++)
+            {
+                if (value < v[i]) value = v[i];
+            }
+            return value;
+        }  
 
         public static float[,] Transpose(float[] row_vector)
         {
