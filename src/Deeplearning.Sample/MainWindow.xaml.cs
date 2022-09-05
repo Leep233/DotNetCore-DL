@@ -1,4 +1,5 @@
-﻿using OxyPlot;
+﻿using Deeplearning.Sample.Windows;
+using OxyPlot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,9 @@ namespace Deeplearning.Sample
     /// </summary>
     public partial class MainWindow : Window
     {
-        MainWindowViewModel viewModel;
+       private readonly MainWindowViewModel viewModel;
+
+        public static string imgPath = "./Resources/cat01.jpeg";
 
         public MainWindow()
         {
@@ -30,6 +33,18 @@ namespace Deeplearning.Sample
             this.DataContext = viewModel;
         }
 
-      
+        private void OnClickSVDDimensionReduction(object sender, RoutedEventArgs e)
+        {
+            ImageComparisonWindow window = new ImageComparisonWindow(imgPath,1);
+            window.Owner = this;
+            window.Show();
+        }
+
+        private void OnClickPCDDimensionReduction(object sender, RoutedEventArgs e)
+        {
+            ImageComparisonWindow window = new ImageComparisonWindow(imgPath, 1);
+            window.Owner = this;
+            window.Show();
+        }
     }
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Deeplearning.Core.Math.LinearAlgebra
 {
@@ -31,7 +32,9 @@ namespace Deeplearning.Core.Math.LinearAlgebra
 
             Matrix Q = Matrix.UnitMatrix(size);
 
-            Matrix R = (Matrix)source.Clone();           
+            Matrix R = (Matrix)source.Clone();
+
+            int vectorCounts = source.Column - 1;
 
             for (int i = 0; i < source.Column - 1; i++)
             {
@@ -41,13 +44,13 @@ namespace Deeplearning.Core.Math.LinearAlgebra
 
                 Vector y = new Vector(x.Length);
 
-                y[0] = - MathF.Sign((float)x[0]) * x.Norm(2);
+                y[0] = -MathF.Sign((float)x[0]) * x.Norm(2);
 
                 Vector z = y - x;
 
                 Matrix temp = HouseholderMatrix(z);
 
-                Matrix h = Matrix.UnitMatrix(source.Row);               
+                Matrix h = Matrix.UnitMatrix(source.Row);
 
                 h = h.Replace(temp, i, i, temp.Row, temp.Column);
 
@@ -55,7 +58,10 @@ namespace Deeplearning.Core.Math.LinearAlgebra
                 R = a_1;
                 Q = Q * h;
             }
-           
+
+            /*
+
+       */
 
             return new QRResult(Q, R);
         }

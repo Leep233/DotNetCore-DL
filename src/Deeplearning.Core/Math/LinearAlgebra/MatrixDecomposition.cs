@@ -10,7 +10,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
     public class MatrixDecomposition
     {
 
-        public static SVDResult SVD(Matrix source, Func<Matrix, QRResult> decompose, int step = 100)
+        public static SVDResult SVD(Matrix source, Func<Matrix, QRResult> decompose, int step = 15)
         {   
             EigResult A_Eig = Eig(source.T * source, decompose, step);
     
@@ -20,7 +20,7 @@ namespace Deeplearning.Core.Math.LinearAlgebra
  
             Matrix U = B_Eig.Vectors;
 
-            float[] eigens = A_Eig.Eigen.DiagonalVector();
+            float[] eigens = A_Eig.Eigen.DiagonalElements();
 
             int r = U.Column;
 
@@ -47,17 +47,35 @@ namespace Deeplearning.Core.Math.LinearAlgebra
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        [Completion(false)]
-        public static PCAResult PCA(Matrix source,int r)
+        /// <exception cref="NotImplementedException"></exception>   
+        public static PCAResult PCA(Matrix source,int r, Func<Matrix, QRResult> qrDecFunction)
         {
-            Matrix matrix =   source.Normalized();
+    
+            //1.中心化
+            var centralInfo= source.Centralized();
+            Matrix centralizedMatrix = centralInfo.matrix;
+            //2.协方差矩阵
+            Matrix covMatrix = source.Cov();
+      
+            //3.对协方差矩阵求特征值特征向量
+            EigResult result = Eig(covMatrix, qrDecFunction);
+           
+            // Matrix eigens = eigResult.Eigen;
 
+            //4.选取有效的特征值
+
+            Matrix eigenVectors = result.Vectors;// result.V;//eigResult.Vectors;
+           
+            Matrix P = eigenVectors.Clip(0,0, r, eigenVectors.Column);
+
+       
+            Matrix y = P * source ;
+   
             return new PCAResult();
         }
 
 
-        public static EigResult Eig(Matrix source, Func<Matrix,QRResult> qrDecFunction, int step = 100)
+        public static EigResult Eig(Matrix source, Func<Matrix,QRResult> qrDecFunction, int step = 15)
         {
 
             Matrix matrix = (Matrix)source.Clone();

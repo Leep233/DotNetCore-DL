@@ -90,12 +90,11 @@ namespace Deeplearning.Core.Math.LinearAlgebra
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("============Eigen Value===========");
+            sb.AppendLine(" [特征分解] ");
+            sb.AppendLine("特征值（Eigen）");
             sb.AppendLine(Eigen?.ToString());
-            sb.AppendLine("============Eigen Vectors===========");
+            sb.AppendLine("特征向量（Vectors）");
             sb.AppendLine(Vectors?.ToString());
-
             return sb.ToString();
         }
     }

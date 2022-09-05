@@ -21,7 +21,8 @@ namespace Deeplearning.Sample
     public class MainWindowViewModel : BindableBase
     {
         public const int SampleMatrixRow = 2;
-        public const int SampleMatrixColumn = 3;
+
+        public const int SampleMatrixColumn = 30;
 
 
         List<Gradient3DInfo> v3Points = new List<Gradient3DInfo>();
@@ -52,15 +53,11 @@ namespace Deeplearning.Sample
         public DelegateCommand NormalDistriutionCommand { get; set; }
         public DelegateCommand MatrixDetCommand { get; set; }
         public DelegateCommand MatrixAdjugateCommand { get; set; }
-
         public DelegateCommand MatrixInverseCommand { get; set; }
         public MatrixDecomposeOparetion Decompostion { get; set; }  
         public DelegateCommand VarianceMatrixCommand { get; set; }
         public DelegateCommand CovarianceMatrixCommand { get; set; }
-
-        public DelegateCommand MatrixNormalizedCommand { get; set; }
-
-        public DelegateCommand PCACommand { get; set; }
+        public DelegateCommand MatrixNormalizedCommand { get; set; } 
         public DelegateCommand TestCommand { get; set; }
         public MainWindowViewModel()
         {
@@ -97,59 +94,16 @@ namespace Deeplearning.Sample
             TestCommand = new DelegateCommand(ExecuteTestCommand);
 
             MatrixNormalizedCommand = new DelegateCommand(ExecuteMatrixNormalizedCommand);
-
-            PCACommand = new DelegateCommand(ExecutePCACommand);
-        }
-
-        private async void ExecutePCACommand()
-        {
-
-           // Matrix matrix = (Matrix)SampleMatrix.Clone();
-
-            Vector[] vectors = new Vector[3] { 
-            
-                new Vector(-1,-1,0,2,1),
-                new Vector(2,0,0,-1,-1),
-                new Vector(2,0,1,1,0),
-
-            };
-            Matrix matrix = new Matrix(vectors).T;
-            Matrix m1 = new Matrix(vectors).T;
-            LeftPlotView.UpdatePointsToPlotView(matrix);
-
-            StringBuilder stringBuilder = new StringBuilder();
-
-            stringBuilder.AppendLine(matrix.ToString());
-            //1.中心化
-            Matrix origin = matrix.Centralized();
-            await Task.Delay(1000);
-            LeftPlotView.UpdatePointsToPlotView(origin);
-            //   //计算协方差矩阵
-            Matrix covMatrix = origin.CovarianceMatrix();
-
-            EigResult eigInfo =  MatrixDecomposition.Eig(covMatrix,Orthogonalization.Householder);
-            stringBuilder.AppendLine(eigInfo.ToString());
-            Matrix eigen = eigInfo.Eigen;
-            Matrix v = eigInfo.Vectors;
-
-
-            Vector[] foctors = new Vector[2];
-
-            for (int i = 0; i < 2; i++)
-            {
-                foctors[i]= v.GetVector(i);
-            }
-
-            Matrix vV = new Matrix(foctors);
-            stringBuilder.AppendLine(vV.ToString());
-          Matrix T =   m1 * vV;
-           stringBuilder.AppendLine(T.ToString());
-            Message = stringBuilder.ToString();
+  
         }
 
         private void ExecuteMatrixNormalizedCommand()
         {
-            Message = SampleMatrix.Normalized().ToString();
+           Matrix normalMatrix = SampleMatrix.Normalized();
+
+            LeftPlotView.UpdatePointsToPlotView(normalMatrix);
+
+           Message = normalMatrix.ToString();
         }
 
         private void ExecuteTestCommand()
@@ -170,7 +124,7 @@ namespace Deeplearning.Sample
             Vector y = new Vector(10, 24, 33, 54, 10);
 
 
-            stringBuilder.AppendLine($"exp={ ProbabilityDistribution.Cov(x, y)}"); 
+            stringBuilder.AppendLine($"Cov={ ProbabilityDistribution.Cov(x, y)}"); 
 
             Message = stringBuilder.ToString();
         }
@@ -186,7 +140,7 @@ namespace Deeplearning.Sample
 
             Matrix matrix = new Matrix(vectors);
 
-            matrix = matrix.CovarianceMatrix();
+            matrix = matrix.Cov();
 
             Message = matrix.ToString();
         }
@@ -203,7 +157,7 @@ namespace Deeplearning.Sample
             Matrix matrix = new Matrix(vectors);
 
 
-            matrix = matrix.VarianceMatrix();
+            matrix = matrix.Var();
 
             Message = matrix.ToString();
         }

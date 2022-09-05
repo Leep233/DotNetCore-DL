@@ -38,6 +38,30 @@ namespace Deeplearning.Core.Math.Probability
            return MathF.Sqrt(1/(double_a_2 * MathF.PI))*MathF.Exp(-(1/double_a_2) * MathF.Pow((x-u), 2));
         }
 
+
+        public static float NormalDistriution(Vector x, Vector u,Matrix β) { 
+            
+            float pi2 = MathF.PI*2;
+        
+            float n = x.Length;
+
+            float det = β.det;
+
+            float f = MathF.Sqrt((det)/ MathF.Pow(pi2, n));
+
+            Vector vector = x - u;
+
+            float m  = vector.T * β * vector;
+
+            return f * MathF.Exp(m / -2);
+
+        }
+
+        public static float Laplace(float x, float u, float y) {
+
+            return MathF.Exp(-(MathF.Abs(x-u)/ y)) / (2 * y);
+        }
+
         /// <summary>
         /// 标准正态分布
         /// </summary>

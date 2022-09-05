@@ -33,7 +33,7 @@
                 <Button Margin="3" Command="{Binding MatrixInverseCommand}">逆矩阵</Button>
                 <Button Margin="3" Command="{Binding VarianceMatrixCommand}">方差矩阵</Button>
                 <Button Margin="3" Command="{Binding CovarianceMatrixCommand}">协方差矩阵</Button>
-                <Button Margin="3" Command="{Binding PCACommand}">主成分分析</Button>
+             
                 <Menu Background="Transparent">
                     <Menu.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -64,6 +64,19 @@
                         <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.PseudoInverseCommand}"></MenuItem>
                         <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.PseudoInverseCommand}"></MenuItem>
                     </MenuItem>
+
+
+                    <MenuItem  Margin="3" Header="主成分分析">
+                        <MenuItem Header="GGS" Margin="3" CommandParameter="0" Command="{Binding Decompostion.PCADecompositionCommand}"></MenuItem>
+                        <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.PCADecompositionCommand}"></MenuItem>
+                        <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.PCADecompositionCommand}"></MenuItem>
+                    </MenuItem>
+
+
+                    <MenuItem  Margin="3" Header="数据降维">
+                        <MenuItem Header="SVD" Margin="3" CommandParameter="0" Click="OnClickSVDDimensionReduction"></MenuItem>
+                        <MenuItem Header="PCA" Margin="3" CommandParameter="1" Click="OnClickPCDDimensionReduction"></MenuItem>
+                    </MenuItem>
                 </Menu>
 
             </StackPanel>
@@ -72,7 +85,7 @@
         <GridSplitter Grid.Row="1" Grid.ColumnSpan="2" Height="1.5" HorizontalAlignment="Stretch" Background="Gray"></GridSplitter>
 
         <oxy:PlotView  Grid.Row="0" Grid.Column="0"  Model="{Binding LeftPlotView.PlotModel}"></oxy:PlotView>
-        <oxy:PlotView Grid.Row="0" Grid.Column="1" Model="{Binding RightPlotView.PlotModel}"></oxy:PlotView>
+        <oxy:PlotView  Grid.Row="0" Grid.Column="1" Model="{Binding RightPlotView.PlotModel}"></oxy:PlotView>
 
         <Border  Grid.Row="2" Grid.ColumnSpan="2">
             <Grid>
