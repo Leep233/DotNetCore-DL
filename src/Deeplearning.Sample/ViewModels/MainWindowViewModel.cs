@@ -24,9 +24,6 @@ namespace Deeplearning.Sample
 
         public const int SampleMatrixColumn = 30;
 
-
-        List<Gradient3DInfo> v3Points = new List<Gradient3DInfo>();
-
         private Matrix SampleMatrix;
 
         private string message;
@@ -295,24 +292,10 @@ namespace Deeplearning.Sample
         {
             Func<Vector, float> original = new Func<Vector, float>(vector => MathF.Pow((float)vector[0], 2) + MathF.Pow((float)vector[1], 2));
 
-            await Gradient.GradientDescentTaskAsync(500, original,OnGradient3DChangedCallback);
+            Vector minVector = Gradient.GradientDescent(original,Vector.Random(2,-5,5));
 
-            using (StreamWriter writer = File.CreateText("point.txt"))
-            {
-                for (int i = 0; i < v3Points.Count; i++)
-                {
-                    writer.WriteLine(v3Points[i].ToString());
-                }
-            }
-
-            Message = "done...";
-        }
-
-        private void OnGradient3DChangedCallback(Gradient3DInfo value)
-        {
-            Message = value.ToString();
-            v3Points.Add(value);
-        }
+            Message = $"done...({minVector})";
+        }  
 
         ~MainWindowViewModel() {
            
@@ -356,16 +339,15 @@ namespace Deeplearning.Sample
 
             Message = "computing...";
 
-            await Gradient.GradientDescentTaskAsync(8, 1000, orginal, OnGradientChangedCallback);
+            Vector vector = await Gradient.GradientDescent(orginal,5, OnGradientChangedCallback);
 
-            Message = "completed";
+            Message = $"completed(min:{vector})";
         }
       
         private void ExecuteComputeCommand()
         {
 
             Vector v = new Vector(2,2,2,2,2);
-
  
             Matrix diagMatrix = Matrix.DiagonalMatrix(v);
 

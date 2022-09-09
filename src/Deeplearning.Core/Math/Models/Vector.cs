@@ -37,11 +37,7 @@ namespace Deeplearning.Core.Math.Models
                     {
                         Parallel.For(0, Length, i => {
                             sum += scalars[i];
-                        });
-                        //for (int i = 0; i < Length; i++)
-                        //{
-                        //    sum += scalars[i];
-                        //}
+                        });    
                     }
                     break;
                 default:
@@ -51,12 +47,6 @@ namespace Deeplearning.Core.Math.Models
                             float value = MathF.Pow((float)scalars[i], (float)p);
                             sum += value;
                         });
-
-                        //for (int i = 0; i < Length; i++)
-                        //{
-                        //    float value = MathF.Pow((float)scalars[i], (float)p);
-                        //    sum += value;                     
-                        //}
                     }
                     break;
             }
@@ -97,10 +87,7 @@ namespace Deeplearning.Core.Math.Models
             Parallel.For(0, Length, i => {
                 sum += Validator.ZeroValidation(MathF.Pow((float)scalars[i], 2));
             });
-            //for (int i = 0; i < Length; i++)
-            //{
-            //    sum += Validator.ZeroValidation(MathF.Pow((float)scalars[i], 2));
-            //}
+   
             return sum;
         }
 

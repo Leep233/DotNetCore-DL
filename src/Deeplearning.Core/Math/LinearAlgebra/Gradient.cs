@@ -8,166 +8,96 @@ namespace Deeplearning.Core.Math.LinearAlgebra
 {
     public class Gradient
     {
-        public const float MinValue = 0.0001f;
-        public static Task GradientDescentTaskAsync(int step, Func<Vector, float> original, Action<Gradient3DInfo> gradientChanged)
+        public const float MinValue = 10E-15F;
+    
+        public static Vector GradientDescent(Func<Vector, float> LinearEquation,Vector initValue,int step = 100, float learningRate = 1E-2f)
         {
-            return Task.Run(() =>
+            Vector vector = (Vector)initValue.Clone();
+
+            int vectorLength = vector.Length;
+
+            Vector k_Vector = new Vector(vectorLength);
+
+            float z = 0;
+
+            float doubleLR = (2 * learningRate);
+
+            Vector vector1 = new Vector(vectorLength);
+
+            Vector vector2 = new Vector(vectorLength);
+
+            do
             {
-                Vector vector2 = Vector.Random(2, -10, 10);
-
-                float learningRate = 0.05f;
-
-                float minValue = 0.0001f;
-
-                Vector k_Vector = Vector.One(2);
-
-                float z = 0;
-
-                float doubleLR = (2 * learningRate);
-
-                for (int i = 0; i < step; i++)
+                for (int j = 0; j < vectorLength; j++)
                 {
-                    Vector tempV2;
+                    vector1[j] = vector[j] - learningRate;
+                    vector2[j] = vector[j] + learningRate;
 
-                    Vector tempV1;
-
-                    z = original(vector2);
-
-                    tempV2 = new Vector(vector2[0] + learningRate, vector2[1]);
-
-
-                    tempV1 = new Vector(vector2[0] - learningRate, vector2[1]);
-
-
-                    float k_x = (original(tempV2) - original(tempV1)) / doubleLR;
-
-                    tempV2 = new Vector(vector2[0], vector2[1] + learningRate);
-
-
-                    tempV1 = new Vector(vector2[0], vector2[1] - learningRate);
-
-
-                    float k_y = (original(tempV2) - original(tempV1)) / doubleLR;
-
-                    k_Vector[0] = k_x;
-
-                    k_Vector[1] = k_y;
-
-                    if (gradientChanged != null)
+                    for (int k = 0; k < vectorLength; k++)
                     {
-                        Gradient3DInfo gradient3DInfo = new Gradient3DInfo();
-
-                        gradient3DInfo.x = (float)vector2[0];
-
-                        gradient3DInfo.y = (float)vector2[1];
-
-                        gradient3DInfo.z = z;
-
-                        gradient3DInfo.grad = k_Vector;
-
-                        gradientChanged.Invoke(gradient3DInfo);
-
+                        if (j == k) continue;
+                        vector1[k] = vector[k];
+                        vector2[k] = vector[k];
                     }
-
-                    if (MathF.Abs((float)vector2[0]) <= minValue && MathF.Abs((float)vector2[1]) <= minValue)
-                    {
-                        break;
-                    }
-
-                    vector2 -= (k_Vector * learningRate);
+                    k_Vector[j] = (LinearEquation(vector2) - LinearEquation(vector1)) / doubleLR;
                 }
-            });
+
+                double norm = k_Vector.NoSqrtNorm();
+
+                if (norm <= 10E-8) break;
+
+                vector -= (k_Vector * learningRate);
+
+            } while (true);
+
+            return vector;
         }
 
-        public static async Task GradientDescentTaskAsync(float initX, int step, Func<double, double> original, Action<GradientInfo> gradientChanged, float learningRate = 0.01f)
+        public static  async Task<Vector> GradientDescent(Func<double, double> LinearEquation, double initValue =0, Action<GradientInfo> gradientChanged = null,float learningRate = 1E-2f)
         {
 
             //随机出 开始进行下降的初始点         
-            float x = initX;
+            double x = initValue;
 
-            float y;
+            double k = 0;
 
-            float k = 0;
+            double y = 0;
 
-            for (int i = 0; i < step; i++)
+            double learingRate2 = learningRate * 2;
+
+            do
             {
-                y = (float)original(x + learningRate);
+                y = LinearEquation(x + learningRate);
 
-                float y1 = (float)original(x - learningRate);
+                double y1 = LinearEquation(x - learningRate);
 
-                k = ((y - y1) / (learningRate * 2));
+                k = (y - y1) / learingRate2;
 
                 if (gradientChanged != null)
                 {
                     GradientInfo info;
 
-                    info.k = k;
+                    info.k = (float)k;
 
-                    info.x = x;
+                    info.x = (float)x;
 
-                    info.y = y;
+                    info.y = (float)y;
 
                     gradientChanged.Invoke(info);
                 }
 
-                //到达可以接受的阈值 跳出函数 说明已经找到了极值
-                if (MathF.Abs(k) <= MinValue)
-                {
-                    break;
-                }
+                await Task.Delay(30);
 
-                await Task.Delay(33);
+                //到达可以接受的阈值 跳出函数 说明已经找到了极值
+                if (MathF.Abs((float)k) <= 10E-8) break;                
 
                 x -= learningRate * k;
-            }
+
+            } while (true);
+        
+
+            return new Vector((float)x, (float)y);
         }
 
-        /// <summary>
-        /// 进行梯度下降
-        /// </summary>
-        /// <param name="desCount">计算下降的次数</param>
-        /// <param name="gradientChangedEvent">每次下降发生的变化事件</param>
-        /// <param name="descRate">下降率</param>
-        /// <param name="thresholdValue">阈值</param>
-        public static async Task GradientDescentTaskAsync(float initX, int step, Func<double, double> original, Func<double, double> derivative, Action<GradientInfo> gradientChanged, float learningRate = 0.01f)
-        {
-            //随机出 开始进行下降的初始点         
-            float x = initX;
-
-            float y = (float)original(x);
-
-            float k = 0;
-
-            for (int i = 0; i < step; i++)
-            {
-                y = (float)original(x);
-
-                //求导/斜率
-                k = (float)derivative(x);
-
-                if (gradientChanged != null)
-                {
-                    GradientInfo info;
-
-                    info.k = k;
-
-                    info.x = x;
-
-                    info.y = y;
-
-                    gradientChanged.Invoke(info);
-                }
-
-                //到达可以接受的阈值 跳出函数 说明已经找到了极值
-                if (MathF.Abs(k) <= MinValue)
-                {
-                    break;
-                }
-
-                await Task.Delay(33);
-
-                x -= (learningRate * k);
-            }
-        }
     }
 }
