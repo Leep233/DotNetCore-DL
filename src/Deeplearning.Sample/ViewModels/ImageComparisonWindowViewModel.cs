@@ -1,5 +1,5 @@
 ﻿using Deeplearning.Core.Math;
-using Deeplearning.Core.Math.LinearAlgebra;
+using Deeplearning.Core.Math.Linear;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;

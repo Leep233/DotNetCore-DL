@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Deeplearning.Core.Math.LinearAlgebra
+namespace Deeplearning.Core.Math.Linear
 {
 
     /// <summary>

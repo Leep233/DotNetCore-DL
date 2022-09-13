@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Deeplearning.Core.Math.LinearAlgebra
+namespace Deeplearning.Core.Math.Linear
 {
     public abstract class DecomposeResult
     {

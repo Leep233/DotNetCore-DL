@@ -1,5 +1,5 @@
 ﻿using Deeplearning.Core.Math;
-using Deeplearning.Core.Math.LinearAlgebra;
+using Deeplearning.Core.Math.Linear;
 using Deeplearning.Core.Math.Models;
 using Deeplearning.Core.Math.Probability;
 using Deeplearning.Sample.Utils;

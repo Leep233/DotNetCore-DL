@@ -15,6 +15,6 @@ namespace Deeplearning.Core.Math.Common
          return MathF.Log(1+ MathF.Exp(x));
         }
 
-
+        
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Deeplearning.Core.Math.LinearAlgebra
+namespace Deeplearning.Core.Math.Linear
 {
     public class Gradient
     {
@@ -99,5 +99,6 @@ namespace Deeplearning.Core.Math.LinearAlgebra
             return new Vector((float)x, (float)y);
         }
 
+       // public static void Jacobian() { }
     }
 }

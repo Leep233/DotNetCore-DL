@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Deeplearning.Core.Math.LinearAlgebra
+namespace Deeplearning.Core.Math.Linear
 {
     public class SVDResult
     {
