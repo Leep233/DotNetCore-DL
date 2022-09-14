@@ -33,7 +33,7 @@
                 <Button Margin="3" Command="{Binding MatrixInverseCommand}">逆矩阵</Button>
                 <Button Margin="3" Command="{Binding VarianceMatrixCommand}">方差矩阵</Button>
                 <Button Margin="3" Command="{Binding CovarianceMatrixCommand}">协方差矩阵</Button>
-             
+                <Button Margin="3" Command="{Binding XORNetCommand}">XOR-Net</Button>
                 <Menu Background="Transparent">
                     <Menu.ItemsPanel>
                         <ItemsPanelTemplate>

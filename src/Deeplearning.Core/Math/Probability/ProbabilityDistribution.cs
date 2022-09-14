@@ -790,5 +790,16 @@ namespace Deeplearning.Core.Math.Probability
             }
             return covValue;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static float Bias(Func<float[], float[]> estimator, float[] inputs, float realData) 
+        {
+          return  (float)(Exp(inputs,estimator(inputs)) - realData);
+        }
+
+      
     }
 }

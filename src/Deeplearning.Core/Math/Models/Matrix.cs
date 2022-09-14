@@ -52,7 +52,7 @@ namespace Deeplearning.Core.Math.Models
             scalars = matrix;
         }
 
-        public Matrix(Vector[] vectors)
+        public Matrix(params Vector[] vectors)
         {
             int col = vectors.Length;
 
@@ -909,7 +909,7 @@ namespace Deeplearning.Core.Math.Models
             //}
             return result;
         }
-        public static Vector operator *(float[] scalars, Matrix m1)
+        public static float[] operator *(float[] scalars, Matrix m1)
         {
 
             if (scalars.Length != m1.Row)
@@ -919,7 +919,7 @@ namespace Deeplearning.Core.Math.Models
 
             int cols = m1.Column;
 
-            Vector result = new Vector(cols);
+            float[] result = new float[cols];
 
             Parallel.For(0, rows, i => {
                 float temp = 0;
@@ -930,19 +930,10 @@ namespace Deeplearning.Core.Math.Models
                 result[i] = temp;
             });
 
-            //for (int i = 0; i < cols; i++)
-            //{
-            //    float temp = 0;
-            //    for (int j = 0; j < rows; j++)
-            //    {
-
-            //        temp += m1[j, i] * scalars[j];
-            //    }
-            //    result[i] = temp;
-            //}
-
             return result;
         }
+
+    
         public static Vector operator *(Matrix m1, Vector vector)
         {
 
@@ -1035,7 +1026,8 @@ namespace Deeplearning.Core.Math.Models
             Parallel.For(0, rows, i => {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] / scalar;
+       
+                    result[i, j] = scalar == 0?0: m1[i, j] / scalar;
                 }
             });
 

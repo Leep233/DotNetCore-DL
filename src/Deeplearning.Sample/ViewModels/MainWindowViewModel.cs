@@ -1,4 +1,5 @@
-﻿using Deeplearning.Core.Math;
+﻿using Deeplearning.Core.Example;
+using Deeplearning.Core.Math;
 using Deeplearning.Core.Math.Linear;
 using Deeplearning.Core.Math.Models;
 using Deeplearning.Core.Math.Probability;
@@ -56,6 +57,8 @@ namespace Deeplearning.Sample
         public DelegateCommand CovarianceMatrixCommand { get; set; }
         public DelegateCommand MatrixNormalizedCommand { get; set; } 
         public DelegateCommand TestCommand { get; set; }
+        public DelegateCommand XORNetCommand { get; set; }
+        
         public MainWindowViewModel()
         {
             LeftPlotView = new OxyPlotView(OxyColors.Orange,OxyColors.DeepPink);
@@ -65,6 +68,8 @@ namespace Deeplearning.Sample
             Decompostion = new MatrixDecomposeOparetion(OnDecomposeCompletedCallback);
 
             ExecuteUpdateSourceMatrixCommannd();
+
+            XORNetCommand = new DelegateCommand(ExecuteXORNetCommand);
 
             VarianceMatrixCommand = new DelegateCommand(ExecuteVarianceMatrixCommand);
 
@@ -92,6 +97,40 @@ namespace Deeplearning.Sample
 
             MatrixNormalizedCommand = new DelegateCommand(ExecuteMatrixNormalizedCommand);
   
+        }
+
+        private void ExecuteXORNetCommand()
+        {
+            XORNet net = new XORNet();
+
+            //Matrix w = new Matrix(2,2);
+
+            float lr = 0.001f;
+            float step = 100;
+            float e = 10E-8f;
+
+            Matrix matrix = (net.transData.T * net.transData).inverse;
+
+            Matrix m = matrix * net.transData.T ;
+
+            Vector w = m * net.realModel;
+
+            //net.ModelFunc.Invoke();
+
+            Message = w.ToString();
+
+
+            //for (int i = 0; i < step; i++)
+            //{
+            //Vector y = net.ModelFunc.Invoke(net.transData, w);
+            //float loss = net.LossFunc.Invoke(y);
+            //if (MathF.Abs(loss) == e)
+            //{
+            //break;
+            //}
+            //}
+
+
         }
 
         private void ExecuteMatrixNormalizedCommand()
@@ -292,7 +331,7 @@ namespace Deeplearning.Sample
         {
             Func<Vector, float> original = new Func<Vector, float>(vector => MathF.Pow((float)vector[0], 2) + MathF.Pow((float)vector[1], 2));
 
-            Vector minVector = Gradient.GradientDescent(original,Vector.Random(2,-5,5));
+            Vector minVector = Gradient.GradientDescent(original,Vector.Random(2,-5,5), GradientParams.Default);
 
             Message = $"done...({minVector})";
         }  
@@ -307,7 +346,7 @@ namespace Deeplearning.Sample
         /// <param name="info"></param>
         /// <param name="range"></param>
         /// <returns></returns>
-        public (DataPoint p1, DataPoint p2) GetTangentLinePoints(GradientInfo info, float range)
+        public (DataPoint p1, DataPoint p2) GetTangentLinePoints(GradientEventArgs info, float range)
         {
 
             float x1 = info.x + range;
@@ -339,7 +378,7 @@ namespace Deeplearning.Sample
 
             Message = "computing...";
 
-            Vector vector = await Gradient.GradientDescent(orginal,5, OnGradientChangedCallback);
+            Vector vector = await Gradient.GradientDescent(orginal,5, GradientParams.Default, OnGradientChangedCallback);
 
             Message = $"completed(min:{vector})";
         }
@@ -381,7 +420,7 @@ namespace Deeplearning.Sample
             SourceMatrix = SampleMatrix.ToString();
         }
        
-        private void OnGradientChangedCallback(GradientInfo eventArgs)
+        private void OnGradientChangedCallback(GradientEventArgs eventArgs)
         {
 
            var points = GetTangentLinePoints(eventArgs, 3);
