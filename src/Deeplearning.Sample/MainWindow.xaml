@@ -71,14 +71,17 @@
                         <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.PCADecompositionCommand}"></MenuItem>
                         <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.PCADecompositionCommand}"></MenuItem>
                     </MenuItem>
+                    <MenuItem  Margin="3" Header="线性回归" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                        <MenuItem Header="训练" Margin="3"  Command="{Binding LinearRegressionTrainCommand}"></MenuItem>
+                        <MenuItem Header="预测" Margin="3" Command="{Binding LinearRegressionPredictCommand}"></MenuItem>
+                    </MenuItem>
 
-
-                    <MenuItem  Margin="3" Header="数据降维">
+                    <!--<MenuItem  Margin="3" Header="数据降维">
                         <MenuItem Header="SVD" Margin="3" CommandParameter="0" Click="OnClickSVDDimensionReduction"></MenuItem>
                         <MenuItem Header="PCA" Margin="3" CommandParameter="1" Click="OnClickPCDDimensionReduction"></MenuItem>
-                    </MenuItem>
+                    </MenuItem>-->
                 </Menu>
-
+               
             </StackPanel>
         </Border>
 

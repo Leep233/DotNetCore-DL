@@ -15,10 +15,18 @@
 
   <ItemGroup>
     <None Remove="Resources\cat01.jpeg" />
+    <None Remove="Resources\TestData\taxi-fare-test.csv" />
+    <None Remove="Resources\TestData\taxi-fare-train.csv" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Resources\cat01.jpeg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\TestData\taxi-fare-test.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\TestData\taxi-fare-train.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

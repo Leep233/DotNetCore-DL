@@ -20,7 +20,7 @@ namespace Deeplearning.Core.Math.Linear
  
             Matrix U = B_Eig.Vectors;
 
-            float[] eigens = A_Eig.Eigen.DiagonalElements();
+            double[] eigens = A_Eig.Eigen.DiagonalElements();
 
             int r = U.Column;
 
@@ -34,7 +34,7 @@ namespace Deeplearning.Core.Math.Linear
 
             for (int i = 0; i < l; i++)
             {
-                float value = Validator.ZeroValidation(eigens[i]);
+                double value = Validator.ZeroValidation(eigens[i]);
                  
                 D[i, i] = value==0?0: MathF.Sqrt((float)value);
             }

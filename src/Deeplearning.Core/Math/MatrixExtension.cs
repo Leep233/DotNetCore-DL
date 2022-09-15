@@ -112,7 +112,7 @@ namespace Deeplearning.Core.Math
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static (Matrix matrix,float[]avgs) Centralized(this Matrix source) 
+        public static (Matrix matrix, double[]avgs) Centralized(this Matrix source) 
         {
             int vectorCount = source.Column;
 
@@ -120,11 +120,11 @@ namespace Deeplearning.Core.Math
 
             Matrix matrix = new Matrix(vectorLength, vectorCount);
 
-            float[] avgs = Average(source,AxisDirection.Horizontal);      
+            double[] avgs = Average(source,AxisDirection.Horizontal);      
 
             for (int r = 0; r < vectorLength; r++)
             {
-                float sum = 0;
+                double sum = 0;
                 for (int c = 0; c < vectorCount; c++)
                 {
                     sum += source[r, c];
@@ -153,59 +153,88 @@ namespace Deeplearning.Core.Math
         }
 
 
-        public static float[] StandardDeviation(this Matrix source, AxisDirection orientation = AxisDirection.Horizontal) {
+        public static double[] StandardDeviation(this Matrix source, AxisDirection orientation = AxisDirection.Horizontal) {
           
             int row = source.Row;
            
             int col = source.Column;
 
-            float[] avgs = Average(source, orientation);
+            double[] avgs = Average(source, orientation);
 
-            float[] sdevs = null;
+            double[] sdevs = null;
 
             switch (orientation)
             {
                 case AxisDirection.Vertical:
                     {
-                        sdevs = new float[col];
+                        sdevs = new double[col];
 
                         int n = row - 1;
-                        for (int c = 0; c < col; c++)
 
-                        {
-                            float sum = 0;
+                        Parallel.For(0, col, c => {
 
-                            float avg = avgs[c];
+                            double sum = 0;
+
+                            double avg = avgs[c];
 
                             for (int r = 0; r < row; r++)
                             {
-                                float value = source[r, c];
-                                sum += MathF.Pow(value - avg, 2);
+                                double value = source[r, c];
+                                sum += MathF.Pow((float)(value - avg), 2);
                             }
-                            sdevs[c] =MathF.Sqrt( sum / n);
-                        }
+
+                            sdevs[c] = MathF.Sqrt((float)(sum / n));
+                        });
+
+                        //for (int c = 0; c < col; c++)
+                        //{
+                        //    double sum = 0;
+
+                        //    double avg = avgs[c];
+
+                        //    for (int r = 0; r < row; r++)
+                        //    {
+                        //        double value = source[r, c];
+                        //        sum += MathF.Pow((float)(value - avg), 2);
+                        //    }
+
+                        //    sdevs[c] =MathF.Sqrt((float)(sum / n));
+                        //}
 
                     }
                     break;
                 case AxisDirection.Horizontal:
                     {
-                        sdevs = new float[row];
+                        sdevs = new double[row];
 
                         int n = row - 1;
 
-                        for (int r = 0; r < row; r++)
-                        {
-                            float sum = 0;
+                        Parallel.For(0, row, r => {
+                            double sum = 0;
 
-                            float avg = avgs[r];
+                            double avg = avgs[r];
 
                             for (int c = 0; c < col; c++)
                             {
-                                float value = source[r, c];
-                                sum += MathF.Pow(value - avg, 2);
+                                double value = source[r, c];
+                                sum += MathF.Pow((float)(value - avg), 2);
                             }
-                            sdevs[r] = MathF.Sqrt(sum / n);
-                        }
+                            sdevs[r] = MathF.Sqrt((float)sum / n);
+                        });
+
+                        //for (int r = 0; r < row; r++)
+                        //{
+                        //    double sum = 0;
+
+                        //    double avg = avgs[r];
+
+                        //    for (int c = 0; c < col; c++)
+                        //    {
+                        //        double value = source[r, c];
+                        //        sum += MathF.Pow((float)(value - avg), 2);
+                        //    }
+                        //    sdevs[r] = MathF.Sqrt((float)sum / n);
+                        //}
 
                     }
                     break;
@@ -219,21 +248,21 @@ namespace Deeplearning.Core.Math
         /// <param name="source"></param>
         /// <param name="orientation"></param>
         /// <returns></returns>
-        public static float[] Var(this Matrix source, AxisDirection orientation = AxisDirection.Horizontal) 
+        public static double[] Var(this Matrix source, AxisDirection orientation = AxisDirection.Horizontal) 
         {
             int row = source.Row;
 
             int col=  source.Column;
 
-            float[] avgs = Average(source,orientation);
+            double[] avgs = Average(source,orientation);
 
-            float[] vars = null;           
+            double[] vars = null;           
 
             switch (orientation)
             {
                 case AxisDirection.Vertical:
                     {
-                        vars = new float[col];
+                        vars = new double[col];
 
                         int n = row - 1;
 
@@ -242,12 +271,12 @@ namespace Deeplearning.Core.Math
                         {
                             float sum = 0;
 
-                            float avg = avgs[c];
+                            double avg = avgs[c];
 
                             for (int r = 0; r < row; r++)
                             {
-                                float value = source[r, c];
-                                sum += MathF.Pow(value - avg, 2);
+                                double value = source[r, c];
+                                sum += MathF.Pow((float)(value - avg), 2);
                             }
 
                             vars[c] = sum / n;
@@ -257,20 +286,20 @@ namespace Deeplearning.Core.Math
                     break;
                 case AxisDirection.Horizontal:
                     {
-                        vars = new float[row];
+                        vars = new double[row];
 
                         int n = row - 1;
 
                         for (int r = 0; r < row; r++)                           
                         {
-                            float sum = 0;
+                            double sum = 0;
 
-                            float avg = avgs[r];
+                            double avg = avgs[r];
 
                             for (int c = 0; c < col; c++)
                             {
-                                float value = source[r, c];
-                                sum += MathF.Pow(value - avg, 2);
+                                double value = source[r, c];
+                                sum += MathF.Pow((float)(value - avg), 2);
                             }
                             vars[r] = sum / n;
                         }
@@ -285,23 +314,23 @@ namespace Deeplearning.Core.Math
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static float[] Average(this Matrix source, AxisDirection  orientation = AxisDirection.Horizontal) {
+        public static double[] Average(this Matrix source, AxisDirection  orientation = AxisDirection.Horizontal) {
 
             int vectorCount = source.Column;
 
-            int vectorLength = source.Row;   
+            int vectorLength = source.Row;
 
-            float[] avgs = null;
+            double[] avgs = null;
 
             switch (orientation)
             {
                 case AxisDirection.Vertical:
                     {                     
-                            avgs = new float[vectorCount];
+                            avgs = new double[vectorCount];
                             //求每一列均值
                             for (int c = 0; c < vectorCount; c++)                               
                             {
-                                float sum = 0;
+                            double sum = 0;
                                 for (int r = 0; r < vectorLength; r++)
                                 {
                                     sum += source[r, c];
@@ -312,11 +341,11 @@ namespace Deeplearning.Core.Math
                     break;
                 case AxisDirection.Horizontal:
                     {
-                       avgs = new float[vectorLength];
+                       avgs = new double[vectorLength];
                         //求每一行均值
                         for (int r = 0; r < vectorLength; r++)
                         {
-                            float sum = 0;
+                            double sum = 0;
                             for (int c = 0; c < vectorCount; c++)
                             {
                                 sum += source[r, c];
@@ -344,12 +373,12 @@ namespace Deeplearning.Core.Math
 
             Matrix matrix = new Matrix(vectorLength, vectorCount);
 
-            float[] avgs = new float[vectorLength];
+            double[] avgs = new double[vectorLength];
 
             //求每一行均值
             for (int r = 0; r < vectorLength; r++)
             {
-                float sum = 0;     
+                double sum = 0;     
                 for (int c = 0; c < vectorCount; c++)
                 {
                     sum += source[r, c];
@@ -358,18 +387,18 @@ namespace Deeplearning.Core.Math
             }
             //求每一行标准差
 
-            float[] sdevs = new float[vectorLength];
+            double[] sdevs = new double[vectorLength];
 
             for (int r = 0; r < vectorLength; r++)
             {
-                float sum = 0;
-                float avg = avgs[r];
+                double sum = 0;
+                double avg = avgs[r];
                 for (int c = 0; c < vectorCount; c++)
                 {
-                    float value = source[r, c];
-                    sum += MathF.Pow(value - avg, 2);
+                    double value = source[r, c];
+                    sum += MathF.Pow((float)(value - avg), 2);
                 }
-                sdevs[r] = MathF.Sqrt( sum / vectorCount);
+                sdevs[r] = MathF.Sqrt((float)(sum / vectorCount));
             }
 
             // （x-均值）/标准差
@@ -389,12 +418,12 @@ namespace Deeplearning.Core.Math
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static float[] DiagonalElements(this Matrix source) 
+        public static double[] DiagonalElements(this Matrix source) 
         {
     
             int r=(int) MathF.Min(source.Row,source.Column);
 
-            float[] vector = new float[r];
+            double[] vector = new double[r];
 
             for (int i = 0; i < r; i++)
             {
@@ -451,7 +480,7 @@ namespace Deeplearning.Core.Math
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    float temp = 0;
+                    double temp = 0;
 
                     for (int k = 0; k < same; k++)
                     {
@@ -482,7 +511,7 @@ namespace Deeplearning.Core.Math
 
             for (int i = 0; i < r; i++)
             {
-                float value = D[i, i];
+                double value = D[i, i];
                 if (value == 0) continue;
                 D_pInv[i, i] = 1 / value;
             }

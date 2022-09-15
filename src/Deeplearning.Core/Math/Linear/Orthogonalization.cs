@@ -100,7 +100,7 @@ namespace Deeplearning.Core.Math.Linear
                 for (int j = i - 1; j >= 0; j--)
                 {
                     e = Q.GetVector(j);
-                    float temp = a.T * e;
+                    double temp = a.T * e;
                     R[j, i] = temp;
                     a = a - temp * e;
                     e = Vector.Standardized(a);
@@ -142,7 +142,7 @@ namespace Deeplearning.Core.Math.Linear
                 {
                     b = matrix.GetVector(j);
 
-                    float temp = b.T * e;
+                    double temp = b.T * e;
 
                     R[i, j] = temp;
 

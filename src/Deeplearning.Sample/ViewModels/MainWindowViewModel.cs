@@ -58,7 +58,11 @@ namespace Deeplearning.Sample
         public DelegateCommand MatrixNormalizedCommand { get; set; } 
         public DelegateCommand TestCommand { get; set; }
         public DelegateCommand XORNetCommand { get; set; }
-        
+
+        public DelegateCommand LinearRegressionTrainCommand { get; set; }
+        public DelegateCommand LinearRegressionPredictCommand { get; set; }
+
+
         public MainWindowViewModel()
         {
             LeftPlotView = new OxyPlotView(OxyColors.Orange,OxyColors.DeepPink);
@@ -96,8 +100,69 @@ namespace Deeplearning.Sample
             TestCommand = new DelegateCommand(ExecuteTestCommand);
 
             MatrixNormalizedCommand = new DelegateCommand(ExecuteMatrixNormalizedCommand);
-  
+
+            LinearRegressionTrainCommand = new DelegateCommand(ExecuteLinearRegressionTrainCommand);
+            LinearRegressionPredictCommand = new DelegateCommand(ExecuteLinearRegressionPredictCommand);
         }
+        private LinearRegression linearRegression = new LinearRegression();
+        private void ExecuteLinearRegressionPredictCommand()
+        {
+            //train
+            // string path = "./resources/testdata/taxi-fare-train.csv";
+            string path = "./resources/testdata/taxi-fare-test.csv";
+
+            var trainData = ReadLinearRegressionData(path,10);
+            Vector testData = linearRegression.Predice(trainData.data);
+            double loss = linearRegression.MES(testData, trainData.real); 
+            Message = $"误差：{loss}" + "\n" +
+                $"预测值：{ testData}" + "\n" +
+                 $"实际值：{  trainData.real}";
+      
+
+        }
+
+    
+        private (Matrix data, Vector real) ReadLinearRegressionData(string path, int count)
+        {
+           
+            string [] lines = File.ReadAllLines(path);
+            
+            int dataCount = count>0?count: lines.Length-1;//count;
+            Vector real = new Vector(dataCount);
+            int fc = lines[0].Split(',').Length-2;
+            Matrix data = new Matrix(dataCount,fc);
+
+            for (int i = 0; i < dataCount; i++)
+            {
+                string content = lines[i + 1];
+               string[] words = content.Split(',');
+                data[i, 0] = 1;
+                data[i,1] = double.Parse(words[1]);
+                data[i,2] = double.Parse(words[2]);
+                data[i,3] = double.Parse(words[3]);
+                data[i,4] = double.Parse(words[4]);
+                real[i] = double.Parse(words[6]);
+      
+            }
+            return (data, real);
+        }
+
+        private  void ExecuteLinearRegressionTrainCommand()
+        {
+            string path = "./resources/testdata/taxi-fare-train.csv";
+
+             var trainData = ReadLinearRegressionData(path,-1);
+
+            double loss = linearRegression.Train(trainData.data, trainData.real);
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine($"训练完成(误差:{loss})");
+
+           Message = sb.ToString();
+        }
+
+    
 
         private void ExecuteXORNetCommand()
         {
@@ -115,21 +180,7 @@ namespace Deeplearning.Sample
 
             Vector w = m * net.realModel;
 
-            //net.ModelFunc.Invoke();
-
             Message = w.ToString();
-
-
-            //for (int i = 0; i < step; i++)
-            //{
-            //Vector y = net.ModelFunc.Invoke(net.transData, w);
-            //float loss = net.LossFunc.Invoke(y);
-            //if (MathF.Abs(loss) == e)
-            //{
-            //break;
-            //}
-            //}
-
 
         }
 
@@ -257,7 +308,7 @@ namespace Deeplearning.Sample
         {
 
 
-            float[,] scalars = new float[3, 3] {
+            double[,] scalars = new double[3, 3] {
             { 1,1,1},
             { 2,1,3},
             { 1,1,4}
@@ -277,7 +328,7 @@ namespace Deeplearning.Sample
 
         private void ExecuteMatrixDetCommand()
         {
-            float[,] scalars = new float[3, 3] {
+            double[,] scalars = new double[3, 3] {
             {6,1,1 },
             {4,-2,5 },
             {2,8,7 }

@@ -10,6 +10,53 @@ namespace Deeplearning.Core.Math.Linear
     {
         public const float MinValue = 10E-15F;
 
+        public static async Task<Vector> GradientDescentTaskAsync(Func<Vector, float> LinearEquation, Vector initValue, GradientParams @params)
+        {
+            Vector vector = (Vector)initValue.Clone();
+
+            int vectorLength = vector.Length;
+
+            Vector k_Vector = new Vector(vectorLength);
+
+            float learningRate = @params.rate;
+
+            float doubleLR = (2 * learningRate);
+
+            Vector vector1 = new Vector(vectorLength);
+
+            Vector vector2 = new Vector(vectorLength);
+
+           await Task.Factory.StartNew(async () => {
+                for (int i = 0; i < @params.step; i++)
+                {
+                    for (int j = 0; j < vectorLength; j++)
+                    {
+                        vector1[j] = vector[j] - learningRate;
+                        vector2[j] = vector[j] + learningRate;
+
+                        for (int k = 0; k < vectorLength; k++)
+                        {
+                            if (j == k) continue;
+                            vector1[k] = vector[k];
+                            vector2[k] = vector[k];
+                        }
+                        k_Vector[j] = (LinearEquation(vector2) - LinearEquation(vector1)) / doubleLR;
+                    }
+
+                    double norm = k_Vector.NoSqrtNorm();
+
+                    if (norm <= @params.e) break;
+
+                    vector -= (k_Vector * learningRate);
+                   await Task.Delay(1000);
+                }
+
+            });
+
+
+            return vector;
+        }
+
         public static Vector GradientDescent(Func<Vector, float> LinearEquation, Vector initValue, GradientParams @params)
         {
             Vector vector = (Vector)initValue.Clone();
@@ -149,7 +196,7 @@ namespace Deeplearning.Core.Math.Linear
             this.e = e;
         }
 
-        public static GradientParams Default => new GradientParams(1000, 0.01f, 10E-8F);
+        public static GradientParams Default => new GradientParams(1000, 0.0001f, 10E-8F);
 
     }
 

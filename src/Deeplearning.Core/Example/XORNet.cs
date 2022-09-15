@@ -23,7 +23,7 @@ namespace Deeplearning.Core.Example
         /// <summary>
         /// 损失函数
         /// </summary>
-        public Func<Vector,float> LossFunc { get; set; }
+        public Func<Vector, double> LossFunc { get; set; }
 
 
         public Func<Matrix, Vector> TargetFunc { get; set; }
@@ -33,7 +33,7 @@ namespace Deeplearning.Core.Example
         {
             ModelFunc = new Func<Matrix,Matrix, Vector>(ModelFunction);
 
-            LossFunc = new Func<Vector, float>(LossFunction);
+            LossFunc = new Func<Vector, double>(LossFunction);
 
             TargetFunc = new Func<Matrix, Vector>(TargetFunction);
         }
@@ -43,17 +43,17 @@ namespace Deeplearning.Core.Example
             return realModel;
         }
 
-        private float LossFunction(Vector y)
+        private double LossFunction(Vector y)
         {
            int m = y.Length;
 
-            float sum = 0;
+            double sum = 0;
 
            Vector real =  TargetFunction(transData);
 
             for (int i = 0; i < m; i++)
             {
-                sum += MathF.Pow(real[i] - y[i], 2);
+                sum += MathF.Pow((float)(real[i] - y[i]), 2);
             }
 
 

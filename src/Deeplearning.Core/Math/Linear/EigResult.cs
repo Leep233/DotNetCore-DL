@@ -42,7 +42,7 @@ namespace Deeplearning.Core.Math.Linear
 
                     if (b)
                     {
-                        float temp = Eigen[j, j];
+                        double temp = Eigen[j, j];
                         Eigen[j, j] = Eigen[nextIndex, nextIndex];
                         Eigen[nextIndex, nextIndex] = temp;
                         Vector v1 = Vectors.GetVector(nextIndex);

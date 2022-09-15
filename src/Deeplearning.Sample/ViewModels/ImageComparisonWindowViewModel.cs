@@ -35,9 +35,9 @@ namespace Deeplearning.Sample.ViewModels
 
         private int dec;
 
-        private float[,] r;
-        private float[,] g;
-        private float[,] b;
+        private double[,] r;
+        private double[,] g;
+        private double[,] b;
 
         public ImageComparisonWindowViewModel(string image1, int dec)
         {
@@ -58,14 +58,14 @@ namespace Deeplearning.Sample.ViewModels
 
                 SVDResult result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.r), Orthogonalization.Householder);
 
-                float[,] r = Compress(result).scalars;
+                double[,] r = Compress(result).scalars;
                  result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.g), Orthogonalization.Householder);
 
-                float[,] g = Compress(result).scalars;
+                double[,] g = Compress(result).scalars;
                  result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.b), Orthogonalization.Householder);
 
-                float[,] b = Compress(result).scalars;
-                float[,] a = new float[b.GetLength(0), b.GetLength(1)];
+                double[,] b = Compress(result).scalars;
+                double[,] a = new double[b.GetLength(0), b.GetLength(1)];
 
                 return Pixels2Image(r, g,b,a);
             });
@@ -134,7 +134,7 @@ namespace Deeplearning.Sample.ViewModels
         }
 
 
-        public BitmapImage Pixels2Image(params float[][,] colors)
+        public BitmapImage Pixels2Image(params double[][,] colors)
         {
 
             int pixelWidth = r.GetLength(0);
@@ -173,7 +173,7 @@ namespace Deeplearning.Sample.ViewModels
         }
 
 
-        private (float[,] r, float[,] g, float[,] b) ReadImagePixels(BitmapImage img)
+        private (double[,] r, double[,] g, double[,] b) ReadImagePixels(BitmapImage img)
         {
 
             int pixelWidth = img.PixelWidth;
@@ -186,9 +186,9 @@ namespace Deeplearning.Sample.ViewModels
 
             img.CopyPixels(pixels, stride, 0);
 
-            float[,] r = new float[pixelWidth, pixelHeight];
-            float[,] g = new float[pixelWidth, pixelHeight];
-            float[,] b = new float[pixelWidth, pixelHeight];
+            double [,] r = new double [pixelWidth, pixelHeight];
+            double [,] g = new double [pixelWidth, pixelHeight];
+            double [,] b = new double [pixelWidth, pixelHeight];
             // float[,] a = new float[pixelWidth, pixelHeight];
 
             for (int y = 0; y < img.PixelHeight; y++)
