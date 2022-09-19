@@ -112,12 +112,14 @@ namespace Deeplearning.Sample
             string path = "./resources/testdata/taxi-fare-test.csv";
 
             var trainData = ReadLinearRegressionData(path,10);
+
             Vector testData = linearRegression.Predice(trainData.data);
-            double loss = linearRegression.MES(testData, trainData.real); 
+
+            double loss = InformationTheory.MES(testData, trainData.real); 
+
             Message = $"误差：{loss}" + "\n" +
                 $"预测值：{ testData}" + "\n" +
                  $"实际值：{  trainData.real}";
-      
 
         }
 
@@ -204,8 +206,8 @@ namespace Deeplearning.Sample
             Vector p = new Vector(0.1f, 0.8f, 0.1f);
             Vector p2 = new Vector(0.3f, 0.4f, 0.3f);
             stringBuilder.AppendLine($"exp={ ProbabilityDistribution.Exp(x, p)}");
-            stringBuilder.AppendLine($"Var1={ ProbabilityDistribution.Var(x, p, ProbabilityDistributionMode.Discrete)}");
-            stringBuilder.AppendLine($"Var2={ ProbabilityDistribution.Var(x, p2, ProbabilityDistributionMode.Discrete)}");
+            stringBuilder.AppendLine($"Var1={ ProbabilityDistribution.Var(x, p, RandomVariableType.Discrete)}");
+            stringBuilder.AppendLine($"Var2={ ProbabilityDistribution.Var(x, p2, RandomVariableType.Discrete)}");
 
             x = new Vector(5, 20, 40, 80, 100);
             Vector y = new Vector(10, 24, 33, 54, 10);

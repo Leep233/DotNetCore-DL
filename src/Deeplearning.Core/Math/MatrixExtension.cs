@@ -221,21 +221,6 @@ namespace Deeplearning.Core.Math
                             }
                             sdevs[r] = MathF.Sqrt((float)sum / n);
                         });
-
-                        //for (int r = 0; r < row; r++)
-                        //{
-                        //    double sum = 0;
-
-                        //    double avg = avgs[r];
-
-                        //    for (int c = 0; c < col; c++)
-                        //    {
-                        //        double value = source[r, c];
-                        //        sum += MathF.Pow((float)(value - avg), 2);
-                        //    }
-                        //    sdevs[r] = MathF.Sqrt((float)sum / n);
-                        //}
-
                     }
                     break;
             }

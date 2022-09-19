@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Deeplearning.Core.Extension;
+using System;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
@@ -148,7 +149,7 @@ namespace Deeplearning.Core.Math.Models
                     {
                        double value = this[i, j] - m[i, j];
 
-                        if (Validator.ZeroValidation(value) != 0)
+                        if (ValueExtension.ZeroValidation(value) != 0)
                         {
                             result = false;
                             break;
@@ -340,7 +341,7 @@ namespace Deeplearning.Core.Math.Models
                     break;
             }
 
-            return Validator.ZeroValidation(detValue);
+            return ValueExtension.ZeroValidation(detValue);
         }
 
         /// <summary>

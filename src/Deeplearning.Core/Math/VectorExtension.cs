@@ -1,4 +1,5 @@
-﻿using Deeplearning.Core.Math.Models;
+﻿using Deeplearning.Core.Extension;
+using Deeplearning.Core.Math.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +10,7 @@ namespace Deeplearning.Core.Math
     {
         public static bool IsOrthogonal(this Vector v1, Vector v2)
         {
-            return Validator.ZeroValidation(v1 * v2) == 0;
+            return ValueExtension.ZeroValidation(v1 * v2) == 0;
         }
 
         public static bool IsOrthogormal(this Vector v1, Vector v2)

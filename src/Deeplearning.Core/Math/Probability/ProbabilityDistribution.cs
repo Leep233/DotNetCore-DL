@@ -1,4 +1,5 @@
-﻿using Deeplearning.Core.Math.Common;
+﻿using Deeplearning.Core.Extension;
+using Deeplearning.Core.Math.Common;
 using Deeplearning.Core.Math.Models;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Text;
 namespace Deeplearning.Core.Math.Probability
 {
 
-    public enum ProbabilityDistributionMode
+    public enum RandomVariableType
     {
         /// <summary>
         /// 离散型
@@ -41,315 +42,6 @@ namespace Deeplearning.Core.Math.Probability
         }
 
         /// <summary>
-        /// 信息量
-        /// </summary>
-        /// <param name="p">概率</param>
-        /// <param name="unit"></param>
-        /// <returns></returns>
-        public static double Information(double p, InformationUnit unit = InformationUnit.Nats)
-        {
-            return -LogFunctionByUnit(unit)((float)p);
-        }
-
-        /// <summary>
-        /// 信息熵
-        /// </summary>
-        /// <param name="x">参数</param>
-        /// <param name="p">参数对应概率</param>
-        /// <param name="unit"></param>
-        /// <param name="mode"></param>
-        /// <returns></returns>
-        public static double InformationEntropy(double[] x, double[] p, InformationUnit unit = InformationUnit.Nats, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
-        {
-            double expValue = 0;
-
-            int length = x.Length;
-
-            Func<float, float> logFun = LogFunctionByUnit(unit);
-
-            double scale = ScaleByProbabilityDistributionMode(mode);
-
-            for (int i = 0; i < length; i++)
-            {
-                double temp = x[i];
-
-                double value = -logFun((float)p[i]);// Information(p[i], unit);// (x[i], unit);
-
-                expValue += temp * value * scale;
-            }
-            return expValue;
-        }
-
-        /// <summary>
-        /// 信息熵
-        /// </summary>
-        /// <param name="x">参数</param>
-        /// <param name="p">参数对应概率</param>
-        /// <param name="unit"></param>
-        /// <param name="mode"></param>
-        /// <returns></returns>
-        public static double InformationEntropy(Vector x, Vector p, InformationUnit unit = InformationUnit.Nats, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
-        {
-            double expValue = 0;
-
-            int length = x.Length;
-
-            double scale = ScaleByProbabilityDistributionMode(mode);
-
-            Func<float, float> logFun = LogFunctionByUnit(unit);
-
-            for (int i = 0; i < length; i++)
-            {
-                double temp = x[i];
-
-                double value = -logFun((float)p[i]);// Information(p[i], unit);// (x[i], unit);
-
-                expValue += temp * value * scale;
-            }
-            return expValue;
-        }
-
-        /// <summary>
-        /// 信息熵
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="p"></param>
-        /// <param name="unit"></param>
-        /// <param name="mode"></param>
-        /// <returns></returns>
-        public static double InformationEntropy(Func<double[], double[]> probabilityDistributionFunction, double[] x, InformationUnit unit = InformationUnit.Nats, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
-        {
-            double[] p = probabilityDistributionFunction(x);
-
-            return InformationEntropy(x, p, unit, mode);
-        }
-
-        /// <summary>
-        /// 信息熵
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="p"></param>
-        /// <param name="unit"></param>
-        /// <param name="mode"></param>
-        /// <returns></returns>
-        public static double InformationEntropy(Func<Vector, Vector> probabilityDistributionFunction, Vector x, InformationUnit unit = InformationUnit.Nats, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
-        {
-            Vector p = probabilityDistributionFunction(x);
-
-            return InformationEntropy(x, p, unit, mode);
-        }
-
-
-
-        /// <summary>
-        ///  kl散度。同一个随机变量有两个独立的概率分布，用来衡量两个分布的差异
-        /// </summary>
-        /// <param name="x">随机变量x</param>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <returns></returns>
-        public static double KL_Divergence(double[] x, double[] p1, double[] p2, InformationUnit unit = InformationUnit.Nats, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
-        {
-            int length = x.Length;
-
-            double result = 0;
-
-            var logFunction = LogFunctionByUnit(unit);
-
-            float scale = ScaleByProbabilityDistributionMode(mode);
-
-            for (int i = 0; i < length; i++)
-            {
-
-                double temp = logFunction((float)(p1[i])) - logFunction((float)(p2[i]));
-
-                result += x[i] * temp * scale;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        ///  kl散度。同一个随机变量有两个独立的概率分布，用来衡量两个分布的差异
-        /// </summary>
-        /// <param name="x">随机变量x</param>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <returns></returns>
-        public static double KL_Divergence(Vector x, Vector p1, Vector p2, InformationUnit unit = InformationUnit.Nats, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
-        {
-            int length = x.Length;
-
-            double result = 0;
- 
-            var logFunction =  LogFunctionByUnit(unit);
-          
-            float scale = ScaleByProbabilityDistributionMode(mode);    
-
-            for (int i = 0; i < length; i++)
-            {
-
-                double temp = logFunction((float)(p1[i])) - logFunction((float)(p2[i]));
-
-                result += x[i] * temp * scale;           
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// kl散度。同一个随机变量有两个独立的概率分布，用来衡量两个分布的差异
-        /// </summary>
-        /// <param name="x">随机变量y</param>
-        /// <param name="p1Function"></param>
-        /// <param name="p2Function"></param>
-        /// <param name="unit"></param>
-        /// <param name="mode"></param>
-        /// <returns></returns>
-        public static double KL_Divergence(Vector x, Func<Vector, Vector> p1Function, Func<Vector, Vector> p2Function, InformationUnit unit = InformationUnit.Nats, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
-        {
-            Vector p1 = p1Function(x);
-            Vector p2 = p2Function(x);
-
-            return KL_Divergence(x, p1, p2, unit, mode);
-        }
-        /// <summary>
-        /// kl散度。同一个随机变量有两个独立的概率分布，用来衡量两个分布的差异
-        /// </summary>
-        /// <param name="x">随机变量y</param>
-        /// <param name="p1Function">分布函数1</param>
-        /// <param name="p2Function">分布函数2</param>
-        /// <param name="unit"></param>
-        /// <param name="mode"></param>
-        /// <returns></returns>
-        public static double KL_Divergence(double[] x, Func<double[], double[]> p1Function, Func<double[], double[]> p2Function, InformationUnit unit = InformationUnit.Nats, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
-        {
-            double[] p1 = p1Function(x);
-
-            double[] p2 = p2Function(x);
-
-            return KL_Divergence(x, p1, p2, unit, mode);
-        }
-
-        private static Func<float, float> LogFunctionByUnit(InformationUnit unit) {
-            Func<float, float> logFunction = MathF.Log;
-
-            switch (unit)
-            {
-                case InformationUnit.Bits:
-                    logFunction = MathF.Log2;
-                    break;
-                case InformationUnit.Hart:
-                    logFunction = MathF.Log10;
-                    break;
-                case InformationUnit.Nats:
-                default:
-                    logFunction = MathF.Log;
-                    break;
-            }
-            return logFunction;
-        }
-
-        private static float ScaleByProbabilityDistributionMode(ProbabilityDistributionMode mode) {
-            float scale = 1;
-            switch (mode)
-            {
-                case ProbabilityDistributionMode.Discrete:
-                    scale = 1;
-                    break;
-                case ProbabilityDistributionMode.Successive:
-                    scale = MIN_VALUE;
-                    break;
-            }
-            return scale;
-        }
-
-        /// <summary>
-        ///  kl散度。同一个随机变量有两个独立的概率分布，用来衡量两个分布的差异
-        /// </summary>
-        /// <param name="x">随机变量x</param>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <returns></returns>
-        public static double CrossEntropy(double[] x, double[] p1, double[] p2, InformationUnit unit = InformationUnit.Nats, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
-        {
-            int length = x.Length;
-
-            double result = 0;
-
-            double entropy = 0;
-
-            float scale = ScaleByProbabilityDistributionMode(mode);
-
-            Func<float, float> logFunction = LogFunctionByUnit(unit);
-           
-
-            for (int i = 0; i < length; i++)
-            {
-                double p1Value = p1[i];
-
-                double p2Value = p2[i];
-
-                double xValue = x[i];
-
-                double p1LogValue = logFunction((float)p1Value);
-
-                double info = -p1LogValue;
-
-                double temp = p1LogValue - logFunction((float)p2Value);
-
-                result = xValue * temp * scale;
-
-                entropy += xValue * info * scale;
-            }
-
-            return entropy + result;
-        }
-
-        /// <summary>
-        ///  kl散度。同一个随机变量有两个独立的概率分布，用来衡量两个分布的差异
-        /// </summary>
-        /// <param name="x">随机变量x</param>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <returns></returns>
-        public static double CrossEntropy(Vector x, Vector p1, Vector p2, InformationUnit unit = InformationUnit.Nats, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
-        {
-            int length = x.Length;
-
-            double result = 0;
-
-            double entropy = 0;
-
-            float scale = ScaleByProbabilityDistributionMode(mode);
-
-            Func<float, float> logFunction = LogFunctionByUnit(unit);
-
-            for (int i = 0; i < length; i++)
-            {
-                double p1Value = p1[i];
-
-                double p2Value = p2[i];
-
-                double xValue = x[i];
-
-                double p1LogValue = logFunction((float)p1Value);
-
-                double info = - p1LogValue;
-
-                double temp = p1LogValue - logFunction((float)p2Value);
-
-                result = xValue * temp * scale;
-
-                entropy += xValue * info * scale;
-            }
-
-            return entropy + result;
-        }
-
-
-
-        /// <summary>
         /// 正态分布
         /// </summary>
         /// <param name="x"></param>
@@ -375,6 +67,17 @@ namespace Deeplearning.Core.Math.Probability
         }
 
         /// <summary>
+        /// 标准正态分布
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static float StandardNormalDistribution(float x)
+        {
+            return MathF.Sqrt(1 / (2 * MathF.PI)) * MathF.Exp(-(1 / 2) * MathF.Pow(x, 2));
+        }
+
+
+        /// <summary>
         /// Laplace分布
         /// </summary>
         /// <param name="x"></param>
@@ -386,25 +89,17 @@ namespace Deeplearning.Core.Math.Probability
             return MathF.Exp(-(MathF.Abs(x - u) / y)) / (2 * y);
         }
 
-        /// <summary>
-        /// 标准正态分布
-        /// </summary>
-        /// <param name="x"></param>
-        /// <returns></returns>
-        public static float StandardNormalDistribution(float x)
-        {
-            return MathF.Sqrt(1 / (2 * MathF.PI)) * MathF.Exp(-(1 / 2) * MathF.Pow(x, 2));
-        }
+        #region 期望函数
 
         /// <summary>
-        /// 期望
+        ///   期望：该概率分布最有可能出现的值（所有随机变量与对应概率分布概率乘积的和）
         /// </summary>
-        /// <param name="x">所有结果</param>
-        /// <param name="p">结果对应发生概率</param>
-        /// <param name="mode">变量类型：离散型/连续型</param>
+        /// <param name="x">随机变量</param>
+        /// <param name="p">概率分布概率</param>
+        /// <param name="type">随机变量类型：离散型/连续型；默认离散型</param>
         /// <returns>期望值</returns>
         /// <exception cref="Exception"></exception>
-        public static double Exp(double[] x, double[] p, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
+        public static double Exp(float[] x, float[] p, RandomVariableType mode = RandomVariableType.Discrete)
         {
             int length = x.Length;
 
@@ -412,7 +107,7 @@ namespace Deeplearning.Core.Math.Probability
 
             double expValue = 0;
 
-            float scale = ScaleByProbabilityDistributionMode(mode);
+            float scale = CommonFunctions.ProbabilityDistributionScale(mode);
 
             for (int i = 0; i < length; i++)
             {
@@ -423,14 +118,14 @@ namespace Deeplearning.Core.Math.Probability
         }
 
         /// <summary>
-        /// 期望 所有对应结果与对应概率发生的和
+        ///   期望：该概率分布最有可能出现的值（所有随机变量与对应概率分布概率乘积的和）
         /// </summary>
-        /// <param name="x">所有结果</param>
-        /// <param name="p">结果对应发生概率</param>
-        /// <param name="mode">变量类型：离散型/连续型</param>
+        /// <param name="x">随机变量</param>
+        /// <param name="p">概率分布概率</param>
+        /// <param name="type">随机变量类型：离散型/连续型；默认离散型</param>
         /// <returns>期望值</returns>
         /// <exception cref="Exception"></exception>
-        public static double Exp(Vector x, Vector p, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
+        public static double Exp(double[] x, double[] p, RandomVariableType mode = RandomVariableType.Discrete)
         {
             int length = x.Length;
 
@@ -438,7 +133,33 @@ namespace Deeplearning.Core.Math.Probability
 
             double expValue = 0;
 
-            float scale = ScaleByProbabilityDistributionMode(mode);
+            float scale = CommonFunctions.ProbabilityDistributionScale(mode);
+
+            for (int i = 0; i < length; i++)
+            {
+                expValue += x[i] * p[i] * scale;
+            }
+
+            return expValue;
+        }
+
+        /// <summary>
+        ///   期望：该概率分布最有可能出现的值（所有随机变量与对应概率分布概率乘积的和）
+        /// </summary>
+        /// <param name="x">随机变量</param>
+        /// <param name="p">概率分布概率</param>
+        /// <param name="type">随机变量类型：离散型/连续型；默认离散型</param>
+        /// <returns>期望值</returns>
+        /// <exception cref="Exception"></exception>
+        public static double Exp(Vector x, Vector p, RandomVariableType type = RandomVariableType.Discrete)
+        {
+            int length = x.Length;
+
+            if (length != p.Length) throw new Exception("结果数必须与结果概率数量一致");
+
+            double expValue = 0;
+
+            float scale = CommonFunctions.ProbabilityDistributionScale(type);
 
             for (int i = 0; i < length; i++)
             {
@@ -447,29 +168,81 @@ namespace Deeplearning.Core.Math.Probability
             return expValue;
         }
 
-        public static double Exp(double[] x, Func<double[], double[]> probabilityDistributionFunction, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
+        /// <summary>
+        /// 期望：该概率分布最有可能出现的值（所有随机变量与对应概率分布概率乘积的和）
+        /// </summary>
+        /// <typeparam name="T">支持类型：double[] ; float[] ; Vector ;</typeparam>
+        /// <typeparam name="T1">支持类型：double[] ; float[] ; Vector ;</typeparam>
+        /// <param name="x">随机变量</param>
+        /// <param name="pdf">概率分布函数</param>
+        /// <param name="type">随机变量类型：离散型/连续型；默认离散型</param>
+        /// <returns>期望值</returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static double Exp<T>(T x, Func<T, T> pdf, RandomVariableType type = RandomVariableType.Discrete)
         {
-            double[] p = probabilityDistributionFunction(x);
+            T pd = pdf(x);
 
-            return Exp(x, p, mode);
+            double result = 0;
+
+            if (x is double[] xdArray && pd is double[] pddArray)
+            {
+                result = Exp(xdArray, pddArray, type);
+            }
+            else if (x is float[] xfArray && pd is float[] pdfArray)
+            {
+                result = Exp(xfArray, pdfArray, type);
+            }
+            else if (x is Vector xv && pd is Vector pdv)
+            {
+                result = Exp(xv, pdv, type);
+            }
+            else
+            {
+                throw new ArgumentException("This parameter is not supported!!(support:float[] double[],Vector)");
+            }
+            return result;
+        
         }
 
-        public static double Exp(Vector x, Func<Vector, Vector> probabilityDistributionFunction, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
+        #endregion
+
+        /// <summary>
+        /// 标准差
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="pd"></param>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public static double StandardDeviation(Vector x, Vector pd, RandomVariableType mode)
+        {
+            return MathF.Sqrt((float)Var(x, pd, mode));
+        }
+
+        /// <summary>
+        /// 标准差
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="p"></param>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public static double StandardDeviation(Func<double[], double[]> pdf, double[] x, RandomVariableType mode)
+        {
+            double[] p = pdf(x);
+
+            return MathF.Sqrt((float)Var(x, p, mode));
+        }
+
+        /// <summary>
+        /// 标准差
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="p"></param>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public static double StandardDeviation(Func<Vector, Vector> probabilityDistributionFunction, Vector x, RandomVariableType mode)
         {
             Vector p = probabilityDistributionFunction(x);
 
-            return Exp(x, p, mode);
-        }
-
-        /// <summary>
-        /// 标准差
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="p"></param>
-        /// <param name="mode"></param>
-        /// <returns></returns>
-        public static double StandardDeviation(Vector x, Vector p, ProbabilityDistributionMode mode)
-        {
             return MathF.Sqrt((float)Var(x, p, mode));
         }
 
@@ -480,36 +253,7 @@ namespace Deeplearning.Core.Math.Probability
         /// <param name="p"></param>
         /// <param name="mode"></param>
         /// <returns></returns>
-        public static double StandardDeviation(Func<double[], double[]> probabilityDistributionFunction, double[] x, ProbabilityDistributionMode mode)
-        {
-            double[] p = probabilityDistributionFunction(x);
-
-            return MathF.Sqrt((float)Var(x, p, mode));
-        }
-
-        /// <summary>
-        /// 标准差
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="p"></param>
-        /// <param name="mode"></param>
-        /// <returns></returns>
-        public static double StandardDeviation(Func<Vector, Vector> probabilityDistributionFunction, Vector x, ProbabilityDistributionMode mode)
-        {
-            Vector p = probabilityDistributionFunction(x);
-
-            return MathF.Sqrt((float)Var(x, p, mode));
-        }
-
-
-        /// <summary>
-        /// 标准差
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="p"></param>
-        /// <param name="mode"></param>
-        /// <returns></returns>
-        public static double StandardDeviation(double[] x, double[] p, ProbabilityDistributionMode mode)
+        public static double StandardDeviation(double[] x, double[] p, RandomVariableType mode)
         {
             return MathF.Sqrt((float)Var(x, p, mode));
         }
@@ -539,25 +283,84 @@ namespace Deeplearning.Core.Math.Probability
         }
 
         /// <summary>
-        ///  方差：衡量随机变量x的值差异性
+        ///  方差：衡量随机变量x的值差异性((随机变量-期望)^2的和)
         /// </summary>
-        /// <param name="x">所有结果</param>
-        /// <param name="p">结果对应发生概率</param>
-        /// <param name="mode">变量类型：离散型/连续型</param>
+        /// <param name="x">随机变量</param>
+        /// <param name="pd">概率分布概率</param>
+        /// <param name="type">变量类型：离散型/连续型</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static double Var(double[] x, double[] p, ProbabilityDistributionMode mode)
+        public static double Var(float[] x, float[] pd, RandomVariableType type)
+        {
+
+            int length = x.Length;
+
+            if (length != pd.Length) throw new Exception("结果数必须与结果概率数量一致");
+
+            double expValue = Exp(x, pd, type);
+
+            double varValue = 0;
+
+            float scale = CommonFunctions.ProbabilityDistributionScale(type);
+
+            for (int i = 0; i < length; i++)
+            {
+                float val = MathF.Pow((float)(x[i] - expValue), 2);
+
+                varValue += val * pd[i] * scale;
+            }
+            return varValue;
+        }
+
+        /// <summary>
+        ///  方差：衡量随机变量x的值差异性((随机变量-期望)^2的和)
+        /// </summary>
+        /// <param name="x">随机变量</param>
+        /// <param name="pd">概率分布概率</param>
+        /// <param name="type">变量类型：离散型/连续型</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static double Var(double[] x, double[] pd, RandomVariableType type = RandomVariableType.Discrete)
+        {
+            int length = x.Length;
+
+            if (length != pd.Length) throw new Exception("结果数必须与结果概率数量一致");
+
+            double expValue = Exp(x, pd, type);
+
+            double varValue = 0;
+
+            float scale = CommonFunctions.ProbabilityDistributionScale(type);
+
+            for (int i = 0; i < length; i++)
+            {
+                float val = MathF.Pow((float)(x[i] - expValue), 2);
+
+                varValue += val * pd[i] * scale;
+            }
+            return varValue;
+        }
+
+        /// <summary>
+        ///  方差：衡量随机变量x的值差异性((随机变量-期望)^2的和)
+        /// </summary>
+        /// <param name="x">随机变量</param>
+        /// <param name="pd">概率分布概率</param>
+        /// <param name="type">变量类型：离散型/连续型</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static double Var(Vector x, Vector p, RandomVariableType mode)
         {
 
             int length = x.Length;
 
             if (length != p.Length) throw new Exception("结果数必须与结果概率数量一致");
 
-            double expValue = (float)Exp(x, p, mode);
+            double expValue = Exp(x, p, mode);
 
             double varValue = 0;
 
-            float scale = ScaleByProbabilityDistributionMode(mode);
+            float scale = CommonFunctions.ProbabilityDistributionScale(mode);
 
             for (int i = 0; i < length; i++)
             {
@@ -566,69 +369,75 @@ namespace Deeplearning.Core.Math.Probability
                 varValue += val * p[i] * scale;
             }
             return varValue;
-
         }
 
         /// <summary>
-        /// 方差：衡量随机变量x的值差异性
+        /// 方差：衡量随机变量x的值差异性((随机变量-期望)^2的和)
         /// </summary>
-        /// <param name="x">所有结果</param>
-        /// <param name="p">结果对应发生概率</param>
-        /// <param name="mode">变量类型：离散型/连续型</param>
+        /// <typeparam name="T">支持类型：double[] ; float[] ; Vector ;</typeparam>
+        /// <param name="x">随机变量</param>
+        /// <param name="pdf">概率分布函数</param>
+        /// <param name="type">随机变量类型：离散型/连续型；默认离散型</param>
         /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        public static double Var(Vector x, Vector p, ProbabilityDistributionMode mode)
+        /// <exception cref="ArgumentException"></exception>
+        public static double Var<T>(T x, Func<T, T> pdf,RandomVariableType type)
+        {
+            T pd = pdf(x);
+
+            double result = 0;
+
+            if (x is double[] x_d_value && pd is double[] pd_d_value)
+            {
+                result = Var(x_d_value, pd_d_value, type);
+            }
+            else if (x is float[] x_f_value && pd is float[] pd_f_value)
+            {
+                result = Var(x_f_value, pd_f_value, type);
+            }
+            else if (x is Vector x_v_value && pd is Vector pd_v_value)
+            {
+                result = Var(x_v_value, pd_v_value, type);
+            }
+            else
+            {
+                throw new ArgumentException("This parameter is not supported!!(support:float[] double[],Vector)");
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 均值方差
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static double Var(float[] x)
         {
 
             int length = x.Length;
 
-            if (length != p.Length) throw new Exception("结果数必须与结果概率数量一致");
+            double avg = MathFExtension.Average(x);
 
-            float expValue = (float)Exp(x, p, mode);
-
-            double varValue = 0;
-
-            float scale = ScaleByProbabilityDistributionMode(mode);
+            double sum = 0;
 
             for (int i = 0; i < length; i++)
             {
-                float val = MathF.Pow((float)(x[i] - expValue), 2);
-
-                varValue += val * p[i] * scale;
+                sum += MathF.Pow((float)(x[i] - avg), 2);
             }
-            return varValue;
+
+            return sum / (length - 1);
         }
 
         /// <summary>
-        /// 方差：衡量随机变量x的值差异性
+        /// 均值方差
         /// </summary>
-        /// <param name="x">所有结果</param>
-        /// <param name="p">结果对应发生概率</param>
-        /// <param name="mode">变量类型：离散型/连续型</param>
+        /// <param name="x"></param>
         /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        public static double Var(Func<Vector, Vector> ProbabilityDistributionFunction, Vector x, ProbabilityDistributionMode mode)
-        {
-            Vector p = ProbabilityDistributionFunction(x);
-
-            return Var(x, p, mode);
-        }
-
-
-        public static double Var(Func<double[], double[]> ProbabilityDistributionFunction, double[] x, ProbabilityDistributionMode mode)
-        {
-            double[] p = ProbabilityDistributionFunction(x);
-
-
-            return Var(x, p, mode);
-        }
-
         public static double Var(double[] x)
         {
 
             int length = x.Length;
 
-            double avg = Average(x);
+            double avg = MathFExtension.Average(x);
 
             double sum = 0;
 
@@ -639,11 +448,17 @@ namespace Deeplearning.Core.Math.Probability
 
             return sum / (length - 1);
         }
-
+        /// <summary>
+        /// 均值方差
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
         public static double Var(Vector x)
         {
             int length = x.Length;
-            double avg = Average(x);
+
+            double avg = MathFExtension.Average(x);
+
             double sum = 0;
 
             for (int i = 0; i < length; i++)
@@ -653,17 +468,25 @@ namespace Deeplearning.Core.Math.Probability
 
             return sum / (length - 1);
         }
+
+        /// <summary>
+        /// 均值协方差
+        /// </summary>
+        /// <param name="x">随机变量x</param>
+        /// <param name="y">随机变量y</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static double Cov(Vector x, Vector y)
         {
             int length = x.Length;
 
-            double xAvg = Average(x);
+            if (length != y.Length) throw new Exception("结果数必须与结果概率数量一致");
 
-            double yAvg = Average(y);
+            double xAvg = MathFExtension.Average(x);
+
+            double yAvg = MathFExtension.Average(y);
 
             double sum = 0;
-
-            if (length != y.Length) throw new Exception("结果数必须与结果概率数量一致");
 
             for (int i = 0; i < length; i++)
             {
@@ -673,14 +496,25 @@ namespace Deeplearning.Core.Math.Probability
             return sum / (length - 1);
         }
 
+        /// <summary>
+        /// 均值协方差
+        /// </summary>
+        /// <param name="x">随机变量x</param>
+        /// <param name="y">随机变量y</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static double Cov(double[] x, double[] y)
         {
             int length = x.Length;
 
-            double xAvg = Average(x);
-            double yAvg = Average(y);
-            double sum = 0;
             if (length != y.Length) throw new Exception("结果数必须与结果概率数量一致");
+
+            double xAvg = MathFExtension.Average(x);
+
+            double yAvg = MathFExtension.Average(y);
+
+            double sum = 0;
+
             for (int i = 0; i < length; i++)
             {
                 sum += (x[i] - xAvg) * (y[i] - yAvg);
@@ -689,57 +523,92 @@ namespace Deeplearning.Core.Math.Probability
             return sum / (length - 1);
         }
 
-        public static double Average(Vector array)
+        /// <summary>
+        /// 协方差
+        /// </summary>
+        /// <param name="x">随机变量x</param>
+        /// <param name="y">随机变量y</param>
+        /// <param name="pd">概率分布概率</param>
+        /// <param name="type"></param>
+        /// <returns>协方差 >0 正相关； <0 负相关； =0不相关</returns>
+        /// <exception cref="Exception"></exception>
+        public static double Cov(double[] x, double[] y, double[] pd, RandomVariableType type = RandomVariableType.Discrete)
         {
-            int length = array.Length;
+            int length = x.Length;
 
-            if (length <= 0) return 0;
+            if (length != pd.Length || length != y.Length) throw new Exception("结果数必须与结果概率数量一致");
 
-            double sum = 0;
+            double xExp = Exp(x, pd, type);
+
+            double yExp = Exp(y, pd, type);
+
+            double covValue = 0;
+
+            float scale = CommonFunctions.ProbabilityDistributionScale(type);
 
             for (int i = 0; i < length; i++)
             {
-                sum += array[i];
+                double val = (x[i] - xExp) * (y[i] - yExp);
+
+                covValue += val * pd[i] * scale;
             }
-            return sum / length;
-        }
-        public static double Average(double[] array)
-        {
-
-            int length = array.Length;
-
-            if (length <= 0) return 0;
-
-            double sum = 0;
-
-            for (int i = 0; i < length; i++)
-            {
-                sum += array[i];
-            }
-            return sum / length;
+            return covValue;
         }
 
         /// <summary>
         /// 协方差
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="p"></param>
-        /// <param name="mode"></param>
-        /// <returns>协方差>0正相关，<0 负相关 =0不相关</returns>
+        /// <param name="x">随机变量x</param>
+        /// <param name="y">随机变量y</param>
+        /// <param name="pd">概率分布概率</param>
+        /// <param name="type"></param>
+        /// <returns>协方差 >0 正相关； <0 负相关； =0不相关</returns>
         /// <exception cref="Exception"></exception>
-        public static double Cov(double[] x, double[] y, double[] p, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
+        public static double Cov(float[] x, float[] y, float[] pd, RandomVariableType type = RandomVariableType.Discrete)
         {
             int length = x.Length;
-            if (length != p.Length || length != y.Length) throw new Exception("结果数必须与结果概率数量一致");
 
-            double xExp = Exp(x, p, mode);
+            if (length != pd.Length || length != y.Length) throw new Exception("结果数必须与结果概率数量一致");
 
-            double yExp = Exp(y, p, mode);
+            double xExp = Exp(x, pd, type);
+
+            double yExp = Exp(y, pd, type);
 
             double covValue = 0;
 
-            float scale = ScaleByProbabilityDistributionMode(mode);
+            float scale = CommonFunctions.ProbabilityDistributionScale(type);
+
+            for (int i = 0; i < length; i++)
+            {
+                double val = (x[i] - xExp) * (y[i] - yExp);
+
+                covValue += val * pd[i] * scale;
+            }
+            return covValue;
+        }
+
+        /// <summary>
+        /// 协方差
+        /// </summary>
+        /// <param name="x">随机变量x</param>
+        /// <param name="y">随机变量y</param>
+        /// <param name="pd">概率分布概率</param>
+        /// <param name="type"></param>
+        /// <returns>协方差 >0 正相关； <0 负相关； =0不相关</returns>
+        /// <exception cref="Exception"></exception>
+        public static double Cov(Vector x, Vector y, Vector p, RandomVariableType type = RandomVariableType.Discrete)
+        {
+            int length = x.Length;
+
+            if (length != p.Length || length != y.Length) throw new Exception("结果数必须与结果概率数量一致");
+
+            double xExp = Exp(x, p, type);
+
+            double yExp = Exp(y, p, type);
+
+            double covValue = 0;
+
+            float scale = CommonFunctions.ProbabilityDistributionScale(type);
 
             for (int i = 0; i < length; i++)
             {
@@ -749,48 +618,6 @@ namespace Deeplearning.Core.Math.Probability
             }
             return covValue;
         }
-
-        /// <summary>
-        /// 协方差
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="p"></param>
-        /// <param name="mode"></param>
-        /// <returns>协方差>0正相关，<0 负相关 =0不相关</returns>
-        /// <exception cref="Exception"></exception>
-        public static double Cov(Vector x, Vector y, Vector p, ProbabilityDistributionMode mode = ProbabilityDistributionMode.Discrete)
-        {
-            int length = x.Length;
-
-            if (length != p.Length || length != y.Length) throw new Exception("结果数必须与结果概率数量一致");
-
-            double xExp = Exp(x, p, mode);
-
-            double yExp = Exp(y, p, mode);
-
-            double covValue = 0;
-
-            float scale = ScaleByProbabilityDistributionMode(mode);
-
-            for (int i = 0; i < length; i++)
-            {
-                double val = (x[i] - xExp) * (y[i] - yExp);
-
-                covValue += val * p[i] * scale;
-            }
-            return covValue;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public static double Bias(Func<double[], double[]> estimator, double[] inputs, double realData) 
-        {
-          return  (double)(Exp(inputs,estimator(inputs)) - realData);
-        }
-
       
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Deeplearning.Core.Attributes;
+using Deeplearning.Core.Extension;
 using Deeplearning.Core.Math.Models;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,7 @@ namespace Deeplearning.Core.Math.Linear
 
             for (int i = 0; i < l; i++)
             {
-                double value = Validator.ZeroValidation(eigens[i]);
+                double value = ValueExtension.ZeroValidation(eigens[i]);
                  
                 D[i, i] = value==0?0: MathF.Sqrt((float)value);
             }

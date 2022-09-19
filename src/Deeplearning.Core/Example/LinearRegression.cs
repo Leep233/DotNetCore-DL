@@ -43,7 +43,7 @@ namespace Deeplearning.Core.Example
 
             Vector y = Predice(data);
 
-           return  MES(y,predict);
+           return InformationTheory.MES(y,predict);
         }
 
         public Vector NormalEquation(Matrix data, Vector predict) 
@@ -57,10 +57,7 @@ namespace Deeplearning.Core.Example
             return matrix * input_T * vector; 
         }
 
-        public double MES(Vector predict,Vector real) 
-        {
-            return (predict - real).Norm(2) / predict.Length;
-        }
+      
 
     }
 }
