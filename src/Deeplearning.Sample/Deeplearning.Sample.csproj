@@ -55,4 +55,9 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ViewModels\Windows\" />
+    <Folder Include="Views\Windows\" />
+  </ItemGroup>
+
 </Project>

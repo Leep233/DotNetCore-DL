@@ -12,7 +12,7 @@ namespace Deeplearning.Core.Math.Linear
 
         public static async Task<Vector> GradientDescentTaskAsync(Func<Vector, float> LinearEquation, Vector initValue, GradientParams @params)
         {
-            Vector vector = (Vector)initValue.Clone();
+            Vector vector = (Vector)initValue;
 
             int vectorLength = vector.Length;
 
@@ -43,7 +43,7 @@ namespace Deeplearning.Core.Math.Linear
                         k_Vector[j] = (LinearEquation(vector2) - LinearEquation(vector1)) / doubleLR;
                     }
 
-                    double norm = k_Vector.NoSqrtNorm();
+                    double norm = Vector.NoSqrtNorm(k_Vector,2);
 
                     if (norm <= @params.e) break;
 
@@ -59,7 +59,7 @@ namespace Deeplearning.Core.Math.Linear
 
         public static Vector GradientDescent(Func<Vector, float> LinearEquation, Vector initValue, GradientParams @params)
         {
-            Vector vector = (Vector)initValue.Clone();
+            Vector vector = initValue;
 
             int vectorLength = vector.Length;
 
@@ -89,7 +89,7 @@ namespace Deeplearning.Core.Math.Linear
                     k_Vector[j] = (LinearEquation(vector2) - LinearEquation(vector1)) / doubleLR;
                 }
 
-                double norm = k_Vector.NoSqrtNorm();
+                double norm = Vector.NoSqrtNorm(k_Vector,2);
 
                 if (norm <= @params.e) break;
 

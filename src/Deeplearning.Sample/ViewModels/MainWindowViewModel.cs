@@ -138,12 +138,12 @@ namespace Deeplearning.Sample
             {
                 string content = lines[i + 1];
                string[] words = content.Split(',');
-                data[i, 0] = 1;
-                data[i,1] = double.Parse(words[1]);
-                data[i,2] = double.Parse(words[2]);
-                data[i,3] = double.Parse(words[3]);
-                data[i,4] = double.Parse(words[4]);
-                real[i] = double.Parse(words[6]);
+                data[i,0] = 1;
+                data[i,1] = float.Parse(words[1]);
+                data[i,2] = float.Parse(words[2]);
+                data[i,3] = float.Parse(words[3]);
+                data[i,4] = float.Parse(words[4]);
+                real[i] = float.Parse(words[6]);
       
             }
             return (data, real);
@@ -155,7 +155,7 @@ namespace Deeplearning.Sample
 
              var trainData = ReadLinearRegressionData(path,-1);
 
-            double loss = linearRegression.Train(trainData.data, trainData.real);
+            double loss = linearRegression.Fit(trainData.data, trainData.real);
 
             StringBuilder sb = new StringBuilder();
 
@@ -176,7 +176,7 @@ namespace Deeplearning.Sample
             float step = 100;
             float e = 10E-8f;
 
-            Matrix matrix = (net.transData.T * net.transData).inverse;
+            Matrix matrix = Matrix.Inv( (net.transData.T * net.transData));
 
             Matrix m = matrix * net.transData.T ;
 
@@ -266,15 +266,18 @@ namespace Deeplearning.Sample
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("========Sources========");
             sb.AppendLine(matrix.ToString());
-            sb.AppendLine("========逆矩阵========");     
-            sb.AppendLine(matrix.inverse.ToString());
+            sb.AppendLine("========逆矩阵========");    
+            
+            Matrix matrixInv = Matrix.Inv(matrix);
+
+            sb.AppendLine(matrixInv.ToString());
             sb.AppendLine("========检测========");
-            sb.AppendLine((matrix * matrix.inverse).ToString());
+            sb.AppendLine((matrix * matrixInv).ToString());
             sb.AppendLine("========检测========");
             sb.AppendLine(sourceVector.ToString());
             Vector v = matrix * sourceVector;
             sb.AppendLine((v).ToString());
-            Vector v2 = matrix.inverse * v;
+            Vector v2 = matrixInv * v;
             sb.AppendLine(v2.ToString());
 
             Message = sb.ToString();
@@ -322,7 +325,7 @@ namespace Deeplearning.Sample
             sb.AppendLine("========Sources========");
             sb.AppendLine(matrix.ToString());
             sb.AppendLine("========伴随矩阵========");
-            matrix = matrix.abj;
+            matrix = Matrix.Adjugate(matrix);
             sb.AppendLine(matrix.ToString());
           
             Message = sb.ToString();
@@ -338,7 +341,7 @@ namespace Deeplearning.Sample
 
             Matrix matrix = new Matrix(scalars);
 
-            Message = matrix.det.ToString("F4");
+            Message = Matrix.Det(matrix).ToString("F4");
         }
 
         private void ExecuteNormalDistriutionCommand()

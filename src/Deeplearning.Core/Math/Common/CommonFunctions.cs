@@ -1,4 +1,6 @@
-﻿using Deeplearning.Core.Math.Probability;
+﻿using Deeplearning.Core.Extension;
+using Deeplearning.Core.Math.Models;
+using Deeplearning.Core.Math.Probability;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,8 +14,86 @@ namespace Deeplearning.Core.Math.Common
             return 1 / (1 + MathF.Exp(-x));
         }
 
+        public static Vector Sigmoid(Vector vector)
+        {
+            for (int i = 0; i < vector.Length; i++)
+            {
+                vector[i] = Sigmoid((float)vector[i]);
+            }
+            return vector;
+        }
+
+        public static Matrix Sigmoid(Matrix matrix) 
+        {
+            Matrix m = matrix;
+
+            for (int i = 0; i < m.Row; i++)
+            {
+                for (int j = 0; j < m.Column; j++)
+                {
+                    m[i, j] = Sigmoid((float)m[i, j]);
+                }
+            }
+
+            return m;
+        }
+
+        public static Vector Softplus(Vector vector)
+        {
+            for (int i = 0; i < vector.Length; i++)
+            {
+                vector[i] = Softplus((float)vector[i]);
+            }
+            return vector;
+        }
+
+        public static Matrix Softplus(Matrix matrix) { 
+        
+            Matrix m = matrix;
+
+            for (int i = 0; i < m.Row; i++)
+            {
+                for (int j = 0; j < m.Column; j++)
+                {
+                    m[i,j] = Softplus((float)m[i, j]);
+                }
+            }
+            return m;        
+        }
+
         public static float Softplus(float x) { 
-         return MathF.Log(1+ MathF.Exp(x));
+            return MathF.Log(1+ MathF.Exp(x));
+        }
+
+        public static Matrix Softmax(Matrix matrix) {
+
+            Matrix m = matrix;
+
+            double MaxValue = MathFExtension.Max(m);
+
+            double sum = 0;
+
+            for (int i = 0; i < matrix.Row; i++)
+            {
+                for (int j = 0; j < matrix.Column; j++)
+                {
+                    double exp = MathF.Exp((float)(m[i, j] - MaxValue));
+
+                    m[i, j] = exp;
+
+                    sum += exp;
+                }
+            }
+
+            for (int i = 0; i < m.Row; i++)
+            {
+                for (int j = 0; j < m.Column; j++)
+                {
+                    m[i, j] /= sum;
+                }
+            }
+
+            return m;
         }
 
         /// <summary>
@@ -61,5 +141,48 @@ namespace Deeplearning.Core.Math.Common
             }
             return scale;
         }
+
+        public static Vector Tanh(Vector vector)
+        {
+            for (int i = 0; i < vector.Length; i++)
+            {
+                vector[i] = Tanh((float)vector[i]);               
+            }
+            return vector;
+        }
+
+        public static Matrix Tanh(Matrix matrix) {
+
+            for (int i = 0; i < matrix.Row; i++)
+            {
+                for (int j = 0; j < matrix.Column; j++)
+                {
+                    matrix[i, j] = Tanh((float)matrix[i, j]);
+                }
+            }
+            return matrix;
+        }
+       
+        public static float Tanh(float x) {
+
+            float e1 = MathF.Pow(MathF.E,x);
+
+            float e2 = MathF.Pow(MathF.E,-x);
+
+            return (e1 - e2) / (e1 + e2);
+        }
+
+        public static Matrix ReLU(Matrix matrix) {
+
+            for (int i = 0; i < matrix.Row; i++)
+            {
+                for (int j = 0; j < matrix.Column; j++)
+                {
+                    matrix[i, j] = MathF.Max(0, (float)matrix[i, j]);
+                }
+            }
+            return matrix;
+        }
+    
     }
 }

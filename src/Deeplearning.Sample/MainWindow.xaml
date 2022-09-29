@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Deeplearning.Sample" xmlns:oxy="http://oxyplot.org/wpf"
+        xmlns:local="clr-namespace:Deeplearning.Sample" xmlns:oxy="http://oxyplot.org/wpf" xmlns:pages="clr-namespace:Deeplearning.Sample.Views.Pages"
         mc:Ignorable="d"
         Title="MainWindow" Height="900" Width="1440">
     <Grid>
@@ -21,67 +21,14 @@
         <Border MinWidth="140" Margin="0 5 5 5" Grid.Column="2" Grid.RowSpan="3" BorderBrush="gray" BorderThickness="1" >
             <StackPanel HorizontalAlignment="Stretch">
                 <TextBlock Padding="5" TextAlignment="Center" FontWeight="Bold" Background="CornflowerBlue">操作</TextBlock>
-                <Button Margin="3" Command="{Binding TestCommand}">测试</Button>
-                <Button Margin="3" Command="{Binding ComputeCommand}">对角矩阵与矩阵乘积</Button>
-                <Button Margin="3" Command="{Binding MatrixNormalizedCommand}">矩阵标准化</Button>
-                <Button Margin="3" Command="{Binding TransposeCommand}">矩阵转置</Button>
+                <Button Margin="3" Command="{Binding TestCommand}">测试</Button>      
                 <Button Margin="3" Command="{Binding GradientCommand}">梯度下降</Button>
                 <Button Margin="3" Command="{Binding Gradient3DCommand}">3D梯度下降</Button>
                 <Button Margin="3" Command="{Binding NormalDistriutionCommand}">正态分布</Button>
-                <Button Margin="3" Command="{Binding MatrixDetCommand}">行列式</Button>
-                <Button Margin="3" Command="{Binding MatrixAdjugateCommand}">伴随矩阵</Button>
-                <Button Margin="3" Command="{Binding MatrixInverseCommand}">逆矩阵</Button>
-                <Button Margin="3" Command="{Binding VarianceMatrixCommand}">方差矩阵</Button>
-                <Button Margin="3" Command="{Binding CovarianceMatrixCommand}">协方差矩阵</Button>
-                <Button Margin="3" Command="{Binding XORNetCommand}">XOR-Net</Button>
-                <Menu Background="Transparent">
-                    <Menu.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Stretch"></StackPanel>
-                        </ItemsPanelTemplate>
-                    </Menu.ItemsPanel>
-                    
-                    <MenuItem  Margin="3" x:Name="menuItem" Header="正交化" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-                        <MenuItem Header="GGS" Margin="3" CommandParameter="0" Command="{Binding Decompostion.OrthogonalizationCommand}"></MenuItem>
-                        <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.OrthogonalizationCommand}"></MenuItem>
-                        <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.OrthogonalizationCommand}"></MenuItem>
-                    </MenuItem>
-
-                    <MenuItem  Margin="3" Header="特征值分解">
-                        <MenuItem Header="GGS" Margin="3" CommandParameter="0" Command="{Binding Decompostion.EigenDecompositionCommand}"></MenuItem>
-                        <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.EigenDecompositionCommand}"></MenuItem>
-                        <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.EigenDecompositionCommand}"></MenuItem>
-                    </MenuItem>
-
-                    <MenuItem  Margin="3" Header="SVD分解">
-                        <MenuItem Header="GGS" Margin="3" CommandParameter="0" Command="{Binding Decompostion.SVDDecompositionCommand}"></MenuItem>
-                        <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.SVDDecompositionCommand}"></MenuItem>
-                        <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.SVDDecompositionCommand}"></MenuItem>
-                    </MenuItem>
-
-                    <MenuItem  Margin="3" Header="伪逆">
-                        <MenuItem Header="GGS" Margin="3" CommandParameter="0" Command="{Binding Decompostion.PseudoInverseCommand}"></MenuItem>
-                        <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.PseudoInverseCommand}"></MenuItem>
-                        <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.PseudoInverseCommand}"></MenuItem>
-                    </MenuItem>
-
-
-                    <MenuItem  Margin="3" Header="主成分分析">
-                        <MenuItem Header="GGS" Margin="3" CommandParameter="0" Command="{Binding Decompostion.PCADecompositionCommand}"></MenuItem>
-                        <MenuItem Header="MGS" Margin="3" CommandParameter="1" Command="{Binding Decompostion.PCADecompositionCommand}"></MenuItem>
-                        <MenuItem Header="Householder" Margin="3" CommandParameter="2" Command="{Binding Decompostion.PCADecompositionCommand}"></MenuItem>
-                    </MenuItem>
-                    <MenuItem  Margin="3" Header="线性回归" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-                        <MenuItem Header="训练" Margin="3"  Command="{Binding LinearRegressionTrainCommand}"></MenuItem>
-                        <MenuItem Header="预测" Margin="3" Command="{Binding LinearRegressionPredictCommand}"></MenuItem>
-                    </MenuItem>
-
-                    <!--<MenuItem  Margin="3" Header="数据降维">
-                        <MenuItem Header="SVD" Margin="3" CommandParameter="0" Click="OnClickSVDDimensionReduction"></MenuItem>
-                        <MenuItem Header="PCA" Margin="3" CommandParameter="1" Click="OnClickPCDDimensionReduction"></MenuItem>
-                    </MenuItem>-->
-                </Menu>
                
+                <Button Margin="3" Command="{Binding XORNetCommand}">XOR-Net</Button>
+                
+        
             </StackPanel>
         </Border>
 
@@ -108,5 +55,12 @@
                 </Border>
             </Grid>
         </Border>
+
+        <Frame Background="Wheat" Grid.RowSpan="3" Grid.ColumnSpan="3">
+            <Frame.Content>
+                <pages:LinearAlgebraPagePage></pages:LinearAlgebraPagePage>
+            </Frame.Content>
+        </Frame>
+        
     </Grid>
 </Window>

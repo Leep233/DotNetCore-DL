@@ -24,6 +24,7 @@ namespace Deeplearning.Core.Math
             for (int c = 0; c < col; c++)
             {
                 vs[c] = new Vector(row);
+
                 for (int r = 0; r < row; r++)
                 {
                     vs[c][r] = source[r, c];
@@ -63,20 +64,13 @@ namespace Deeplearning.Core.Math
 
             Matrix matrix = new Matrix(rSize, cSize);
 
-            Parallel.For(0, rSize, r => {
+            for (int r = 0; r < rSize; r++)
+            {
                 for (int c = 0; c < cSize; c++)
                 {
                     matrix[r, c] = source[r + sR, c + sC];
                 }
-            });
-
-            //for (int r = 0; r < rSize; r++)
-            //{
-            //    for (int c = 0; c < cSize; c++)
-            //    {
-            //        matrix[r, c] = source[r + sR, c + sC];
-            //    }
-            //}
+            }
             return matrix;
         }
 
@@ -84,28 +78,41 @@ namespace Deeplearning.Core.Math
         {
             if(offsetR>= source.Row || offsetC>= source.Column) throw new IndexOutOfRangeException();
 
-            Parallel.For(0, matrix.Row, r => {
+            for (int r = 0; r < matrix.Row; r++)
+            {
                 for (int c = 0; c < matrix.Column; c++)
                 {
                     source[r + offsetR, c + offsetC] = matrix[r, c];
                 }
-            });
-
-            //for (int r = 0; r < matrix.Row; r++)
-            //{
-            //    for (int c = 0; c < matrix.Column; c++)
-            //    {
-            //        source[r + offsetR, c + offsetC] = matrix[r, c];
-            //    }
-            //}
-
-
+            }
 
             return source;
 
         }
 
-  
+        /// <summary>
+        /// 判断是否是对称矩阵
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static bool Symmetry(this Matrix source) 
+        {
+           if (source.Row != source.Column) return false;
+
+           int row = source.Row;
+
+            for (int r = 0; r < row; r++)
+            {
+                for (int c = 0; c < row; c++)
+                {
+                    if (c == r) continue;
+
+                    if(source[r,c] != source[c,r]) return false;    
+
+                }
+            }
+            return true;
+        }
 
         /// <summary>
         /// 中心化（零均值化）：是指变量减去它的均值。其实就是一个平移的过程，平移后所有数据的中心是（0，0）
@@ -136,7 +143,7 @@ namespace Deeplearning.Core.Math
             {
                 for (int c = 0; c < vectorCount; c++)
                 {
-                    matrix[r,c] = source[r, c] - avgs[r];
+                    matrix[r,c] =( source[r, c] - avgs[r]);
                 }          
             }
 
@@ -146,8 +153,13 @@ namespace Deeplearning.Core.Math
 
         public static Matrix Replace(this Matrix source, Vector vector, int colIndex) 
         {
-            Parallel.For(0, vector.Length, i => { source[i, colIndex] = vector[i]; });
 
+            for (int i = 0; i < vector.Length; i++)
+            {
+                source[i, colIndex] = vector[i];
+            }
+
+          //  Parallel.For(0, vector.Length, i => {  });
 
             return source;
         }
@@ -391,7 +403,7 @@ namespace Deeplearning.Core.Math
             {
                 for (int c = 0; c < vectorCount; c++)
                 {
-                    matrix[r, c] = (source[r, c] - avgs[r])/ (sdevs[r]);
+                    matrix[r, c] = ((source[r, c] - avgs[r]) / sdevs[r]);
                 }
             }
 
@@ -471,26 +483,21 @@ namespace Deeplearning.Core.Math
                     {
                         temp += m1[i, k] * m2[k, j];
                     }
-                    result[i, j] = temp/n;
+                    result[i, j] = temp /n;
                 }
             }
             return result;
-
-           // return (source * source.T) / n;
         }
 
-        public static Matrix PInv(this Matrix source,Func<Matrix,QRResult> orthogonaliztionFunction=null) {
+        public static Matrix PInv(this Matrix source,int k=1000) {
 
-            if (orthogonaliztionFunction is null)
-                orthogonaliztionFunction = Orthogonalization.Householder;
-
-            SVDResult svdResult = MatrixDecomposition.SVD(source, orthogonaliztionFunction);      
+            SVDEventArgs svdResult = MatrixDecomposition.SVD(source,k);      
 
             Matrix D = svdResult.S;
             Matrix V = svdResult.V;
             Matrix U = svdResult.U;
 
-            Matrix D_pInv = new Matrix(D.Column,D.Row);
+            Matrix S = new Matrix(V.Column,U.Column);
 
             int r = (int)MathF.Min(D.Row, D.Column);
 
@@ -498,10 +505,82 @@ namespace Deeplearning.Core.Math
             {
                 double value = D[i, i];
                 if (value == 0) continue;
-                D_pInv[i, i] = 1 / value;
+                S[i, i] = (1 / value);
             }
 
-            return V * D_pInv * U.T;
+            return V * S * U.T;
         }
+
+        public static (Vector eigens, Matrix vectors) Sort(Vector eigens, Matrix vectors, int order = -1)
+        {
+            int r = eigens.Length;//(int)MathF.Min(Eigen.Row, Eigen.Column);
+
+            Func<double, double, bool> conditions = (a, b) => order == -1 ? (a < b) : (a > b);
+
+            return  Sort(eigens, vectors, conditions) ;
+
+        }
+
+
+        public static (Vector eigens, Matrix vectors) Sort(Vector eigens, Matrix vectors,Func<double,double,bool> conditions)
+        {
+            int r = eigens.Length;
+
+            for (int i = 0; i < r - 1; i++)
+            {
+                for (int j = 0; j < r - 1 - i; j++)
+                {
+                    int nextIndex = j + 1;
+
+                    if (conditions(eigens[j], eigens[nextIndex]))
+                    {
+                        double temp = eigens[j];
+                        eigens[j] = eigens[nextIndex];
+                        eigens[nextIndex] = temp;
+                        Vector v1 = vectors.GetVector(nextIndex);
+                        Vector v2 = vectors.GetVector(j);
+                        vectors.Replace(v2, nextIndex);
+                        vectors.Replace(v1, j);
+                    }
+                }
+            }
+
+            return (eigens, vectors);
+        }
+
+
+        public static (Vector eigens, Vector[] vectors) Sort(Vector eigens, Vector[] vectors, int order = -1)
+        {
+            Func<double, double, bool> conditions = (a, b) => order == -1 ? (a < b) : (a > b);
+
+            return Sort(eigens, vectors, conditions);
+        }
+
+        public static (Vector eigens, Vector[] vectors) Sort(Vector eigens, Vector[] vectors, Func<double, double, bool> conditions)
+        {
+            int r = eigens.Length;
+
+            for (int i = 0; i < r - 1; i++)
+            {
+                for (int j = 0; j < r - 1 - i; j++)
+                {
+                    int nextIndex = j + 1;          
+
+                    if (conditions(eigens[j], eigens[nextIndex]))
+                    {
+                        double temp = eigens[j];
+                        eigens[j] = eigens[nextIndex];
+                        eigens[nextIndex] = temp;
+                        Vector v1 = vectors[nextIndex];
+                      //  Vector v2 = vectors[j]; 
+                        vectors[nextIndex] = vectors[j];
+                        vectors[j] = v1;
+                    }
+                }
+            }
+            return (eigens, vectors);
+        }
+
+
     }
 }

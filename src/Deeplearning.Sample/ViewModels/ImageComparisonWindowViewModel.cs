@@ -55,14 +55,14 @@ namespace Deeplearning.Sample.ViewModels
 
             var result = await Task.Factory.StartNew<BitmapImage>(() =>
             {
+                SVDEventArgs result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.r));
 
-                SVDResult result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.r), Orthogonalization.Householder);
+                 double[,] r = Compress(result).scalars;
+                 result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.g));
 
-                double[,] r = Compress(result).scalars;
-                 result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.g), Orthogonalization.Householder);
+                 double[,] g = Compress(result).scalars;
 
-                double[,] g = Compress(result).scalars;
-                 result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.b), Orthogonalization.Householder);
+                 result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.b));
 
                 double[,] b = Compress(result).scalars;
                 double[,] a = new double[b.GetLength(0), b.GetLength(1)];
@@ -72,7 +72,7 @@ namespace Deeplearning.Sample.ViewModels
             Image = result;
         }
 
-        private Core.Math.Models.Matrix Compress(SVDResult svd, float rate = 0.8f)
+        private Core.Math.Models.Matrix Compress(SVDEventArgs svd, float rate = 0.8f)
         {
             var oldEigens = svd.S;
             int r = (int)(oldEigens.Row * 0.8f);
@@ -186,9 +186,9 @@ namespace Deeplearning.Sample.ViewModels
 
             img.CopyPixels(pixels, stride, 0);
 
-            double [,] r = new double [pixelWidth, pixelHeight];
-            double [,] g = new double [pixelWidth, pixelHeight];
-            double [,] b = new double [pixelWidth, pixelHeight];
+            double[,] r = new double[pixelWidth, pixelHeight];
+            double[,] g = new double[pixelWidth, pixelHeight];
+            double[,] b = new double[pixelWidth, pixelHeight];
             // float[,] a = new float[pixelWidth, pixelHeight];
 
             for (int y = 0; y < img.PixelHeight; y++)

@@ -55,7 +55,7 @@ namespace Deeplearning.Core.Math.Probability
 
             int n = x.Length;
 
-            double det = β.det;
+            double det = Matrix.Det(β);//.det;
 
             float f = MathF.Sqrt(((float)det) / MathF.Pow(pi2, n));
 

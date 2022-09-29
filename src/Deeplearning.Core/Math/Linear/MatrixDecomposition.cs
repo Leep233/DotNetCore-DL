@@ -11,17 +11,27 @@ namespace Deeplearning.Core.Math.Linear
     public class MatrixDecomposition
     {
 
-        public static SVDResult SVD(Matrix source, Func<Matrix, QRResult> decompose, int step = 15)
-        {   
-            EigResult A_Eig = Eig(source.T * source, decompose, step);
-    
-            Matrix V = A_Eig.Vectors;
+       
 
-            EigResult B_Eig = Eig(source * source.T, decompose, step);
- 
-            Matrix U = B_Eig.Vectors;
+        public static SVDEventArgs SVD(Matrix source, int iterations = 15)
+        {
+            //1. A^T * A get matrix V
+            Matrix aTA = source.T * source;     
 
-            double[] eigens = A_Eig.Eigen.DiagonalElements();
+           EigenDecompositionEventArgs eventArgs1 =  Eig(aTA, iterations, true);
+
+           Matrix V = eventArgs1.eigenVectors;
+
+            //2.A*A^T .get Matrix.U
+            Matrix aAT = source * source.T;
+
+            EigenDecompositionEventArgs eventArgs2 = Eig(aAT, iterations, true);
+       
+            Matrix U = eventArgs2.eigenVectors;
+
+            //get matrix S
+
+            Vector eigens = eventArgs1.eigens;
 
             int r = U.Column;
 
@@ -31,79 +41,181 @@ namespace Deeplearning.Core.Math.Linear
 
             int l = (int)MathF.Min(r, c);
 
-            l = (int)MathF.Min(l,eigens.Length);
+            l = (int)MathF.Min(l, eigens.Length);
 
             for (int i = 0; i < l; i++)
             {
-                double value = ValueExtension.ZeroValidation(eigens[i]);
-                 
-                D[i, i] = value==0?0: MathF.Sqrt((float)value);
+                double value = eigens[i];
+
+                value = value == 0 ? 0 : MathF.Sqrt(MathF.Abs((float)value));
+
+                D[i, i] = value;
             }
-            return new SVDResult(U,D,V);
+            return new SVDEventArgs(U, D, V);
         }
 
-
+   
         /// <summary>
-        /// 主成分分析（Principal Component Analysis，PCA）
+        /// 幂法迭代
         /// </summary>
         /// <param name="source"></param>
+        /// <param name="k"></param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>   
-        public static PCAResult PCA(Matrix source,int r, Func<Matrix, QRResult> qrDecFunction)
+        public static EigenDecompositionEventArgs Eig(Matrix source, int k = 100, bool isClip = true)
         {
-    
-            //1.中心化
-            var centralInfo= source.Centralized();
-            Matrix centralizedMatrix = centralInfo.matrix;
-            //2.协方差矩阵
-            Matrix covMatrix = source.Cov();
-      
-            //3.对协方差矩阵求特征值特征向量
-            EigResult result = Eig(covMatrix, qrDecFunction);
+            Matrix matrix = source;
+
+            int vectorCount = source.Column * source.Row;       
+
+            Vector eigenValues = new Vector(vectorCount);
+
+            Vector[] eigenVectors = new Vector[vectorCount];  
+
+            for (int count = 0; count < vectorCount; count++)
+            {
+                EigenEventArgs eigenEvent = null;
+                try
+                {
+                    eigenEvent = Linear.Algebra.PowerIteration(matrix, k);         
+                }
+                catch (Exception ex)
+                {
+                   // Debug.WriteLine(ex.Message);
+                }
+
+                eigenValues[count] = eigenEvent.eigen;
+
+                eigenVectors[count] = eigenEvent.vector;
+
+                //去特征 A = A-λxx^T;
+                Matrix eigenMatrix = eigenValues[count] * eigenVectors[count] * eigenVectors[count].T;
+
+                matrix = matrix - eigenMatrix;
+            }
+
+            bool isSymmetry = true;// source.Symmetry(); ////
+
+            EigenDecompositionEventArgs eventArgs = new EigenDecompositionEventArgs(eigenValues, new Matrix(eigenVectors), isSymmetry);//.Clip(source.Column); //.Clip(source.Column);//.Sort();//
            
-            // Matrix eigens = eigResult.Eigen;
+            return isClip? eventArgs.Clip(source.Column): eventArgs;
+        }
 
-            //4.选取有效的特征值
+        
 
-            Matrix eigenVectors = result.Vectors;// result.V;//eigResult.Vectors;
-           
-            Matrix P = eigenVectors.Clip(0,0, r, eigenVectors.Column);
 
-       
-            Matrix y = P * source ;
-   
-            return new PCAResult();
+        [Obsolete("特征值无法算全")]
+        public static EigenDecompositionEventArgs Eig(Matrix source, Func<Matrix, QREventArgs> decompose, int k = 300)
+        {
+
+            EigenDecompositionEventArgs eigEventArgs = null;
+
+            bool isSymmetry = source.Symmetry();
+
+            Matrix Ak = source;
+
+            Matrix Q = Matrix.UnitMatrix(source.Row);
+
+            for (int i = 0; i < k; i++)
+            {
+                var decResult = decompose.Invoke(Ak);
+
+                Ak = decResult.Q.T * Ak * decResult.Q;
+
+                if (isSymmetry) Q = Q * decResult.Q;
+            }
+
+            Vector eigens = new Vector(Ak.DiagonalElements());
+
+            if (isSymmetry)
+            {
+                eigEventArgs = new EigenDecompositionEventArgs(eigens, Q, true);
+            }
+            else
+            {
+                //系数矩阵
+                Matrix eigenVectors = EigenVectors(source, eigens);
+
+                eigEventArgs = new EigenDecompositionEventArgs(eigens, eigenVectors);
+            }
+
+            return eigEventArgs.Sort();
         }
 
 
-        public static EigResult Eig(Matrix source, Func<Matrix,QRResult> qrDecFunction, int step = 15)
+
+        private static Matrix EigenVectors(Matrix source, Vector eigenValues)
+        {
+            int eigenCount = eigenValues.Length;
+
+            Vector[] eigenVectors = new Vector[eigenCount];
+
+            for (int i = 0; i < eigenCount; i++)
+            {
+                Matrix coefficientMatrix = source;
+
+                double eigenValue = eigenValues[i];
+
+                for (int j = 0; j < eigenCount; j++)
+                {
+                    double s1 = source[j, j];
+
+                    double value = s1 - eigenValue;
+
+                    coefficientMatrix[j, j] = value;
+                }
+                Matrix temp = Matrix.ElementaryTransformation(coefficientMatrix);
+
+                eigenVectors[i] = SolveLinearEquations(temp);
+            }
+            return new Matrix(eigenVectors);
+        }
+
+        //解方程组
+        public static Vector SolveLinearEquations(Matrix matrix)
         {
 
-            Matrix matrix = (Matrix)source.Clone();
+            int size = matrix.Row;
 
-            int k = (int)MathF.Min(matrix.Row, matrix.Column);
+            int col = matrix.Column;
 
-            Matrix Q = Matrix.UnitMatrix(k);
+            Vector vector = new Vector(size);
 
-            for (int i = 0; i < step; i++)
+            vector[size - 1] = 1;
+
+            double mid = 1;
+
+            //从下往上求解
+            for (int r = size - 2; r >= 0; r--)
             {
-                QRResult result = qrDecFunction(matrix);
+                double sum = 0;
 
-                matrix = result.R * result.Q;
-
-                Q = Q * result.Q;
-            }
-
-            for (int i = 0; i < matrix.Row; i++)
-            {
-                for (int j = 0; j < matrix.Column; j++)
+                for (int c = col - 1; c > r; c--)
                 {
-                    if (i == j) continue;
-                    matrix[i, j] = 0;
+                    double x = vector[c];
+
+                    double d1 = matrix[r, c];
+
+                    sum += d1 * x;
                 }
+
+                double d2 = matrix[r, r];
+
+                d2 = (d2 == 0) ? 0 : -sum / d2;
+
+                vector[r] = d2;
+
+                mid += sum * sum;
             }
 
-            return new EigResult(matrix, Q).Sort();
+            mid = MathF.Sqrt((float)mid);
+
+            for (int i = 0; i < vector.Length; i++)
+            {
+                vector[i] /= mid;
+            }
+
+            return vector;
+
         }
 
     }

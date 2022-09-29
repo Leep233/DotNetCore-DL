@@ -34,9 +34,8 @@ namespace Deeplearning.Core.Example
             return input * weights - bias;
         }
         
-        public  double Train(Matrix data,Vector predict) 
+        public  double Fit(Matrix data,Vector predict) 
         {
-
             bias = new Vector(data.Row);
 
             weights = NormalEquation(data,predict);
@@ -52,12 +51,10 @@ namespace Deeplearning.Core.Example
 
             Matrix input_T = data.T;
 
-            Matrix matrix = (input_T * data).inverse;         
+            Matrix matrix = Matrix.Inv( input_T * data);         
 
             return matrix * input_T * vector; 
         }
-
-      
 
     }
 }
