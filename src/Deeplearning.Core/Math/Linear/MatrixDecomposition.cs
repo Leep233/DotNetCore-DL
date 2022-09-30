@@ -63,13 +63,16 @@ namespace Deeplearning.Core.Math.Linear
         /// <returns></returns>
         public static EigenDecompositionEventArgs Eig(Matrix source, int k = 100, bool isClip = true)
         {
+            float minValue = 1E-2f;
+
             Matrix matrix = source;
 
-            int vectorCount = source.Column * source.Row;       
+            int vectorCount = source.Column * source.Row;
 
-            Vector eigenValues = new Vector(vectorCount);
+            List<double> eigens = new List<double>();
 
-            Vector[] eigenVectors = new Vector[vectorCount];  
+            List<Vector> vectors = new List<Vector>();
+
 
             for (int count = 0; count < vectorCount; count++)
             {
@@ -78,30 +81,41 @@ namespace Deeplearning.Core.Math.Linear
                 {
                     eigenEvent = Linear.Algebra.PowerIteration(matrix, k);         
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                    // Debug.WriteLine(ex.Message);
                 }
 
-                eigenValues[count] = eigenEvent.eigen;
+                if (eigenEvent is null) continue;
 
-                eigenVectors[count] = eigenEvent.vector;
+                double eigenValue = eigenEvent.eigen;
 
-                //去特征 A = A-λxx^T;
-                Matrix eigenMatrix = eigenValues[count] * eigenVectors[count] * eigenVectors[count].T;
+                Vector vector = eigenEvent.vector;
+
+                if (MathF.Abs((float)eigenValue) <= minValue || Vector.NoSqrtNorm(vector) <= minValue) continue;
+
+                eigens.Add(eigenValue);
+
+                vectors.Add(vector);
+
+                 //去特征 A = A-λxx^T;
+                Matrix eigenMatrix = eigenValue * vector * vector.T;
 
                 matrix = matrix - eigenMatrix;
+        
             }
 
-            bool isSymmetry = true;// source.Symmetry(); ////
+            bool isSymmetry = true;// source.Symmetry();//  ////
 
-            EigenDecompositionEventArgs eventArgs = new EigenDecompositionEventArgs(eigenValues, new Matrix(eigenVectors), isSymmetry);//.Clip(source.Column); //.Clip(source.Column);//.Sort();//
+
+            Vector eigenValues = new Vector(eigens.ToArray());
+
+           Matrix eigenVectors = new Matrix( vectors.ToArray());
+
+            EigenDecompositionEventArgs eventArgs = new EigenDecompositionEventArgs(eigenValues, eigenVectors, isSymmetry);//.Clip(source.Column); //.Clip(source.Column);//.Sort();//
            
-            return isClip? eventArgs.Clip(source.Column): eventArgs;
+            return isClip ? eventArgs.Clip(source.Column): eventArgs.Sort();
         }
-
-        
-
 
         [Obsolete("特征值无法算全")]
         public static EigenDecompositionEventArgs Eig(Matrix source, Func<Matrix, QREventArgs> decompose, int k = 300)

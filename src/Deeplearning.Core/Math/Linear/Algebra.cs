@@ -9,15 +9,15 @@ namespace Deeplearning.Core.Math.Linear
     {
         public static EigenEventArgs PowerIteration(Matrix matrix,int iterations = 300) 
         {
-            double minValue = 1E-10;      
-
             int vectorCount = matrix.Column;
 
-            Vector eigenVector = new Vector(vectorCount);//.Random(vectorCount, -3, 3);
+            Vector eigenVector = new Vector(vectorCount);
+
+            Random r = new Random();
 
             for (int i = 0; i < vectorCount; i++)
             {
-                eigenVector[i] = new Random().NextDouble();
+                eigenVector[i] = r.NextDouble();
             }
 
             for (int i = 0; i < iterations; i++)
@@ -30,18 +30,20 @@ namespace Deeplearning.Core.Math.Linear
                 {
                     eigenVector = vector;
                     continue;
-                }             
+                }
 
-                vector /= norm;            
+                vector /= norm;
 
                 Vector y = eigenVector - vector;
 
-                norm = Vector.Norm(y);
+                norm = Vector.NoSqrtNorm(y);
 
-                if (norm <= minValue) break;
+                if (norm <= 0.00001) break;
 
                 eigenVector = vector;
             }
+
+            eigenVector = Vector.Standardized(eigenVector);
 
             double[] eigenVector_T = eigenVector.T;
 
@@ -49,7 +51,6 @@ namespace Deeplearning.Core.Math.Linear
 
             return new EigenEventArgs(eigenValue, eigenVector);
 
-        }
-   
+        }   
     }
 }

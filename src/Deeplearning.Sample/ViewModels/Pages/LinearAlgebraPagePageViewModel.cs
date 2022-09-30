@@ -144,7 +144,7 @@ namespace Deeplearning.Sample.ViewModels.Pages
 
             StringBuilder builder = new StringBuilder();
 
-            EigenDecompositionEventArgs eventArgs =  MatrixDecomposition.Eig(matrix,3000);
+            EigenDecompositionEventArgs eventArgs =  MatrixDecomposition.Eig(matrix,3000,false);
 
            // EigenDecompositionEventArgs eventArgs = MatrixDecomposition.Eig(matrix,decompose,2000);
 
