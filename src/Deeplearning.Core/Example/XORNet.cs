@@ -20,6 +20,7 @@ namespace Deeplearning.Core.Example
         /// 模型函数
         /// </summary>
         public Func<Matrix, Matrix, Vector> ModelFunc { get; set; }
+
         /// <summary>
         /// 损失函数
         /// </summary>
