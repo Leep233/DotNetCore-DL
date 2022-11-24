@@ -1,49 +1,60 @@
 ﻿using Deeplearning.Core.Math;
 using Deeplearning.Core.Math.Linear;
-using Deeplearning.Core.Math.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Deeplearning.Core.Example
 {
     public class PCA
     {
 
-        public PCAEventArgs Fit(Matrix source,int k) 
+        public PCAEventArgs EigFit(Matrix source,int k) 
         {
             Matrix matrix = source;
             //1.中心化
-            var centralInfo = matrix.Centralized();
+            var centralInfo = Matrix.Centralized(matrix);
 
             Matrix centralizedMatrix = centralInfo.matrix;
             //2.协方差矩阵
-            Matrix covMatrix = centralizedMatrix.Cov();
+            Matrix covMatrix = Matrix.Cov(centralizedMatrix);
 
             //3.对协方差矩阵求特征值特征向量
-            EigenDecompositionEventArgs result = MatrixDecomposition.Eig(covMatrix,500, true);
+            EigenDecompositionEventArgs result = Math.Linear.Algebra.Eig(covMatrix,k);
 
             //Matrix eigens = eigResult.Eigen;
 
             //4.选取有效的特征值
 
-            Matrix eigenVectors = result.eigenVectors;// result.V;//eigResult.Vectors;
+          //  Matrix eigenVectors = result.eigenVectors;
 
-            Vector[] vectors = new Vector[k];
+            Matrix D = result.eigenVectors;// eigenVectors;// Matrix.Clip(eigenVectors, 0,0, eigenVectors.Row,k);
 
-            for (int i = 0; i < k; i++)
-            {
-                vectors[i] = eigenVectors.GetVector(i);
-            }
+            Matrix X = D.T * source;      
 
-           // Vector v = eigenVectors.GetVector(0);
-            //vectors[1] = eigenVectors.GetVector(1);
+            return new PCAEventArgs(X,D);
+        }
 
-            Matrix D = new Matrix(vectors);
+        public PCAEventArgs SVDFit(Matrix source, int k)
+        {
+            Matrix matrix = source;
+            //1.中心化
+            var centralInfo = Matrix.Centralized(matrix);
+
+            Matrix centralizedMatrix = centralInfo.matrix;
+            //2.协方差矩阵
+            Matrix covMatrix = Matrix.Cov(centralizedMatrix);
+
+            //3.对协方差矩阵求特征值特征向量
+            SVDEventArgs result = Math.Linear.Algebra.SVD(covMatrix,k);
+
+            //Matrix eigens = eigResult.Eigen;
+
+            //4.选取有效的特征值
+            Matrix eigenVectors = result.V;
+
+            Matrix D = eigenVectors;// Matrix.Clip(eigenVectors, 0, 0, eigenVectors.Row, k);
 
             Matrix X = D.T * source;
 
-            return new PCAEventArgs(X,D);
+            return new PCAEventArgs(X, D);
         }
     }
 }

@@ -1,12 +1,4 @@
 ﻿using Deeplearning.Core.Math;
-using Deeplearning.Core.Math.Linear;
-using Deeplearning.Core.Math.Models;
-using Deeplearning.Core.Math.Probability;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Deeplearning.Core.Example
 {

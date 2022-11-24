@@ -29,9 +29,14 @@ namespace Deeplearning.Sample.Views.Pages
             this.DataContext = viewModel;   
         }
 
-        private void OnClickPACButton(object sender, RoutedEventArgs e)
+        private void OnClickPCAButton(object sender, RoutedEventArgs e)
         {
             pcaPanel.Visibility  =pcaPanel.Visibility == Visibility.Visible? Visibility.Collapsed: Visibility.Visible;
+        }
+
+        private void OnClickImageCompressionButton(object sender, RoutedEventArgs e)
+        {
+            imageCompressionPanel.Visibility = imageCompressionPanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
         }
     }
 }

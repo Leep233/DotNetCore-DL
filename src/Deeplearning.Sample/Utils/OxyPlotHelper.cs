@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Deeplearning.Core.Math.Models;
+﻿using System.Collections.Generic;
+using Deeplearning.Core.Math;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;

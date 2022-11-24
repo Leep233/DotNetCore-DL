@@ -24,11 +24,10 @@
                 <Button Margin="3" Command="{Binding TestCommand}">测试</Button>      
                 <Button Margin="3" Command="{Binding GradientCommand}">梯度下降</Button>
                 <Button Margin="3" Command="{Binding Gradient3DCommand}">3D梯度下降</Button>
-                <Button Margin="3" Command="{Binding NormalDistriutionCommand}">正态分布</Button>
-               
+                <Button Margin="3" Command="{Binding NormalDistriutionCommand}">正态分布</Button>               
                 <Button Margin="3" Command="{Binding XORNetCommand}">XOR-Net</Button>
-                
-        
+                <Button Margin="3" Command="{Binding MatrixCentralizedCommand}">去中心化</Button>
+                <Button Margin="3" Command="{Binding MatrixCovCommand}">协方差矩阵</Button>
             </StackPanel>
         </Border>
 
@@ -56,7 +55,7 @@
             </Grid>
         </Border>
 
-        <Frame Background="Wheat" Grid.RowSpan="3" Grid.ColumnSpan="3">
+        <Frame  Background="Wheat" Grid.RowSpan="3" Grid.ColumnSpan="3">
             <Frame.Content>
                 <pages:LinearAlgebraPagePage></pages:LinearAlgebraPagePage>
             </Frame.Content>

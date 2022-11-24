@@ -1,10 +1,5 @@
 ﻿using Deeplearning.Core.Attributes;
-using Deeplearning.Core.Math.Models;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Deeplearning.Core.Math.Linear
 {
@@ -64,7 +59,7 @@ namespace Deeplearning.Core.Math.Linear
 
             for (int i = 0; i < count; i++)
             {
-                Matrix subMatrix = R.Clip(i, i, R.Row, R.Row);
+                Matrix subMatrix = Matrix.Clip(R,i, i, R.Row, R.Row);
 
                 Vector x = subMatrix.GetVector(0);
 
@@ -78,7 +73,7 @@ namespace Deeplearning.Core.Math.Linear
 
                 Matrix h = Matrix.UnitMatrix(source.Row);
 
-                h = h.Replace(temp, i, i, temp.Row, temp.Column);
+                h = Matrix.Replace(h,temp, i, i);
 
                 R = h * R;
                 /*
@@ -98,6 +93,7 @@ namespace Deeplearning.Core.Math.Linear
 
             return new QREventArgs(Q, R);
         }
+      
         /// <summary>
         /// 上三角矩阵校正，
         /// </summary>
@@ -132,9 +128,9 @@ namespace Deeplearning.Core.Math.Linear
         public static QREventArgs CGS(Matrix source)
         {
 
-            Matrix matrix = source;// (Matrix).Clone();
+            Matrix matrix = source;
 
-            Matrix Q = source;// (Matrix)source.Clone();
+            Matrix Q = source;
 
             Matrix R = new Matrix(source.Column, source.Column);
 
@@ -158,7 +154,7 @@ namespace Deeplearning.Core.Math.Linear
                 }
 
                 R[i, i] = Vector.Norm(a);// (float)a.Norm(2);
-                Q = Q.Replace(e, i);
+                Q = Matrix.Replace(Q,e, i);
             }
 
             R = UpperTriangularMatrixCalibration(R);
@@ -188,7 +184,7 @@ namespace Deeplearning.Core.Math.Linear
 
                 Vector e = Vector.Standardized(b);
 
-                Q = Q.Replace(e, i);
+                Q = Matrix.Replace(Q,e, i);
 
                 R[i, i] = Vector.Norm(b);
 
@@ -202,7 +198,7 @@ namespace Deeplearning.Core.Math.Linear
 
                     b = b - temp * e;
 
-                    matrix.Replace(b, j);
+                    matrix = Matrix.Replace(matrix, b, j);
                 }
             }
 

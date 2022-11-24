@@ -1,13 +1,10 @@
-﻿using Deeplearning.Core.Example;
-using Deeplearning.Core.Math;
+﻿using Deeplearning.Core.Math;
 using Deeplearning.Core.Math.Linear;
-using Deeplearning.Core.Math.Models;
 using Deeplearning.Sample.Utils;
 using Deeplearning.Sample.ViewModels.Components;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Deeplearning.Sample.ViewModels.Pages
@@ -41,11 +38,7 @@ namespace Deeplearning.Sample.ViewModels.Pages
          
 
             IOComponentContext = new IOComponentViewModel();
-
-         
-
-            ExecuteSelectedQRFunctionCommand(2);
-
+      
             SelectedQRFunctionCommand = new DelegateCommand<object>(ExecuteSelectedQRFunctionCommand);
 
             // MatrixDetCommand = new DelegateCommand(Execute);
@@ -66,6 +59,7 @@ namespace Deeplearning.Sample.ViewModels.Pages
             PCADecomposeCommand = new DelegateCommand(ExecutePCADecomposeCommand);
             PseudoInverseCommand = new DelegateCommand(ExecutePseudoInverseCommand);
 
+            SelectedQRFunctionCommand.Execute(2);
             MatrixRandomCommand.Execute();
         }
 
@@ -75,12 +69,12 @@ namespace Deeplearning.Sample.ViewModels.Pages
             int size = 5;
 
             source = new Matrix(size,size);
-
+            Random random = new Random();
             for (int r = 0; r < size; r++)
             {
                 for (int c = 0; c < size; c++)
                 {
-                    source[r, c] = new Random().NextDouble();
+                    source[r, c] = random.Next(-5,5);
                 }
             }
 
@@ -89,16 +83,16 @@ namespace Deeplearning.Sample.ViewModels.Pages
 
         private Matrix GetSourceMatrix() 
         {
-          return  TextUtil.StringToMatrix(IOComponentContext.InputContent);
+         return  TextUtil.StringToMatrix(IOComponentContext.InputContent);
         }
 
         private void ExecutePseudoInverseCommand()
         {
             Matrix matrix = GetSourceMatrix();         
 
-            SVDEventArgs eventArgs = MatrixDecomposition.SVD(matrix, 2000);
+            SVDEventArgs eventArgs = Algebra.SVD(matrix);
 
-           Matrix pInv_Matrix = matrix.PInv();
+           Matrix pInv_Matrix = Algebra.PInv(matrix);
 
             StringBuilder sb = new StringBuilder();
 
@@ -125,7 +119,7 @@ namespace Deeplearning.Sample.ViewModels.Pages
         {
             Matrix matrix = GetSourceMatrix();
 
-            SVDEventArgs eventArgs = MatrixDecomposition.SVD(matrix,2000);
+            SVDEventArgs eventArgs = Algebra.SVD(matrix);
 
             StringBuilder sb = new StringBuilder();
 
@@ -140,11 +134,11 @@ namespace Deeplearning.Sample.ViewModels.Pages
 
         private void ExecuteEigenDecomposeCommand()
         {
+         
             Matrix matrix = GetSourceMatrix();
-
             StringBuilder builder = new StringBuilder();
 
-            EigenDecompositionEventArgs eventArgs =  MatrixDecomposition.Eig(matrix,3000,false);
+            EigenDecompositionEventArgs eventArgs = Algebra.Eig(matrix);
 
            // EigenDecompositionEventArgs eventArgs = MatrixDecomposition.Eig(matrix,decompose,2000);
 
@@ -152,7 +146,7 @@ namespace Deeplearning.Sample.ViewModels.Pages
 
             builder.AppendLine(eventArgs.ToString());
 
-            builder.AppendLine(eventArgs.Validate().ToString()); 
+           builder.AppendLine(eventArgs.Validate().ToString()); 
 
             IOComponentContext.OutputContent = builder.ToString();
         }
@@ -222,7 +216,8 @@ namespace Deeplearning.Sample.ViewModels.Pages
 
         private void ExecuteMatrixNormalizedCommand()
         {
-            IOComponentContext.OutputContent = GetSourceMatrix().Normalized().ToString();
+            Matrix matrix = GetSourceMatrix();
+            IOComponentContext.OutputContent = Matrix.Normalized(matrix).ToString();
         }
 
         private void ExecuteSelectedQRFunctionCommand(object type)

@@ -1,15 +1,14 @@
 ﻿using Deeplearning.Core.Exceptions;
 using Deeplearning.Core.Extension;
+using Deeplearning.Core.Math.Common;
 using System;
-using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Deeplearning.Core.Math.Models
+namespace Deeplearning.Core.Math
 {
     public struct Matrix 
     {
-        public const int MAX_TO_STRING_COUNT = 7;
+        public const int MAX_TO_STRING_COUNT = 8;
 
         public const string STRINGFORMAT = "F4";
         public bool IsSquare => Row == Column;
@@ -80,20 +79,28 @@ namespace Deeplearning.Core.Math.Models
         {
             return FrobeniusNorm(new Matrix(matrix));
         }
+
+        /// <summary>
+        /// 矩阵的迹
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
         public static double Track(Matrix matrix)
         {
             int row = matrix.Row;
 
             int col = matrix.Column;
 
-            int count = (int)MathF.Min(row, col);
+            int size = (int)MathF.Min(row, col);
 
-            double temp = 0;
-            for (int i = 0; i < count; i++)
+            double trackValue = matrix[0, 0];
+
+            for (int i = 1; i < size; i++)
             {
-                temp += matrix[i, i];
+                trackValue += matrix[i, i];
             }
-            return temp;
+
+            return trackValue;
         }
         public static double Track(double[,] matrix)
         {
@@ -101,15 +108,15 @@ namespace Deeplearning.Core.Math.Models
 
             int col = matrix.GetLength(1);
 
-            int count = (int)MathF.Min(row, col);
+            int size = (int)MathF.Min(row, col);
 
-            double temp = 0;
+            double trackValue = matrix[0,0];
 
-            for (int i = 0; i < count; i++)
+            for (int i = 1; i < size; i++)
             {
-                temp += matrix[i, i];
+                trackValue += matrix[i, i];
             }
-            return temp;
+            return trackValue;
         }
 
         public override string ToString()
@@ -171,7 +178,7 @@ namespace Deeplearning.Core.Math.Models
                         {
                             double value = this[i, j] - m[i, j];
 
-                            if (MathF.Abs((float)value) > 10E-15)
+                            if (MathF.Abs((float)value) > MathFExtension.MIN_VALUE)
                             {
                                 return false;
                             }
@@ -188,7 +195,11 @@ namespace Deeplearning.Core.Math.Models
             return result;
         }
 
-
+        /// <summary>
+        /// 单位矩阵
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
         public static Matrix UnitMatrix(int size)
         {
             Matrix matrix = new Matrix(size, size);
@@ -216,9 +227,10 @@ namespace Deeplearning.Core.Math.Models
             }
             return result;
         }
+
+
         public static Matrix HadamardProduct(Matrix matrix01, Matrix matrix02)
         {
-
             if (matrix01.Row != matrix02.Row || matrix01.Column != matrix02.Column)
                 throw new ArgumentException("矩阵大小不一致，无法相加");
 
@@ -236,9 +248,15 @@ namespace Deeplearning.Core.Math.Models
             return result;
         }
       
+            /// <summary>
+            /// 矩阵行列式
+            /// </summary>
+            /// <param name="matrix"></param>
+            /// <returns></returns>
+            /// <exception cref="Exception"></exception>
         public static double Det(Matrix matrix)
         {
-            if (matrix.Row != matrix.Column) throw new Exception("方阵才能求行列式");
+            if (!matrix.IsSquare) throw new Exception("方阵才能求行列式");
 
             double detValue = 0;
 
@@ -273,7 +291,7 @@ namespace Deeplearning.Core.Math.Models
                     break;
             }
 
-            return detValue;// ValueExtension.ZeroValidation();
+            return detValue;
         }
 
         /// <summary>
@@ -332,7 +350,7 @@ namespace Deeplearning.Core.Math.Models
 
                     double detValue = (((i + j + 2) % 2 == 0 ? 1 : -1)) * Det(temp);
 
-                    abj[i, j] = (float)detValue;
+                    abj[i, j] = detValue;
                 }
             }
             return abj;
@@ -342,51 +360,424 @@ namespace Deeplearning.Core.Math.Models
         {
             double[,] scalers = new double[row, col];
 
-            Random r = new Random();
+            Random r = new Random(DateTime.Now.GetHashCode());
 
             for (int i = 0; i < row; i++)
             {
                 for (int j = 0; j < col; j++)
                 {
-                    scalers[i, j] = (float)r.NextDouble();
+                    scalers[i, j] = r.NextDouble();
                 }
             }
             return new Matrix(scalers);
         }
 
+       /// <summary>
+       /// 获取某一列向量
+       /// </summary>
+       /// <param name="index">向量所在列</param>
+       /// <returns></returns>
+       /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public Vector GetVector(int index)
+        {
+            int row = this.Row;
+
+            int col = this.Column;    
+
+            if (col <= index) throw new ArgumentOutOfRangeException("越界");
+
+            Vector vector = new Vector(row);
+
+            for (int i = 0; i < row; i++)
+            {
+                vector[i] = this[i, index];
+            }
+            return vector;
+        }
+
         /// <summary>
-        /// 
+        /// 获取矩阵所有列向量
+        /// </summary>
+        /// <param name="vectorType"></param>
+        /// <returns></returns>
+        public Vector[] ToVectors()
+        {
+            int row = this.Row;
+
+            int col = this.Column;
+       
+            Vector[] vs = new Vector[col];
+
+            for (int c = 0; c < col; c++)
+            {
+                vs[c] = new Vector(row);
+
+                for (int r = 0; r < row; r++)
+                {
+                    vs[c][r] = this[r, c];
+                }
+            }
+            return vs;
+        }
+
+
+        /// <summary>
+        /// 求均值向量
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static Vector Average(Matrix source)
+        {
+
+            int vectorCount = source.Column;
+
+            int vectorLength = source.Row;
+           
+            Vector avgs = new Vector(vectorLength);
+
+            for (int r = 0; r < vectorLength; r++)
+            {
+                double sum = 0;
+                for (int c = 0; c < vectorCount; c++)
+                {
+                    sum += source[r, c];
+                }
+                avgs[r] = sum / vectorCount;
+            }
+
+            return avgs;
+        }
+
+        /// <summary>
+        /// 矩阵归一化
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="mode">0，将所有列向量归一，其他将行向量归一</param>
+        /// <returns></returns>
+        public static Matrix Normalized(Matrix source)
+        {
+            int vectorCount = source.Column;
+
+            int vectorLength = source.Row;
+
+            Matrix matrix = new Matrix(vectorLength, vectorCount);
+
+            //求出了每一行的均值
+            Vector avgs = Average(source);
+    
+            //求每一行标准差
+            double[] sdevs = new double[vectorLength];
+
+            for (int r = 0; r < vectorLength; r++)
+            {
+                double sum = 0;
+                double avg = avgs[r];
+                for (int c = 0; c < vectorCount; c++)
+                {
+                    double value = source[r, c];
+                    sum += MathF.Pow((float)(value - avg), 2);
+                }
+                sdevs[r] = MathF.Sqrt((float)(sum / vectorCount));
+            }
+
+            // （x-均值）/标准差
+            for (int r = 0; r < vectorLength; r++)
+            {
+                for (int c = 0; c < vectorCount; c++)
+                {
+                    matrix[r, c] = (source[r, c] - avgs[r]) / sdevs[r];
+                }
+            }
+
+            return matrix;
+        }
+
+        /// <summary>
+        /// 获取主对角所有元素
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static double[] DiagonalElements(Matrix source)
+        {
+
+            int r = (int)MathF.Min(source.Row, source.Column);
+
+            double[] vector = new double[r];
+
+            for (int i = 0; i < r; i++)
+            {
+                vector[i] = source[i, i];
+            }
+            return vector;
+        }
+
+
+        /// <summary>
+        /// 协方差
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static Matrix Cov(Matrix source)
+        {
+
+            float n = source.Column - 1;//;//
+
+            Matrix m1 = source;
+            Matrix m2 = source.T;
+
+            int rows = m1.Row;
+
+            int same = m1.Column;
+
+            int cols = m2.Column;
+
+            Matrix result = new Matrix(m1.Row, m2.Column);
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    double temp = 0;
+
+                    for (int k = 0; k < same; k++)
+                    {
+                        temp += m1[i, k] * m2[k, j];
+                    }
+                    result[i, j] = temp/ n;
+                }
+            }
+            return result;
+        }
+
+     
+        /// <summary>
+        /// 方差
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static double[] Var(Matrix source)
+        {
+            int row = source.Row;
+
+            int col = source.Column;
+
+            Vector avgs = Average(source);       
+
+            double[] vars = new double[row];
+
+            int n = row - 1;
+
+            for (int r = 0; r < row; r++)
+            {
+                double sum = 0;
+
+                double avg = avgs[r];
+
+                for (int c = 0; c < col; c++)
+                {
+                    double value = source[r, c];
+                    sum += MathF.Pow((float)(value - avg), 2);
+                }
+                vars[r] = sum / n;
+            }
+
+
+            return vars;
+        }
+       
+        /// <summary>
+        /// 标准差
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static double[] StandardDeviation(Matrix source)
+        {
+
+            int row = source.Row;
+
+            int col = source.Column;
+
+            Vector avgs = Average(source);
+
+            double[] sdevs = null;
+
+            int n = row - 1;
+
+            for (int r = 0; r < row; r++)
+            {
+                double sum = 0;
+
+                double avg = avgs[r];
+
+                for (int c = 0; c < col; c++)
+                {
+                    double value = source[r, c];
+                    sum += MathF.Pow((float)(value - avg), 2);
+                }   
+                sdevs[r] = MathF.Sqrt((float)(sum / n));
+            }
+
+            return sdevs;
+        }
+
+        public static Matrix Replace(Matrix source, Vector vector, int colIndex)
+        {
+            for (int i = 0; i < vector.Length; i++)
+            {
+                source[i, colIndex] = vector[i];
+            }
+
+            return source;
+        }
+
+
+        /// <summary>
+        /// 中心化（零均值化）：是指变量减去它的均值。其实就是一个平移的过程，平移后所有数据的中心是（0，0）
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static (Matrix matrix, Vector avgs) Centralized(Matrix source)
+        {
+            int vectorCount = source.Column;
+
+            int vectorLength = source.Row;
+
+            Matrix matrix = new Matrix(vectorLength, vectorCount);
+
+            Vector avgs = Average(source);
+
+            //for (int r = 0; r < vectorLength; r++)
+            //{
+            //    double sum = 0;
+            //    for (int c = 0; c < vectorCount; c++)
+            //    {
+            //        sum += source[r, c];
+            //    }
+            //    avgs[r] = sum / vectorCount;
+            //}
+
+            for (int r = 0; r < vectorLength; r++)
+            {
+                for (int c = 0; c < vectorCount; c++)
+                {
+                    matrix[r, c] = source[r, c] - avgs[r];
+                }
+            }
+
+            return (matrix, avgs);
+
+        }
+
+        /// <summary>
+        /// 判断是否是对称矩阵
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static bool Symmetry(Matrix source)
+        {
+            if (source.Row != source.Column) return false;
+
+            int row = source.Row;
+
+            for (int r = 0; r < row; r++)
+            {
+                for (int c = 0; c < row; c++)
+                {
+                    if (c == r) continue;
+
+                    if (source[r, c] != source[c, r]) return false;
+                }
+            }
+            return true;
+        }
+
+        public static Matrix Replace(Matrix source, Matrix matrix, int offsetR, int offsetC)
+        {
+            if (offsetR >= source.Row || offsetC >= source.Column) throw new IndexOutOfRangeException();
+
+            int rowCount = matrix.Row;// - rCount;
+            int colCount = matrix.Column;// - cCount;
+
+            for (int r = 0; r < rowCount; r++)
+            {
+                for (int c = 0; c < colCount; c++)
+                {
+                    source[r + offsetR, c + offsetC] = matrix[r, c];
+                }
+            }
+            return source;
+
+        }
+       
+        /// <summary>
+        /// 裁剪矩阵
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="startRow"></param>
+        /// <param name="startColumn"></param>
+        /// <param name="endRow"></param>
+        /// <param name="endColumn"></param>
+        /// <returns></returns>
+        public static Matrix Clip(Matrix source, int startRow, int startColumn, int endRow, int endColumn)
+        {
+            int sR = (int)MathF.Max(startRow, 0); //startRow < 0 ? 0 : startRow;
+            int sC = (int)MathF.Max(startColumn, 0); //startColumn < 0 ? 0 : startColumn;
+
+            int eR = (int)MathF.Min(endRow, source.Row); //endRow <= source.Row ? endRow : source.Row;
+            int eC = (int)MathF.Min(endColumn, source.Column); //endColumn <= source.Column ? endColumn : source.Column;
+
+            int rSize = eR - sR;
+            int cSize = eC - sC;
+
+            Matrix matrix = new Matrix(rSize, cSize);
+
+            for (int r = 0; r < rSize; r++)
+            {
+                for (int c = 0; c < cSize; c++)
+                {
+                    matrix[r, c] = source[r + sR, c + sC];
+                }
+            }
+            return matrix;
+        }
+      
+        /// <summary>
+        /// 对角矩阵
         /// </summary>
         /// <param name="scalar"></param>
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <returns></returns>
-        public static Matrix DiagonalMatrix(float scalar, int row, int col)
+        public static Matrix DiagonalMatrix(int row, int col, params float[] scalars)
         {
             Matrix matrix = new Matrix(row, col);
 
-            int count = (int)MathF.Min(row, col);
+            int size = (int)MathF.Min(row, col);
 
-            for (int i = 0; i < count; i++)
+            size = (int)MathF.Min(size, scalars.Length);
+
+            for (int i = 0; i < size; i++)
             {
-                matrix[i, i] = scalar;
+                matrix[i, i] = scalars[i];
             }        
 
             return matrix;
         }
 
-        public static Matrix DiagonalMatrix(double scalar, int size)
+        public static Matrix DiagonalMatrix(int size, params double[] scalars)
         {
             Matrix matrix = new Matrix(size, size);
 
+            size = (int)MathF.Min(size, scalars.Length);
+
             for (int i = 0; i < size; i++)
             {
-                matrix[i, i] = scalar;
+                matrix[i, i] = scalars[i];
             }
 
             return matrix;
         }
-        public static Matrix DiagonalMatrix(double[] array)
+        public static Matrix DiagonalMatrix(params double[] array)
         {
             int size = array.Length;
 
@@ -413,18 +804,22 @@ namespace Deeplearning.Core.Math.Models
             return matrix;
         }
 
-
+        /// <summary>
+        /// 矩阵逆
+        /// </summary>
+        /// <param name="origin"></param>
+        /// <returns></returns>
+        /// <exception cref="SingularMatrixException"></exception>
         public static Matrix Inv(Matrix origin)
         {
-            Matrix abj = Matrix.Adjugate(origin);
+            Matrix abj = Adjugate(origin);
 
-            float det = (float)Matrix.Det(origin);
+            float det = (float)Det(origin);
 
-            if (MathF.Abs(det) <= 10E-15) {
-
+            if (MathF.Abs(det) <= MathFExtension.MIN_VALUE) 
+            {
                 throw new SingularMatrixException();
             }
-
 
             return abj / det;
         }
@@ -497,7 +892,6 @@ namespace Deeplearning.Core.Math.Models
         }
 
 
-
         #region 运算符重载
 
         public static Matrix operator +(Matrix m1, Matrix m2)
@@ -533,39 +927,24 @@ namespace Deeplearning.Core.Math.Models
 
             int col = m1.Column;
 
-            Matrix result = new Matrix(row, col);
+            Matrix result = m1;
 
-            for (int i = 0; i < row; i++)
+            for (int j = 0; j < col; j++)
             {
-                for (int j = 0; j < col; j++)
+                double temp = scalars[j];
+
+                if (MathF.Abs((float)temp) <= MathFExtension.MIN_VALUE) continue;
+
+                for (int i = 0; i < row; i++)
                 {
-                    result[i, j] = m1[i, j] + scalars[j];
-                }
-            }        
-
-            return result;
-        }  
-        public static Matrix operator +(Matrix m1, double[] scalars)
-        {
-
-            if (scalars.Length != m1.Row)
-                throw new ArgumentException("标量数量与矩阵列数不一致，无法操作");
-
-            int row = m1.Row;
-
-            int col = m1.Column;
-
-            Matrix result = new Matrix(row, col);
-
-            for (int i = 0; i < row; i++)
-            {
-                for (int j = 0; j < col; j++)
-                {
-                    result[i, j] = m1[i, j] + scalars[j];
+                    result[i, j] += temp;
                 }
             }
- 
             return result;
+        }
+        public static Matrix operator +(Matrix m1, double[] scalars)
+        {
+            return scalars+m1;
         }
         public static Matrix operator +(Vector vector, Matrix m1)
         {
@@ -576,38 +955,25 @@ namespace Deeplearning.Core.Math.Models
 
             int col = m1.Column;
 
-            Matrix result = new Matrix(row, col);
+            Matrix result = m1;
 
             for (int i = 0; i < row; i++)
             {
+                double temp = vector[i];
+
+                if (MathF.Abs((float)temp) <= MathFExtension.MIN_VALUE) continue;
+
                 for (int j = 0; j < col; j++)
                 {
-                    result[i, j] = m1[i, j] + vector[i];
+                    result[i, j] += temp;
                 }
             }
+           
             return result;
         }
         public static Matrix operator +(Matrix m1, Vector vector)
         {
-
-            if (vector.Length != m1.Row)
-                throw new ArgumentException("向量与矩阵维度不一致，无法操作");
-
-            int rows = m1.Row;
-
-            int cols = m1.Column;
-
-            Matrix result = new Matrix(rows, cols);
-
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    result[i, j] = m1[i, j] + vector[i];
-                }
-            }
-
-            return result;
+            return vector + m1;
         }
         public static Matrix operator +(double scalar, Matrix m1)
         {
@@ -615,7 +981,9 @@ namespace Deeplearning.Core.Math.Models
 
             int cols = m1.Column;
 
-            Matrix result = new Matrix(rows, cols);
+            Matrix result = m1;       
+
+            if(MathF.Abs((float)scalar)<=MathFExtension.MIN_VALUE) return result;
 
             for (int i = 0; i < rows; i++)
             {
@@ -625,26 +993,11 @@ namespace Deeplearning.Core.Math.Models
                 }
 
             }
-
             return result;
         }
         public static Matrix operator +(Matrix m1, double scalar)
         {
-            int rows = m1.Row;
-
-            int cols = m1.Column;
-
-            Matrix result = new Matrix(rows, cols);
-
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    result[i, j] = m1[i, j] + scalar;
-                }
-            }
-
-            return result;
+            return scalar+m1;
         }
         public static Matrix operator -(Matrix m1, Matrix m2)
         {
@@ -670,44 +1023,45 @@ namespace Deeplearning.Core.Math.Models
             return result;
         }
 
-        public static Matrix operator -(double[] scalars, Matrix m1)
+        public static Matrix operator -(double[] scalars, Matrix matrix)
         {
-
-            if (scalars.Length != m1.Row)
+            if (scalars.Length != matrix.Row)
                 throw new ArgumentException("标量数量与矩阵列数不一致，无法操作");
 
-            int rows = m1.Row;
+            int rows = matrix.Row;
 
-            int cols = m1.Column;
+            int cols = matrix.Column;
 
-            Matrix result = new Matrix(rows, cols);
+            Matrix result = matrix;
 
-            for (int i = 0; i < rows; i++)
+            for (int j = 0; j < cols; j++)
             {
-                for (int j = 0; j < cols; j++)
+                for (int i = 0; i < rows; i++)
                 {
-                    result[i, j] = scalars[j] - m1[i, j];
+                    result[i, j] = scalars[j] - matrix[i, j];
                 }
-            } 
-
+            }
             return result;
         }
-        public static Matrix operator -(Matrix m1, double[] scalars)
+        public static Matrix operator -(Matrix matrix, double[] scalars)
         {
-            if (scalars.Length != m1.Row)
+            if (scalars.Length != matrix.Row)
                 throw new ArgumentException("标量数量与矩阵列数不一致，无法操作");
 
-            int rows = m1.Row;
+            int rows = matrix.Row;
 
-            int cols = m1.Column;
+            int cols = matrix.Column;
 
-            Matrix result = new Matrix(rows, cols);
-
-            for (int i = 0; i < rows; i++)
+            Matrix result = matrix;
+            for (int j = 0; j < cols; j++)
             {
-                for (int j = 0; j < cols; j++)
+                double temp = scalars[j];
+
+                if (MathF.Abs((float)temp) <= MathFExtension.MIN_VALUE) continue;
+
+                for (int i = 0; i < rows; i++)
                 {
-                    result[i, j] = (m1[i, j] - scalars[j]);
+                    result[i, j] -= temp;
                 }
             }
             return result;
@@ -729,40 +1083,43 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = (vector[i] - m1[i, j]);
+                    result[i, j] = vector[i] - m1[i, j];
                 }
             }
 
             return result;
         }
-        public static Matrix operator -(Matrix m1, Vector vector)
+        public static Matrix operator -(Matrix matrix, Vector vector)
         {
-
-            if (vector.Length != m1.Row)
+            if (vector.Length != matrix.Row)
                 throw new ArgumentException("向量与矩阵维度不一致，无法操作");
 
-            int rows = m1.Row;
+            int rows = matrix.Row;
 
-            int cols = m1.Column;
+            int cols = matrix.Column;
 
-            Matrix result = new Matrix(rows, cols);
+            Matrix result = matrix;
 
             for (int i = 0; i < rows; i++)
             {
+                double temp = vector[i];
+
+                if (MathF.Abs((float)temp) <= MathFExtension.MIN_VALUE) continue;
+
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = (m1[i, j] - vector[i]);
+                    result[i, j] -= temp;
                 }
             }
 
             return result;
         }
-        public static Matrix operator -(double scalar, Matrix m1)
+        public static Matrix operator -(double scalar, Matrix matrix)
         {
 
-            int rows = m1.Row;
+            int rows = matrix.Row;
 
-            int cols = m1.Column;
+            int cols = matrix.Column;
 
             Matrix result = new Matrix(rows, cols);
 
@@ -770,7 +1127,7 @@ namespace Deeplearning.Core.Math.Models
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = scalar - m1[i, j];
+                    result[i, j] = scalar - matrix[i, j];
                 }
             }
 
@@ -782,13 +1139,15 @@ namespace Deeplearning.Core.Math.Models
 
             int cols = m1.Column;
 
-            Matrix result = new Matrix(rows, cols);
+            Matrix result = m1;
+
+            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) return result;
 
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = m1[i, j] - scalar;
+                    result[i, j] -= scalar;
                 }
             }
             return result;
@@ -882,6 +1241,8 @@ namespace Deeplearning.Core.Math.Models
 
             Matrix result = new Matrix(rows, cols);
 
+            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) return result;
+
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
@@ -901,11 +1262,13 @@ namespace Deeplearning.Core.Math.Models
 
             Matrix result = new Matrix(rows, cols);
 
+            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) return result;
+
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    result[i, j] = (m1[i, j] * scalar);
+                    result[i, j] = m1[i, j] * scalar;
                 }
             }
 
@@ -941,15 +1304,13 @@ namespace Deeplearning.Core.Math.Models
 
             Matrix result = new Matrix(rows, cols);
 
+            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) return result;
+
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    double value = m1[i, j];
-
-                    value = value == 0 ? 0 : scalar / value;
-
-                    result[i, j] = value;
+                    result[i, j] = scalar / m1[i, j];
                 }
             }
 

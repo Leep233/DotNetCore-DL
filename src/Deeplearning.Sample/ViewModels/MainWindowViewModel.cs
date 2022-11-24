@@ -1,21 +1,15 @@
 ﻿using Deeplearning.Core.Example;
 using Deeplearning.Core.Math;
 using Deeplearning.Core.Math.Linear;
-using Deeplearning.Core.Math.Models;
 using Deeplearning.Core.Math.Probability;
-using Deeplearning.Sample.Utils;
 using Deeplearning.Sample.ViewModels;
 using OxyPlot;
-using OxyPlot.Axes;
 using OxyPlot.Series;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Deeplearning.Sample
 {
@@ -62,6 +56,17 @@ namespace Deeplearning.Sample
         public DelegateCommand LinearRegressionTrainCommand { get; set; }
         public DelegateCommand LinearRegressionPredictCommand { get; set; }
 
+        //去中心话
+        public DelegateCommand MatrixCentralizedCommand { get; set; }
+        /// <summary>
+        /// 协方差矩阵
+        /// </summary>
+        public DelegateCommand MatrixCovCommand { get; set; }
+
+        /// <summary>
+        /// 协方差矩阵
+        /// </summary>
+        public DelegateCommand PCACommand { get; set; }
 
         public MainWindowViewModel()
         {
@@ -103,7 +108,57 @@ namespace Deeplearning.Sample
 
             LinearRegressionTrainCommand = new DelegateCommand(ExecuteLinearRegressionTrainCommand);
             LinearRegressionPredictCommand = new DelegateCommand(ExecuteLinearRegressionPredictCommand);
+
+            MatrixCentralizedCommand = new DelegateCommand(ExecuteMatrixCentralizedCommand);
+
+            MatrixCovCommand = new DelegateCommand(ExecuteMatrixCovCommand);
+
+            PCACommand = new DelegateCommand(ExecutePCACommand);
         }
+
+        private void ExecutePCACommand()
+        {
+            SampleMatrix = Matrix.Normalized(SampleMatrix);
+
+            SampleMatrix = Matrix.Centralized(SampleMatrix).matrix;
+
+            Matrix cov = Matrix.Cov(SampleMatrix);
+            //3.对协方差矩阵求特征值特征向量
+            EigenDecompositionEventArgs result = Algebra.Eig(cov);
+
+        }
+            
+
+
+        private void ExecuteMatrixCovCommand()
+        {
+            Matrix matrix = new Matrix(new Vector[] { 
+                new Vector(-2,-1,0,1,2),
+                new Vector(-4,2,0,-2,4)            
+            }) ;
+
+            matrix = SampleMatrix;// matrix.T;
+
+            matrix = Matrix.Cov(matrix);
+
+            Message = matrix.ToString();
+
+            LeftPlotView.UpdatePointsToPlotView(Matrix.Normalized(matrix));
+        }
+
+        private void ExecuteMatrixCentralizedCommand()
+        {
+            SampleMatrix = Matrix.Normalized(SampleMatrix);
+
+            var result  = Matrix.Centralized(SampleMatrix);
+
+            SampleMatrix = result.matrix;
+
+            Message = result.avgs.ToString();
+
+            LeftPlotView.UpdatePointsToPlotView(SampleMatrix);
+        }
+
         private LinearRegression linearRegression = new LinearRegression();
         private void ExecuteLinearRegressionPredictCommand()
         {
@@ -188,7 +243,7 @@ namespace Deeplearning.Sample
 
         private void ExecuteMatrixNormalizedCommand()
         {
-           Matrix normalMatrix = SampleMatrix.Normalized();
+           Matrix normalMatrix = Matrix.Normalized(SampleMatrix);
 
             LeftPlotView.UpdatePointsToPlotView(normalMatrix);
 
@@ -229,7 +284,7 @@ namespace Deeplearning.Sample
 
             Matrix matrix = new Matrix(vectors);
 
-            matrix = matrix.Cov();
+            matrix = Matrix.Cov(matrix);
 
             Message = matrix.ToString();
         }
@@ -246,7 +301,7 @@ namespace Deeplearning.Sample
             Matrix matrix = new Matrix(vectors);
 
 
-            matrix = matrix.Var();
+            //matrix = Matrix.Var(matrix);
 
             Message = matrix.ToString();
         }

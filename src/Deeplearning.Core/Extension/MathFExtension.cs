@@ -1,4 +1,4 @@
-﻿using Deeplearning.Core.Math.Models;
+﻿using Deeplearning.Core.Math;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,150 +7,210 @@ namespace Deeplearning.Core.Extension
 {
     public static class MathFExtension
     {
-        public static double Sum(int[] array)
-        {
-            double sum = 0;
+        public const double MIN_VALUE = 10E-8; //0.0000000001
 
-            for (int i = 0; i < array.Length; i++)
+        public static int Sum(params int[] args)
+        {  
+            if(args is null || args.Length<=0) return 0;
+
+            int result = args[0];
+
+            for (int i = 1; i < args.Length; i++)
             {
-                sum += array[i];
+                result += args[i];
             }
-            return sum;
+            return result;
         }
-        public static double Sum(double[] array)
+        public static double Sum(params double[] args)
         {
-            double sum = 0;
+            if (args is null || args.Length <= 0) return 0;
 
-            for (int i = 0; i < array.Length; i++)
+            double result = args[0];
+
+            for (int i = 1; i < args.Length; i++)
             {
-                sum += array[i];
+                result += args[i];
             }
-            return sum;
+            return result;
         }
-        public static double Sum(Vector array)
+        public static double Sum(params float[] args)
         {
-            double sum = 0;
+            if (args is null || args.Length <= 0) return 0;
 
-            for (int i = 0; i < array.Length; i++)
+            double result = args[0];
+
+            for (int i = 1; i < args.Length; i++)
             {
-                sum += array[i];
+                result += args[i];
             }
-            return sum;
+            return result;
         }
-        public static double Sum(float[] array) 
+        public static double Sum(Vector args)
         {
-            double sum = 0;
+            if (args.Length <= 0) return 0;
 
-            for (int i = 0; i < array.Length; i++)
+            double result = args[0];
+
+            for (int i = 1; i < args.Length; i++)
             {
-                sum += array[i];
+                result += args[i];
             }
-            return sum;
+            return result;
         }
+     
 
-        public static double Average(float[] array)
+        public static double Average(params float[] args)
         {
-            int length = array.Length;
+            if (args is null || args.Length <= 0) return 0;
 
-            if (length <= 0) return 0;
-
-            double sum = Sum(array);
- 
-            return sum / length;
+            return Sum(args) / args.Length;
         }
-        public static double Average(int[] array)
+        public static double Average(params int[] args)
         {
-            int length = array.Length;
+            if (args is null || args.Length <= 0) return 0;
 
-            if (length <= 0) return 0;
-
-            double sum = Sum(array);
-
-            return sum / length;
+            return Sum(args) / args.Length;
         }
-        public static double Average(Vector array)
+        public static double Average(Vector args)
         {
-            int length = array.Length;
+            if ( args.Length <= 0) return 0;
 
-            if (length <= 0) return 0;
-
-            double sum = Sum(array);
-
-            return sum / length;
+            return Sum(args) / args.Length;
         }
-        public static double Average(double[] array)
+        public static double Average(params double[] args)
         {
+            if (args.Length <= 0) return 0;
 
-            int length = array.Length;
-
-            if (length <= 0) return 0;
-
-            double sum = Sum(array);
-
-            return sum / length;
+            return Sum(args) / args.Length;
         }
 
 
-        public static double Min(Matrix v)
+        public static int Min(params int[] args)
         {
-            double value = v[0,0];
-            for (int i = 1; i < v.Row; i++)
+            if (args is null || args.Length <= 0)
+                return 0;
+
+            int value = args[0];
+
+            for (int i = 1; i < args.Length; i++)
             {
-                for (int j = 0; j < v.Column; j++)
+                if (value > args[i]) value = args[i];
+            }
+            return value;
+        }
+        public static float Min(params float[] args)
+        {
+            if (args is null || args.Length <= 0)
+                return 0;
+
+            float value = args[0];
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                if (value > args[i]) value = args[i];
+            }
+            return value;
+        }
+        public static double Min(params double[] args)
+        {
+            if (args is null || args.Length <= 0)
+                return 0;
+
+            double value = args[0];
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                if (value > args[i]) value = args[i];
+            }
+            return value;
+        }
+        public static double Min(Matrix matrix)
+        {
+            double result = matrix[0,0];
+            for (int i = 1; i < matrix.Row; i++)
+            {
+                for (int j = 0; j < matrix.Column; j++)
                 {
-                    if (value > v[i,j]) value = v[i,j];
+                    if (result > matrix[i,j]) result = matrix[i,j];
                 }               
             }
+            return result;
+        }
+        public static double Min(Vector vector)
+        {
+            double value = vector[0];
+            for (int i = 1; i < vector.Length; i++)
+            {
+                if (value > vector[i]) value = vector[i];
+            }
             return value;
         }
-        public static double Max(Matrix v)
+      
+        public static int Max(params int[] args)
         {
-            double value = v[0, 0];
-            for (int i = 1; i < v.Row; i++)
+            if (args is null || args.Length <= 0)
+                return 0;
+
+            int value = args[0];
+
+            for (int i = 1; i < args.Length; i++)
             {
-                for (int j = 0; j < v.Column; j++)
+                if (value < args[i]) value = args[i];
+            }
+
+            return value;
+        }
+        public static float Max(params float[] args)
+        {
+            if (args is null || args.Length <= 0)
+                return 0;
+
+            float value = args[0];
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                if (value < args[i]) value = args[i];
+            }
+
+            return value;
+        }
+        public static double Max(params double[] args)
+        {
+            if (args is null || args.Length <= 0)
+                return 0;
+
+            double value = args[0];
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                if (value < args[i]) value = args[i];
+            }
+
+            return value;
+        }
+        public static double Max(Vector vector)
+        {
+            double value = vector[0];
+            for (int i = 1; i < vector.Length; i++)
+            {
+                if (value < vector[i]) value = vector[i];
+            }
+            return value;
+        }
+        public static double Max(Matrix matrix)
+        {
+            double result = matrix[0, 0];
+
+            for (int i = 1; i < matrix.Row; i++)
+            {
+                for (int j = 0; j < matrix.Column; j++)
                 {
-                    if (value < v[i, j]) value = v[i, j];
+                    if (result < matrix[i, j]) result = matrix[i, j];
                 }
             }
-            return value;
+            return result;
         }
-        public static double Min(double[] v)
-        {
-            double value = v[0];
-            for (int i = 1; i < v.Length; i++)
-            {
-                if (value > v[i]) value = v[i];
-            }
-            return value;
-        }
-        public static double Max(double[] v)
-        {
-            double value = v[0];
-            for (int i = 1; i < v.Length; i++)
-            {
-                if (value < v[i]) value = v[i];
-            }
-            return value;
-        }
-        public static double Min(Vector v)
-        {
-            double value = v[0];
-            for (int i = 1; i < v.Length; i++)
-            {
-                if (value > v[i]) value = v[i];
-            }
-            return value;
-        }
-        public static double Max(Vector v)
-        {
-            double value = v[0];
-            for (int i = 1; i < v.Length; i++)
-            {
-                if (value < v[i]) value = v[i];
-            }
-            return value;
-        }
+
 
     }
 }

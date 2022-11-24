@@ -1,11 +1,8 @@
-﻿using Deeplearning.Core.Math.Models;
+﻿using Deeplearning.Core.Math;
 using Deeplearning.Sample.Utils;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Deeplearning.Sample
 {

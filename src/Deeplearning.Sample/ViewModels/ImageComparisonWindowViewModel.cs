@@ -55,34 +55,34 @@ namespace Deeplearning.Sample.ViewModels
 
             var result = await Task.Factory.StartNew<BitmapImage>(() =>
             {
-                SVDEventArgs result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.r));
+                SVDEventArgs result = Algebra.SVD(new Core.Math.Matrix(this.r));
 
                  double[,] r = Compress(result).scalars;
-                 result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.g));
+                 result = Algebra.SVD(new Core.Math.Matrix(this.g));
 
                  double[,] g = Compress(result).scalars;
 
-                 result = MatrixDecomposition.SVD(new Core.Math.Models.Matrix(this.b));
+                 result = Algebra.SVD(new Core.Math.Matrix(this.b));
 
                 double[,] b = Compress(result).scalars;
                 double[,] a = new double[b.GetLength(0), b.GetLength(1)];
-
-                return Pixels2Image(r, g,b,a);
+                return null;
+              //  return Pixels2Image(r, g,b,a);
             });
             Image = result;
         }
 
-        private Core.Math.Models.Matrix Compress(SVDEventArgs svd, float rate = 0.8f)
+        private Core.Math.Matrix Compress(SVDEventArgs svd, float rate = 0.8f)
         {
             var oldEigens = svd.S;
             int r = (int)(oldEigens.Row * 0.8f);
             int c = (int)(oldEigens.Column * 0.8f);
 
-            var newEigens = oldEigens.Clip(0, 0, r, c);
+            var newEigens = Core.Math.Matrix.Clip(oldEigens,0, 0, r, c);
 
-            var newU = svd.U.Clip(0, 0, svd.U.Row, r);
+            var newU = Core.Math.Matrix.Clip(svd.U,0, 0, svd.U.Row, r);
 
-            var newV = svd.V.Clip(0, 0, svd.V.Row, c);
+            var newV = Core.Math.Matrix.Clip(svd.V,0, 0, svd.V.Row, c);
 
             return newU * newEigens * newV.T;
         }
@@ -125,86 +125,16 @@ namespace Deeplearning.Sample.ViewModels
 
                 bitmapImage.EndInit();
 
-                var data = ReadImagePixels(bitmapImage);
-                r = data.r;
-                g = data.g;
-                b = data.b;
+               //var data = null; //ReadImagePixels(bitmapImage);
+               //r = data.r;
+               //g = data.g;
+               //b = data.b;
             }
             return bitmapImage;
         }
 
 
-        public BitmapImage Pixels2Image(params double[][,] colors)
-        {
-
-            int pixelWidth = r.GetLength(0);
-            int pixelHeight = r.GetLength(1);
-            int stride = pixelWidth * 4;
-            int byteLength = pixelWidth * pixelHeight * 4;
-
-            byte[] pixels = new byte[byteLength];
-
-            for (int y = 0; y < pixelHeight; y++)
-            {
-                for (int x = 0; x < pixelWidth; x++)
-                {
-                    int index = y * stride + 4 * x;
-
-                    for (int i = 0; i < colors.GetLength(0); i++)
-                    {
-                        pixels[index + i] = (byte)(colors[i][y, x] * 255.0);
-                    }
-
-                    //pixels[index] = (byte)(r[y, x] * 255.0);
-                    //pixels[index + 1] = (byte)(g[y, x] * 255.0);
-                    //pixels[index + 2] = (byte)(b[y, x] * 255.0);
-                    //pixels[index + 3] = 255;
-                }
-            }
-
-            BitmapImage image = new BitmapImage();
-            image.BeginInit();
-
-            image.StreamSource = new System.IO.MemoryStream(pixels);
-
-            image.EndInit();
-
-            return image;
-        }
-
-
-        private (double[,] r, double[,] g, double[,] b) ReadImagePixels(BitmapImage img)
-        {
-
-            int pixelWidth = img.PixelWidth;
-
-            int pixelHeight = img.PixelHeight;
-
-            int stride = img.PixelWidth * 4;
-            int size = img.PixelHeight * stride;
-            byte[] pixels = new byte[size];
-
-            img.CopyPixels(pixels, stride, 0);
-
-            double[,] r = new double[pixelWidth, pixelHeight];
-            double[,] g = new double[pixelWidth, pixelHeight];
-            double[,] b = new double[pixelWidth, pixelHeight];
-            // float[,] a = new float[pixelWidth, pixelHeight];
-
-            for (int y = 0; y < img.PixelHeight; y++)
-            {
-                for (int x = 0; x < img.PixelWidth; x++)
-                {
-                    int index = y * stride + 4 * x;
-                    r[y, x] = pixels[index] / 255.0f;
-                    g[y, x] = pixels[index + 1] / 255.0f;
-                    b[y, x] = pixels[index + 2] / 255.0f;
-                }
-            }
-
-            return (r, g, b);
-
-        }
+      
 
     }
 }

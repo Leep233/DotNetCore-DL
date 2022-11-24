@@ -1,9 +1,6 @@
 ﻿using Deeplearning.Core.Math.Common;
-using Deeplearning.Core.Math.Models;
 using Deeplearning.Core.Math.Probability;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Deeplearning.Core.Math
 {

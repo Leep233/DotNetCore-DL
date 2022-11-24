@@ -59,15 +59,5 @@ namespace Deeplearning.Sample {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   查找 System.Byte[] 类型的本地化资源。
-        /// </summary>
-        internal static byte[] cat01 {
-            get {
-                object obj = ResourceManager.GetObject("cat01", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
     }
 }

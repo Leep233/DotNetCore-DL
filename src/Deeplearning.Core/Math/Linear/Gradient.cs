@@ -1,14 +1,10 @@
-﻿using Deeplearning.Core.Math.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace Deeplearning.Core.Math.Linear
 {
     public class Gradient
     {
-        public const float MinValue = 10E-15F;
 
         public static async Task<Vector> GradientDescentTaskAsync(Func<Vector, float> LinearEquation, Vector initValue, GradientParams @params)
         {
@@ -196,7 +192,7 @@ namespace Deeplearning.Core.Math.Linear
             this.e = e;
         }
 
-        public static GradientParams Default => new GradientParams(1000, 0.0001f, 10E-8F);
+        public static GradientParams Default => new GradientParams(1000, 0.005f, 10E-8F);
 
     }
 

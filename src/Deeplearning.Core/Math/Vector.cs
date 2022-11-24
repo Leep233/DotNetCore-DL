@@ -1,13 +1,11 @@
 ﻿using Deeplearning.Core.Exceptions;
 using Deeplearning.Core.Extension;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Deeplearning.Core.Math.Models
+namespace Deeplearning.Core.Math
 {
+
     public struct Vector
     {
 
@@ -118,14 +116,12 @@ namespace Deeplearning.Core.Math.Models
                     {
                         double value = this[i] - v2[i];
 
-                        if (MathF.Abs((float)value) > 10E-15)
+                        if (MathF.Abs((float)value) > MathFExtension.MIN_VALUE)
                         {
                             result = false;
                             break;
                         }
-
                     }
-
                 }
             }
             else
@@ -145,18 +141,6 @@ namespace Deeplearning.Core.Math.Models
             {
                 vector[i] = r.Next(min, max);
             }
-            return vector;
-        }
-
-        public static Vector One(int length) {
-
-            Vector vector = new Vector(length);
-
-            for (int i = 0; i < vector.Length; i++)
-            {
-                vector[i] = 1;
-            }
-
             return vector;
         }
 
@@ -187,12 +171,9 @@ namespace Deeplearning.Core.Math.Models
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
         public static Vector Standardized(Vector vector) 
         {
-            double m = Vector.Norm(vector,2);
-
-            if (m == 0) throw new InvalidOperationException("被除数不能为0");
+            double m = Norm(vector,2);
 
             return vector / m;
         }
@@ -210,17 +191,14 @@ namespace Deeplearning.Core.Math.Models
 
         public static double[] Transpose(Vector vector)
         {
-
             double[] result = new double[vector.Length];
 
             for (int i = 0; i < vector.Length; i++)
             {
                 result[i] = vector[i];
             }
-
             return result;
         }
-
 
         public static Matrix operator *(Vector vector, double [] array) 
         {
@@ -271,9 +249,12 @@ namespace Deeplearning.Core.Math.Models
         public static Vector operator *(Vector vector, double scalar)
         {
             Vector result = new Vector(vector.Length);
+            //这里做个判断，如果scalar太小了 我们可以视作为0，这样我们直接返回0向量即可，不必去做循环
+            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) return result;
 
-            for (int i = 0; i < vector.Length; i++) {
-                result[i] = vector[i] * scalar;     
+            for (int i = 0; i < vector.Length; i++) 
+            {
+                result[i] = vector[i] * scalar;    
             }
 
             return result;
@@ -346,11 +327,11 @@ namespace Deeplearning.Core.Math.Models
         {
             Vector result = new Vector(vector.Length);
 
+            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) throw new ArgumentException("被除数不能为0");
+
             for (int i = 0; i < vector.Length; i++)
             {
-                double value = scalar == 0 ? 0 : vector[i] / scalar;
-
-                result[i] = value;
+                result[i] = vector[i] / scalar;
             }
 
             return result;
@@ -359,11 +340,12 @@ namespace Deeplearning.Core.Math.Models
         {
             Vector result = new Vector(vector.Length);
 
+            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE)
+                return result;
+
             for (int i = 0; i < vector.Length; i++)
             {
-                double value = vector[i];
-                value = (value == 0 ? 0 : scalar / value);
-                result[i] = value;
+                result[i] = scalar / vector[i];
             }
    
             return result;

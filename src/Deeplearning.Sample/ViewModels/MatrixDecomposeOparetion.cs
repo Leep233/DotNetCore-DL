@@ -1,10 +1,8 @@
 ﻿using Deeplearning.Core.Example;
 using Deeplearning.Core.Math;
 using Deeplearning.Core.Math.Linear;
-using Deeplearning.Core.Math.Models;
 using Prism.Commands;
 using System;
-using System.Diagnostics;
 using System.Text;
 
 namespace Deeplearning.Sample.ViewModels
@@ -128,7 +126,7 @@ namespace Deeplearning.Sample.ViewModels
 
             Matrix matrix = new Matrix(vectors);
 
-            var result = new PCA().Fit(matrix,1);
+            //var result = new PCA().Fit(matrix,1);
 
            // MatrixDecomposition.PCA(matrix,1,1000);
         }
@@ -144,7 +142,7 @@ namespace Deeplearning.Sample.ViewModels
         {
             StringBuilder stringBuilder = new StringBuilder();         
 
-            Matrix pInvMatrix = Source.PInv(1000);
+            Matrix pInvMatrix = Algebra.PInv(Source);
 
             Matrix ans2 = Source * pInvMatrix * Source;
 
@@ -166,7 +164,7 @@ namespace Deeplearning.Sample.ViewModels
 
             Matrix matrix = Source;
 
-            SVDEventArgs result = MatrixDecomposition.SVD(matrix, 100);
+            SVDEventArgs result = Algebra.SVD(matrix);
 
             StringBuilder sb = new StringBuilder();
 
@@ -214,7 +212,7 @@ namespace Deeplearning.Sample.ViewModels
             Matrix matrix = new Matrix(vectors);// Source;//new Matrix(vectors); ////new Matrix(vectors); //Source;//
 
 
-            var result = MatrixDecomposition.Eig(matrix, 1000);
+            var result = Algebra.Eig(matrix);
 
             StringBuilder sb = new StringBuilder();
 

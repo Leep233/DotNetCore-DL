@@ -12,7 +12,7 @@
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition Width="120"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-
+        
      
         <Border>
             <components:IOComponent DataContext="{Binding IOComponentContext}"></components:IOComponent>
@@ -21,7 +21,11 @@
         <Border x:Name="pcaPanel" Visibility="Collapsed" Padding="10" Grid.ColumnSpan="2" Margin="120 50">
             <panels:PCAExamplePanel></panels:PCAExamplePanel>
         </Border>
+        <Border CornerRadius="15" BorderThickness="1" BorderBrush="Gray" Background="White" x:Name="imageCompressionPanel" Visibility="Collapsed" Padding="10" Margin="120 50">
+            <panels:ImageCompressionPanel></panels:ImageCompressionPanel>
+        </Border>
 
+        
 
         <Border Grid.Column="1">       
                 <StackPanel>
@@ -41,8 +45,9 @@
                     <Button Margin="3" Command="{Binding OrthogonalizationCommand}">正交化（QR分解）</Button>
                     <Button Margin="3" Command="{Binding EigenDecomposeCommand}">特征值分解</Button>
                     <Button Margin="3" Command="{Binding SVDDecomposeCommand}">SVD分解</Button>
-                    <Button Margin="3" Click="OnClickPACButton" Command="{Binding PCADecomposeCommand}">PCA</Button>
-                    <Button Margin="3" Command="{Binding PseudoInverseCommand}">伪逆</Button>
+                    <Button Margin="3" Click="OnClickPCAButton" Command="{Binding PCADecomposeCommand}">PCA</Button>
+                    <Button Margin="3" Click="OnClickImageCompressionButton" Command="{Binding PCADecomposeCommand}">PCA图片压缩</Button>
+                <Button Margin="3" Command="{Binding PseudoInverseCommand}">伪逆</Button>
                 </StackPanel>
       
           
