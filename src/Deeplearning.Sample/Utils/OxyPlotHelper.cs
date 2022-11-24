@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Deeplearning.Core.Math.Models;
+﻿using System.Collections.Generic;
+using Deeplearning.Core.Math;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -74,9 +72,9 @@ namespace Deeplearning.Sample.Utils
             for (int j = 0; j < vectorCount; j++)
             {
                
-                    float x = matrix[0, j];
+                    double x = matrix[0, j];
 
-                    float y = matrix[1, j];
+                    double y = matrix[1, j];
 
                     yield return new ScatterPoint(x, y);
                 

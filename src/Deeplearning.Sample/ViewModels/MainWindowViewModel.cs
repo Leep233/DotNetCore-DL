@@ -1,20 +1,15 @@
-﻿using Deeplearning.Core.Math;
+﻿using Deeplearning.Core.Example;
+using Deeplearning.Core.Math;
 using Deeplearning.Core.Math.Linear;
-using Deeplearning.Core.Math.Models;
 using Deeplearning.Core.Math.Probability;
-using Deeplearning.Sample.Utils;
 using Deeplearning.Sample.ViewModels;
 using OxyPlot;
-using OxyPlot.Axes;
 using OxyPlot.Series;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Deeplearning.Sample
 {
@@ -56,6 +51,23 @@ namespace Deeplearning.Sample
         public DelegateCommand CovarianceMatrixCommand { get; set; }
         public DelegateCommand MatrixNormalizedCommand { get; set; } 
         public DelegateCommand TestCommand { get; set; }
+        public DelegateCommand XORNetCommand { get; set; }
+
+        public DelegateCommand LinearRegressionTrainCommand { get; set; }
+        public DelegateCommand LinearRegressionPredictCommand { get; set; }
+
+        //去中心话
+        public DelegateCommand MatrixCentralizedCommand { get; set; }
+        /// <summary>
+        /// 协方差矩阵
+        /// </summary>
+        public DelegateCommand MatrixCovCommand { get; set; }
+
+        /// <summary>
+        /// 协方差矩阵
+        /// </summary>
+        public DelegateCommand PCACommand { get; set; }
+
         public MainWindowViewModel()
         {
             LeftPlotView = new OxyPlotView(OxyColors.Orange,OxyColors.DeepPink);
@@ -65,6 +77,8 @@ namespace Deeplearning.Sample
             Decompostion = new MatrixDecomposeOparetion(OnDecomposeCompletedCallback);
 
             ExecuteUpdateSourceMatrixCommannd();
+
+            XORNetCommand = new DelegateCommand(ExecuteXORNetCommand);
 
             VarianceMatrixCommand = new DelegateCommand(ExecuteVarianceMatrixCommand);
 
@@ -91,12 +105,145 @@ namespace Deeplearning.Sample
             TestCommand = new DelegateCommand(ExecuteTestCommand);
 
             MatrixNormalizedCommand = new DelegateCommand(ExecuteMatrixNormalizedCommand);
-  
+
+            LinearRegressionTrainCommand = new DelegateCommand(ExecuteLinearRegressionTrainCommand);
+            LinearRegressionPredictCommand = new DelegateCommand(ExecuteLinearRegressionPredictCommand);
+
+            MatrixCentralizedCommand = new DelegateCommand(ExecuteMatrixCentralizedCommand);
+
+            MatrixCovCommand = new DelegateCommand(ExecuteMatrixCovCommand);
+
+            PCACommand = new DelegateCommand(ExecutePCACommand);
+        }
+
+        private void ExecutePCACommand()
+        {
+            SampleMatrix = Matrix.Normalized(SampleMatrix);
+
+            SampleMatrix = Matrix.Centralized(SampleMatrix).matrix;
+
+            Matrix cov = Matrix.Cov(SampleMatrix);
+            //3.对协方差矩阵求特征值特征向量
+            EigenDecompositionEventArgs result = Algebra.Eig(cov);
+
+        }
+            
+
+
+        private void ExecuteMatrixCovCommand()
+        {
+            Matrix matrix = new Matrix(new Vector[] { 
+                new Vector(-2,-1,0,1,2),
+                new Vector(-4,2,0,-2,4)            
+            }) ;
+
+            matrix = SampleMatrix;// matrix.T;
+
+            matrix = Matrix.Cov(matrix);
+
+            Message = matrix.ToString();
+
+            LeftPlotView.UpdatePointsToPlotView(Matrix.Normalized(matrix));
+        }
+
+        private void ExecuteMatrixCentralizedCommand()
+        {
+            SampleMatrix = Matrix.Normalized(SampleMatrix);
+
+            var result  = Matrix.Centralized(SampleMatrix);
+
+            SampleMatrix = result.matrix;
+
+            Message = result.avgs.ToString();
+
+            LeftPlotView.UpdatePointsToPlotView(SampleMatrix);
+        }
+
+        private LinearRegression linearRegression = new LinearRegression();
+        private void ExecuteLinearRegressionPredictCommand()
+        {
+            //train
+            // string path = "./resources/testdata/taxi-fare-train.csv";
+            string path = "./resources/testdata/taxi-fare-test.csv";
+
+            var trainData = ReadLinearRegressionData(path,10);
+
+            Vector testData = linearRegression.Predice(trainData.data);
+
+            double loss = InformationTheory.MES(testData, trainData.real); 
+
+            Message = $"误差：{loss}" + "\n" +
+                $"预测值：{ testData}" + "\n" +
+                 $"实际值：{  trainData.real}";
+
+        }
+
+    
+        private (Matrix data, Vector real) ReadLinearRegressionData(string path, int count)
+        {
+           
+            string [] lines = File.ReadAllLines(path);
+            
+            int dataCount = count>0?count: lines.Length-1;//count;
+            Vector real = new Vector(dataCount);
+            int fc = lines[0].Split(',').Length-2;
+            Matrix data = new Matrix(dataCount,fc);
+
+            for (int i = 0; i < dataCount; i++)
+            {
+                string content = lines[i + 1];
+               string[] words = content.Split(',');
+                data[i,0] = 1;
+                data[i,1] = float.Parse(words[1]);
+                data[i,2] = float.Parse(words[2]);
+                data[i,3] = float.Parse(words[3]);
+                data[i,4] = float.Parse(words[4]);
+                real[i] = float.Parse(words[6]);
+      
+            }
+            return (data, real);
+        }
+
+        private  void ExecuteLinearRegressionTrainCommand()
+        {
+            string path = "./resources/testdata/taxi-fare-train.csv";
+
+             var trainData = ReadLinearRegressionData(path,-1);
+
+            double loss = linearRegression.Fit(trainData.data, trainData.real);
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine($"训练完成(误差:{loss})");
+
+           Message = sb.ToString();
+        }
+
+    
+
+        private void ExecuteXORNetCommand()
+        {
+            XORNet net = new XORNet();
+
+            //Matrix w = new Matrix(2,2);
+
+            float lr = 0.001f;
+            float step = 100;
+            float e = 10E-8f;
+
+            Matrix matrix = Matrix.Inv( (net.transData.T * net.transData));
+
+            Matrix m = matrix * net.transData.T ;
+
+            Vector w = m * net.realModel;
+
+            Message = w.ToString();
+
         }
 
         private void ExecuteMatrixNormalizedCommand()
         {
-           Matrix normalMatrix = SampleMatrix.Normalized();
+           Matrix normalMatrix = Matrix.Normalized(SampleMatrix);
 
             LeftPlotView.UpdatePointsToPlotView(normalMatrix);
 
@@ -114,8 +261,8 @@ namespace Deeplearning.Sample
             Vector p = new Vector(0.1f, 0.8f, 0.1f);
             Vector p2 = new Vector(0.3f, 0.4f, 0.3f);
             stringBuilder.AppendLine($"exp={ ProbabilityDistribution.Exp(x, p)}");
-            stringBuilder.AppendLine($"Var1={ ProbabilityDistribution.Var(x, p, ProbabilityDistributionMode.Discrete)}");
-            stringBuilder.AppendLine($"Var2={ ProbabilityDistribution.Var(x, p2, ProbabilityDistributionMode.Discrete)}");
+            stringBuilder.AppendLine($"Var1={ ProbabilityDistribution.Var(x, p, RandomVariableType.Discrete)}");
+            stringBuilder.AppendLine($"Var2={ ProbabilityDistribution.Var(x, p2, RandomVariableType.Discrete)}");
 
             x = new Vector(5, 20, 40, 80, 100);
             Vector y = new Vector(10, 24, 33, 54, 10);
@@ -137,7 +284,7 @@ namespace Deeplearning.Sample
 
             Matrix matrix = new Matrix(vectors);
 
-            matrix = matrix.Cov();
+            matrix = Matrix.Cov(matrix);
 
             Message = matrix.ToString();
         }
@@ -154,7 +301,7 @@ namespace Deeplearning.Sample
             Matrix matrix = new Matrix(vectors);
 
 
-            matrix = matrix.Var();
+            //matrix = Matrix.Var(matrix);
 
             Message = matrix.ToString();
         }
@@ -174,15 +321,18 @@ namespace Deeplearning.Sample
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("========Sources========");
             sb.AppendLine(matrix.ToString());
-            sb.AppendLine("========逆矩阵========");     
-            sb.AppendLine(matrix.inverse.ToString());
+            sb.AppendLine("========逆矩阵========");    
+            
+            Matrix matrixInv = Matrix.Inv(matrix);
+
+            sb.AppendLine(matrixInv.ToString());
             sb.AppendLine("========检测========");
-            sb.AppendLine((matrix * matrix.inverse).ToString());
+            sb.AppendLine((matrix * matrixInv).ToString());
             sb.AppendLine("========检测========");
             sb.AppendLine(sourceVector.ToString());
             Vector v = matrix * sourceVector;
             sb.AppendLine((v).ToString());
-            Vector v2 = matrix.inverse * v;
+            Vector v2 = matrixInv * v;
             sb.AppendLine(v2.ToString());
 
             Message = sb.ToString();
@@ -218,7 +368,7 @@ namespace Deeplearning.Sample
         {
 
 
-            float[,] scalars = new float[3, 3] {
+            double[,] scalars = new double[3, 3] {
             { 1,1,1},
             { 2,1,3},
             { 1,1,4}
@@ -230,7 +380,7 @@ namespace Deeplearning.Sample
             sb.AppendLine("========Sources========");
             sb.AppendLine(matrix.ToString());
             sb.AppendLine("========伴随矩阵========");
-            matrix = matrix.abj;
+            matrix = Matrix.Adjugate(matrix);
             sb.AppendLine(matrix.ToString());
           
             Message = sb.ToString();
@@ -238,7 +388,7 @@ namespace Deeplearning.Sample
 
         private void ExecuteMatrixDetCommand()
         {
-            float[,] scalars = new float[3, 3] {
+            double[,] scalars = new double[3, 3] {
             {6,1,1 },
             {4,-2,5 },
             {2,8,7 }
@@ -246,7 +396,7 @@ namespace Deeplearning.Sample
 
             Matrix matrix = new Matrix(scalars);
 
-            Message = matrix.det.ToString("F4");
+            Message = Matrix.Det(matrix).ToString("F4");
         }
 
         private void ExecuteNormalDistriutionCommand()
@@ -292,7 +442,7 @@ namespace Deeplearning.Sample
         {
             Func<Vector, float> original = new Func<Vector, float>(vector => MathF.Pow((float)vector[0], 2) + MathF.Pow((float)vector[1], 2));
 
-            Vector minVector = Gradient.GradientDescent(original,Vector.Random(2,-5,5));
+            Vector minVector = Gradient.GradientDescent(original,Vector.Random(2,-5,5), GradientParams.Default);
 
             Message = $"done...({minVector})";
         }  
@@ -307,7 +457,7 @@ namespace Deeplearning.Sample
         /// <param name="info"></param>
         /// <param name="range"></param>
         /// <returns></returns>
-        public (DataPoint p1, DataPoint p2) GetTangentLinePoints(GradientInfo info, float range)
+        public (DataPoint p1, DataPoint p2) GetTangentLinePoints(GradientEventArgs info, float range)
         {
 
             float x1 = info.x + range;
@@ -339,7 +489,7 @@ namespace Deeplearning.Sample
 
             Message = "computing...";
 
-            Vector vector = await Gradient.GradientDescent(orginal,5, OnGradientChangedCallback);
+            Vector vector = await Gradient.GradientDescent(orginal,5, GradientParams.Default, OnGradientChangedCallback);
 
             Message = $"completed(min:{vector})";
         }
@@ -381,7 +531,7 @@ namespace Deeplearning.Sample
             SourceMatrix = SampleMatrix.ToString();
         }
        
-        private void OnGradientChangedCallback(GradientInfo eventArgs)
+        private void OnGradientChangedCallback(GradientEventArgs eventArgs)
         {
 
            var points = GetTangentLinePoints(eventArgs, 3);

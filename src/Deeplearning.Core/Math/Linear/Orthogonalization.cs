@@ -1,10 +1,5 @@
 ﻿using Deeplearning.Core.Attributes;
-using Deeplearning.Core.Math.Models;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Deeplearning.Core.Math.Linear
 {
@@ -15,7 +10,33 @@ namespace Deeplearning.Core.Math.Linear
     public class Orthogonalization
     {
 
-        public static Matrix HouseholderMatrix(Vector vector) 
+
+        public static Func<Matrix, QREventArgs> Decompose(object decType)
+        {
+
+            int.TryParse(decType.ToString(), out int type);
+
+            Func<Matrix, QREventArgs> function = Householder;
+
+            switch (type)
+            {
+                case 0:
+                    function = CGS;
+                    break;
+                case 1:
+                    function = MGS;
+                    break;
+                case 2:
+                default:
+                    function = Householder;
+                    break;
+            }
+
+
+            return function;
+        }
+
+        public static Matrix HouseholderMatrix(Vector vector)
         {
             Vector w = Vector.Standardized(vector);
 
@@ -25,56 +46,77 @@ namespace Deeplearning.Core.Math.Linear
         }
 
 
-        public static QRResult Householder(Matrix source)
+        public static QREventArgs Householder(Matrix source)
         {
 
             int size = (int)MathF.Min(source.Row, source.Column);
 
             Matrix Q = Matrix.UnitMatrix(size);
 
-            Matrix R = (Matrix)source.Clone();
+            Matrix R = source;
 
-            int vectorCounts = source.Column - 1;
+            int count = source.Column - 1;
 
-            for (int i = 0; i < source.Column - 1; i++)
+            for (int i = 0; i < count; i++)
             {
-                Matrix subMatrix = R.Clip(i, i, R.Row, R.Row);
+                Matrix subMatrix = Matrix.Clip(R,i, i, R.Row, R.Row);
 
                 Vector x = subMatrix.GetVector(0);
 
                 Vector y = new Vector(x.Length);
 
-                y[0] = -MathF.Sign((float)x[0]) * x.Norm(2);
+                y[0] = Vector.Norm(x); //- MathF.Sign((float)x[0]) * (float) x.Norm(2);
 
-                Vector z = y - x;
+                Vector z = x - y;
 
                 Matrix temp = HouseholderMatrix(z);
 
                 Matrix h = Matrix.UnitMatrix(source.Row);
 
-                h = h.Replace(temp, i, i, temp.Row, temp.Column);
+                h = Matrix.Replace(h,temp, i, i);
 
-                Matrix a_1 = h * R;
-                R = a_1;
+                R = h * R;
+                /*
+     *人工校正 理论上与household 矩阵相乘的向量除了第一个元素  其余都会是0
+     * 当时程序上而已 浮点型 本身就是不稳定的 所以需要人工进行校正
+     */
+                for (int j = i + 1; j < source.Row; j++)
+                {
+                    R[j, i] = 0;
+                }
                 Q = Q * h;
             }
 
-            /*
 
-       */
 
-            return new QRResult(Q, R);
+            //  R =  UpperTriangularMatrixCalibration(R);
+
+            return new QREventArgs(Q, R);
+        }
+      
+        /// <summary>
+        /// 上三角矩阵校正，
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        private static Matrix UpperTriangularMatrixCalibration(Matrix source)
+        {
+            for (int c = 0; c < source.Column; c++)
+            {
+                for (int r = source.Row - 1; r > c; r--)
+                {
+                    source[r, c] = 0;
+                }
+            }
+            return source;
         }
 
-      
-
         [Completion(false)]
-        public static QRResult Givens(Matrix source)
+        public static QREventArgs Givens(Matrix source)
         {
-            Matrix Q = null;
-            Matrix R = null;
 
-            return new QRResult();
+
+            return new QREventArgs();
 
         }
 
@@ -83,33 +125,41 @@ namespace Deeplearning.Core.Math.Linear
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static QRResult CGS(Matrix source)
+        public static QREventArgs CGS(Matrix source)
         {
 
-            Matrix matrix = (Matrix)source.Clone();
+            Matrix matrix = source;
 
-            Matrix Q = (Matrix)source.Clone();
+            Matrix Q = source;
 
             Matrix R = new Matrix(source.Column, source.Column);
 
             for (int i = 0; i < matrix.Column; i++)
             {
                 Vector a = matrix.GetVector(i);
+
                 Vector e = Vector.Standardized(a);
 
                 for (int j = i - 1; j >= 0; j--)
                 {
                     e = Q.GetVector(j);
-                    float temp = a.T * e;
-                    R[j, i] = temp;
+
+                    double temp = a.T * e;
+
+                    R[j, i] = (float)temp;
+
                     a = a - temp * e;
+
                     e = Vector.Standardized(a);
                 }
 
-                R[i, i] = a.Norm(2);
-                Q = Q.Replace(e, i);
+                R[i, i] = Vector.Norm(a);// (float)a.Norm(2);
+                Q = Matrix.Replace(Q,e, i);
             }
-            return new QRResult(Q, R);
+
+            R = UpperTriangularMatrixCalibration(R);
+
+            return new QREventArgs(Q, R);
         }
 
 
@@ -118,9 +168,9 @@ namespace Deeplearning.Core.Math.Linear
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static QRResult MGS(Matrix source)
+        public static QREventArgs MGS(Matrix source)
         {
-            Matrix matrix = (Matrix)source.Clone();
+            Matrix matrix = source;
 
             int vectorCount = source.Column;
 
@@ -134,24 +184,27 @@ namespace Deeplearning.Core.Math.Linear
 
                 Vector e = Vector.Standardized(b);
 
-                Q = Q.Replace(e, i);
+                Q = Matrix.Replace(Q,e, i);
 
-                R[i, i] = b.Norm(2);
+                R[i, i] = Vector.Norm(b);
 
-                for (int j = i+1; j < vectorCount; j++)
+                for (int j = i + 1; j < vectorCount; j++)
                 {
                     b = matrix.GetVector(j);
 
-                    float temp = b.T * e;
+                    double temp = b.T * e;
 
                     R[i, j] = temp;
 
                     b = b - temp * e;
 
-                    matrix.Replace(b, j);
-                }              
+                    matrix = Matrix.Replace(matrix, b, j);
+                }
             }
-            return new QRResult(Q, R);
+
+            R = UpperTriangularMatrixCalibration(R);
+
+            return new QREventArgs(Q, R);
         }
 
     }
