@@ -549,6 +549,49 @@ namespace Deeplearning.Core.Math
             return result;
         }
 
+        /// <summary>
+        /// 均值归一化，
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static (Matrix matrix, Vector avgs,Vector stds) MeanNormalization(Matrix matrix)
+        {
+            int row = matrix.Row;
+
+            int col = matrix.Column;
+
+            Matrix normMatrix = new Matrix(row, col);
+
+            Vector avgs = Average(matrix);
+
+            Vector vars = new Vector(row);
+
+            int n = row-1;
+
+            for (int r = 0; r < row; r++)
+            {
+                double sum = 0;
+                double avg = avgs[r];
+                for (int c = 0; c < col; c++)
+                {
+                    sum += MathF.Pow((float)(matrix[r,c] - avg),2);
+                }
+                vars[r] = MathF.Sqrt((float)(sum / n));// sum / n;// MathF.Sqrt((float)(sum / n));
+            }
+
+            for (int r = 0; r < row; r++)
+            {
+                double avg = avgs[r];
+                double var = vars[r];
+                for (int c = 0; c < col; c++)
+                {
+                    normMatrix[r, c] = (matrix[r, c] - avg)/ var;
+                }
+            }
+
+            return (normMatrix, avgs, vars);
+
+        }
      
         /// <summary>
         /// 方差

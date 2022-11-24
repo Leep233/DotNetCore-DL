@@ -75,14 +75,20 @@ namespace Deeplearning.Sample.ViewModels.Panels
                 CompressedImage = null;
 
               DLMath.Matrix matrix = Pixels2Matrix(pixels, 400);
+            //byte[] ps = Matrix2Pixels(matrix);
+            //CompressedImage = ImageUtil.Pixels2Image(sourceBitMap.PixelWidth, sourceBitMap.PixelHeight,
+            // sourceBitMap.DpiX, sourceBitMap.DpiY, ps);
+            //compressing = false;
 
-              PCA pca = new PCA();
+            //return;
+
+            PCA pca = new PCA();
 
               PCAEventArgs eventArgs = await Task.Factory.StartNew(() => pca.EigFit(matrix, EigenCount));
 
               DLMath.Matrix compressMatrix = eventArgs.D * eventArgs.X;
 
-              byte[] ps = Matrix2Pixels(compressMatrix);
+            byte[] ps = Matrix2Pixels(compressMatrix);
 
              CompressedImage = ImageUtil.Pixels2Image(sourceBitMap.PixelWidth, sourceBitMap.PixelHeight,
              sourceBitMap.DpiX, sourceBitMap.DpiY, ps);
@@ -119,10 +125,10 @@ namespace Deeplearning.Sample.ViewModels.Panels
             {
                 for (int j = 0; j < r; j++)
                 {
-                    matrix[i, j] = pixels[i*r+j] / 255.0;
+                    matrix[i, j] = pixels[i * r + j] / 255.0000;///255.0000;
                 }
             }
-            return matrix;
+            return matrix;// DLMath.Matrix.MeanNormalization(matrix).matrix;// ;
         }
 
 

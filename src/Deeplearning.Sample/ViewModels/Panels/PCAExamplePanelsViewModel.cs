@@ -23,28 +23,38 @@ namespace Deeplearning.Sample.ViewModels.Panels
         public ScatterSeries Scatter { get; protected set; }
         public LineSeries Line { get; protected set; }
 
+        public LineSeries Line2 { get; protected set; }
+
         public DelegateCommand LoadTestDataCommand { get; set; }
         public DelegateCommand PCACommand { get; set; }
-
+        public DelegateCommand SVDPCACommand { get; set; }
         public DelegateCommand ReductionCommand { get; set; }
 
+     
         public PCAExamplePanelsViewModel()
         {
             PlotModel = new PlotModel();
      
             Scatter = new ScatterSeries() { MarkerType = MarkerType.Circle, MarkerFill = OxyColors.GreenYellow };
 
-            Line = new LineSeries() {  LineStyle = LineStyle.Dot,MarkerType = MarkerType.Diamond, Color = OxyColors.Red };
+            Line = new LineSeries() {  LineStyle = LineStyle.Dot, MarkerSize = 8,MarkerType = MarkerType.Diamond, Color = OxyColors.Red };
+
+            Line2 = new LineSeries() { LineStyle = LineStyle.Dot,MarkerSize=5,MarkerStroke= OxyColors.BurlyWood, MarkerType = MarkerType.Star, Color = OxyColors.BlueViolet };
+
 
             PlotModel.Series.Add(Scatter);
 
             PlotModel.Series.Add(Line);
+
+            PlotModel.Series.Add(Line2);
 
             LoadTestDataCommand = new DelegateCommand(ExecuteLoadTestDataCommand);
 
             PCACommand = new DelegateCommand(ExecutePCACommand);
 
             ReductionCommand = new DelegateCommand(ExecuteReductionCommand);
+
+            SVDPCACommand = new DelegateCommand(ExecuteSVDPCACommand);
         }
 
         private PCAEventArgs pcaEventArgs = null;
@@ -70,11 +80,36 @@ namespace Deeplearning.Sample.ViewModels.Panels
         {
             PCA pca = new PCA();
 
-         pcaEventArgs = pca.SVDFit(source,1);
+            pcaEventArgs = pca.EigFit(source,1);
 
-            //     pcaEventArgs = pca.EigFit(source, 1);
+            // pcaEventArgs = pca.EigFit(source, 1);
 
             ReductionCommand.Execute();
+        }
+
+        private void ExecuteSVDPCACommand()
+        {
+            PCA pca = new PCA();
+
+            pcaEventArgs = pca.SVDFit(source, 1);
+
+            if (pcaEventArgs is null) return;
+
+
+            Matrix matrix = pcaEventArgs.D * pcaEventArgs.X;
+
+            for (int i = 0; i < matrix.Row; i++)
+            {
+
+                Line2.Points.Add(new DataPoint(matrix[i, 0], matrix[i, 1]));
+
+                // Scatter2.Points.Add(new ScatterPoint(matrix[i, 0], matrix[i, 1]));
+            }
+            PlotModel.InvalidatePlot(true);
+
+            // pcaEventArgs = pca.EigFit(source, 1);
+
+            // ReductionCommand.Execute();
         }
 
         private void ExecuteLoadTestDataCommand()
@@ -82,6 +117,7 @@ namespace Deeplearning.Sample.ViewModels.Panels
 
             Scatter.Points.Clear();
             Line.Points.Clear();
+            Line2.Points.Clear();
 
             int dataCount = 20;
 
@@ -129,7 +165,9 @@ namespace Deeplearning.Sample.ViewModels.Panels
                // data[ 4,i] = float.Parse(words[6]);//价格
 
             }
-            return data;
+            // var result = Matrix.MeanNormalization(data);
+
+            return data;// result.matrix;// data;
         }
 
     }

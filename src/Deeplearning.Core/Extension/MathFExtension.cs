@@ -7,7 +7,7 @@ namespace Deeplearning.Core.Extension
 {
     public static class MathFExtension
     {
-        public const double MIN_VALUE = 10E-8; //0.0000000001
+        public const double MIN_VALUE = 10E-15; //0.0000000001
 
         public static int Sum(params int[] args)
         {  

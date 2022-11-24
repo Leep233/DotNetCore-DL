@@ -9,8 +9,11 @@ namespace Deeplearning.Core.Example
         public PCAEventArgs EigFit(Matrix source,int k) 
         {
             Matrix matrix = source;
+
             //1.中心化
-            var centralInfo = Matrix.Centralized(matrix);
+            //var centralInfo = Matrix.MeanNormalization(matrix);
+
+            var centralInfo = Matrix.Centralized(source);
 
             Matrix centralizedMatrix = centralInfo.matrix;
             //2.协方差矩阵
@@ -23,9 +26,9 @@ namespace Deeplearning.Core.Example
 
             //4.选取有效的特征值
 
-          //  Matrix eigenVectors = result.eigenVectors;
+            //  Matrix eigenVectors = result.eigenVectors;
 
-            Matrix D = result.eigenVectors;// eigenVectors;// Matrix.Clip(eigenVectors, 0,0, eigenVectors.Row,k);
+            Matrix D = result.eigenVectors;// Matrix.Clip(result.eigenVectors, 0, 0, result.eigenVectors.Row, k);// result.eigenVectors;// eigenVectors;// ;
 
             Matrix X = D.T * source;      
 
@@ -36,8 +39,9 @@ namespace Deeplearning.Core.Example
         {
             Matrix matrix = source;
             //1.中心化
+           // var centralInfo = Matrix.Centralized(matrix);
             var centralInfo = Matrix.Centralized(matrix);
-
+            
             Matrix centralizedMatrix = centralInfo.matrix;
             //2.协方差矩阵
             Matrix covMatrix = Matrix.Cov(centralizedMatrix);
@@ -48,9 +52,9 @@ namespace Deeplearning.Core.Example
             //Matrix eigens = eigResult.Eigen;
 
             //4.选取有效的特征值
-            Matrix eigenVectors = result.V;
+            // Matrix eigenVectors = result.V;
 
-            Matrix D = eigenVectors;// Matrix.Clip(eigenVectors, 0, 0, eigenVectors.Row, k);
+            Matrix D = result.V;// Matrix.Clip(eigenVectors, 0, 0, eigenVectors.Row, k);
 
             Matrix X = D.T * source;
 

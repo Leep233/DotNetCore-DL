@@ -148,9 +148,13 @@ namespace Deeplearning.Sample
 
         private void ExecuteMatrixCentralizedCommand()
         {
-            SampleMatrix = Matrix.Normalized(SampleMatrix);
+          //  SampleMatrix = Matrix.Normalized(SampleMatrix);
 
-            var result  = Matrix.Centralized(SampleMatrix);
+           // var result  = Matrix.Centralized(SampleMatrix);
+
+            var result = Matrix.MeanNormalization(SampleMatrix);
+
+          //  
 
             SampleMatrix = result.matrix;
 

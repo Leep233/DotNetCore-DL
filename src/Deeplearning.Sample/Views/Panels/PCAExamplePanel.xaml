@@ -14,7 +14,8 @@
         <oxy:PlotView  Grid.Row="0" Grid.Column="0"  Model="{Binding PlotModel}"></oxy:PlotView>
         <StackPanel Grid.Column="1">
             <Button Margin="3" Command="{Binding LoadTestDataCommand}">加载数据</Button>
-            <Button  Margin="3" Command="{Binding PCACommand}">主成分分析</Button>   
+            <Button  Margin="3" Command="{Binding PCACommand}">主成分分析</Button>
+            <Button  Margin="3" Command="{Binding SVDPCACommand}">SVD主成分分析</Button>
         </StackPanel>
     </Grid>
 </UserControl>

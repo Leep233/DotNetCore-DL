@@ -7,20 +7,20 @@ namespace Deeplearning.Core.Math.Linear
 {
     public static class Algebra
     {
-
+       
         public static SVDEventArgs SVD(Matrix source,int k=-1)
         {
 
             //1. A^T * A get matrix V
             Matrix AT_A = source.T * source;
 
-            EigenDecompositionEventArgs eventArgs1 = Eig(AT_A,k);
+            EigenDecompositionEventArgs eventArgs1 = Eig(AT_A, k);
 
             Matrix V = eventArgs1.eigenVectors;
 
             Matrix A_AT = source * source.T;
 
-            EigenDecompositionEventArgs eventArgs2 = Eig(A_AT,k);
+            EigenDecompositionEventArgs eventArgs2 = Eig(A_AT, k);
 
             Matrix U = eventArgs2.eigenVectors;
 
@@ -33,6 +33,9 @@ namespace Deeplearning.Core.Math.Linear
 
         private static (Matrix U, Matrix D, Matrix V) SVDFilter(Matrix u, Vector eigens, Matrix v, double threshold = 0.001)
         {
+
+            return (u, Matrix.DiagonalMatrix(eigens), v);
+
             List<double> list = new List<double>();
 
             for (int i = eigens.Length - 1; i >= 0; i--)
@@ -64,11 +67,11 @@ namespace Deeplearning.Core.Math.Linear
         /// <param name="source"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        public static EigenDecompositionEventArgs Eig(Matrix source, int k = -1, double threshold = 0.0001)
+        public static EigenDecompositionEventArgs Eig(Matrix source,int k=-1,double threshold = 10E-5)
         {
             Matrix matrix = source;
 
-            int vectorCount = k <= 0 ? source.Column : k;
+            int vectorCount = k<=0? source.Column:k;
 
             List<double> eigens = new List<double>();
 
@@ -81,6 +84,8 @@ namespace Deeplearning.Core.Math.Linear
 
                 if (mainEigen != null)
                 {
+                    if (MathF.Abs((float)(mainEigen.eigen)) <= MathFExtension.MIN_VALUE) break;
+
                     eigens.Add(mainEigen.eigen);
 
                     vectors.Add(mainEigen.vector);
@@ -90,8 +95,7 @@ namespace Deeplearning.Core.Math.Linear
 
                     matrix = matrix - eigenMatrix;
                 }
-            }
-            //
+            }       
 
             var sortedResult = EigenFilter(new Vector(eigens.ToArray()), vectors.ToArray());
 
@@ -112,9 +116,9 @@ namespace Deeplearning.Core.Math.Linear
         private static (Vector eigens, Vector[] vectors) EigenFilter(Vector eigenValues, Vector[] vectors)
         {
 
-            //if (eigenValues.Length > quantity) 
+            //if (eigenValues.Length > quantity)
             //{
-            //   var result = Sort(eigenValues, vectors, (a, b) => MathF.Abs((float)a) < MathF.Abs((float)b));
+            //    var result = Sort(eigenValues, vectors, (a, b) => MathF.Abs((float)a) < MathF.Abs((float)b));
 
             //    //剔除多余的特征值和特征向量
 
@@ -235,10 +239,10 @@ namespace Deeplearning.Core.Math.Linear
 
             return V * S * U.T;
         }
-
-        public static EigenEventArgs PowerIteration(Matrix matrix, int iterations = 300)
+     
+        public static EigenEventArgs PowerIteration(Matrix matrix, int iterations = 500)
         {
-            float minValue = 0.000001f;
+            
             int length = matrix.Column;
 
             Vector eigenVector = new Vector(length);
@@ -271,7 +275,7 @@ namespace Deeplearning.Core.Math.Linear
 
                 norm = Vector.NoSqrtNorm(y);
 
-                if (MathF.Abs((float)norm) <= minValue) break;
+                if (MathF.Abs((float)norm) <= MathFExtension.MIN_VALUE) break;
 
                 eigenVector = vector;
             }
