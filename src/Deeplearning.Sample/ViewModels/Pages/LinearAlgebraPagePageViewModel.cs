@@ -217,7 +217,7 @@ namespace Deeplearning.Sample.ViewModels.Pages
         private void ExecuteMatrixNormalizedCommand()
         {
             Matrix matrix = GetSourceMatrix();
-            IOComponentContext.OutputContent = Matrix.Normalized(matrix).ToString();
+            IOComponentContext.OutputContent = Matrix.MeanNormalization(matrix).matrix.ToString();
         }
 
         private void ExecuteSelectedQRFunctionCommand(object type)

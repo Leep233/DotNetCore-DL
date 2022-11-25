@@ -223,7 +223,7 @@ namespace Deeplearning.Sample.ViewModels
             sb.AppendLine("Matrix * EigenVectors");
             sb.AppendLine((matrix * result.eigenVectors).ToString());
             sb.AppendLine("EigenVectors * EigenMatrix");
-            sb.AppendLine((result.eigenVectors * Matrix.DiagonalMatrix(result.eigens)).ToString());
+            sb.AppendLine((result.eigenVectors * MatrixFactory.DiagonalMatrix(result.eigens)).ToString());
             sb.AppendLine("EigenVectors * EigenVectors * EigenVectors.Inv");
 
 

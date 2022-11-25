@@ -118,7 +118,7 @@ namespace Deeplearning.Sample
 
         private void ExecutePCACommand()
         {
-            SampleMatrix = Matrix.Normalized(SampleMatrix);
+            SampleMatrix = Matrix.MeanNormalization(SampleMatrix).matrix;
 
             SampleMatrix = Matrix.Centralized(SampleMatrix).matrix;
 
@@ -143,7 +143,7 @@ namespace Deeplearning.Sample
 
             Message = matrix.ToString();
 
-            LeftPlotView.UpdatePointsToPlotView(Matrix.Normalized(matrix));
+            LeftPlotView.UpdatePointsToPlotView(Matrix.MeanNormalization(matrix).matrix);
         }
 
         private void ExecuteMatrixCentralizedCommand()
@@ -247,7 +247,7 @@ namespace Deeplearning.Sample
 
         private void ExecuteMatrixNormalizedCommand()
         {
-           Matrix normalMatrix = Matrix.Normalized(SampleMatrix);
+           Matrix normalMatrix = Matrix.MeanNormalization(SampleMatrix).matrix;
 
             LeftPlotView.UpdatePointsToPlotView(normalMatrix);
 
@@ -503,7 +503,7 @@ namespace Deeplearning.Sample
 
             Vector v = new Vector(2,2,2,2,2);
  
-            Matrix diagMatrix = Matrix.DiagonalMatrix(v);
+            Matrix diagMatrix = MatrixFactory.DiagonalMatrix(v);
 
             Matrix matrixT = diagMatrix * SampleMatrix;
 

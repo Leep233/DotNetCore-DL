@@ -34,30 +34,30 @@ namespace Deeplearning.Core.Math.Linear
         private static (Matrix U, Matrix D, Matrix V) SVDFilter(Matrix u, Vector eigens, Matrix v, double threshold = 0.001)
         {
 
-            return (u, Matrix.DiagonalMatrix(eigens), v);
+            return (u, MatrixFactory.DiagonalMatrix(eigens), v);
 
-            List<double> list = new List<double>();
+            //List<double> list = new List<double>();
 
-            for (int i = eigens.Length - 1; i >= 0; i--)
-            {
-                double value = eigens[i];
+            //for (int i = eigens.Length - 1; i >= 0; i--)
+            //{
+            //    double value = eigens[i];
 
-                value = value == 0 ? 0 : MathF.Sqrt(MathF.Abs((float)value));
+            //    value = value == 0 ? 0 : MathF.Sqrt(MathF.Abs((float)value));
 
-                if (value >= threshold)
-                {
-                    list.Insert(0, value);
-                }
-            }
-            double[] es = list.ToArray();
+            //    if (value >= threshold)
+            //    {
+            //        list.Insert(0, value);
+            //    }
+            //}
+            //double[] es = list.ToArray();
 
-            Matrix D = Matrix.DiagonalMatrix(es);
+            //Matrix D = MatrixFactory.DiagonalMatrix(es);
 
-            Matrix U = Matrix.Clip(u, 0, 0, u.Row, es.Length);
+            //Matrix U = Matrix.Clip(u, 0, 0, u.Row, es.Length);
 
-            Matrix V = Matrix.Clip(v, 0, 0, v.Row, es.Length);
+            //Matrix V = Matrix.Clip(v, 0, 0, v.Row, es.Length);
 
-            return (U, D, V);
+            //return (U, D, V);
         }
 
 
@@ -67,7 +67,7 @@ namespace Deeplearning.Core.Math.Linear
         /// <param name="source"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        public static EigenDecompositionEventArgs Eig(Matrix source,int k=-1,double threshold = 10E-5)
+        public static EigenDecompositionEventArgs Eig(Matrix source,int k=-1)
         {
             Matrix matrix = source;
 
@@ -79,7 +79,6 @@ namespace Deeplearning.Core.Math.Linear
 
             for (int count = 0; count < vectorCount; count++)
             {
-
                 EigenEventArgs mainEigen = PowerIteration(matrix);
 
                 if (mainEigen != null)
@@ -136,8 +135,6 @@ namespace Deeplearning.Core.Math.Linear
 
             //    vectors = eigenVectors;
             //}
-
-
             // return (eigenValues, vectors);
             return Sort(eigenValues, vectors, (a, b) => a < b);
 
@@ -153,7 +150,7 @@ namespace Deeplearning.Core.Math.Linear
 
             Matrix Ak = source;
 
-            Matrix Q = Matrix.UnitMatrix(source.Row);
+            Matrix Q = MatrixFactory.UnitMatrix(source.Row);
 
             for (int i = 0; i < k; i++)
             {
@@ -164,7 +161,7 @@ namespace Deeplearning.Core.Math.Linear
                 if (isSymmetry) Q = Q * decResult.Q;
             }
 
-            Vector eigens = new Vector(Matrix.DiagonalElements(Ak));
+            Vector eigens = Matrix.DiagonalElements(Ak);
 
             if (isSymmetry)
             {

@@ -40,7 +40,7 @@ namespace Deeplearning.Core.Math.Linear
         {
             Vector w = Vector.Standardized(vector);
 
-            Matrix I = Matrix.UnitMatrix(w.Length);
+            Matrix I = MatrixFactory.UnitMatrix(w.Length);
 
             return I - 2 * w * w.T;
         }
@@ -51,7 +51,7 @@ namespace Deeplearning.Core.Math.Linear
 
             int size = (int)MathF.Min(source.Row, source.Column);
 
-            Matrix Q = Matrix.UnitMatrix(size);
+            Matrix Q = MatrixFactory.UnitMatrix(size);
 
             Matrix R = source;
 
@@ -71,7 +71,7 @@ namespace Deeplearning.Core.Math.Linear
 
                 Matrix temp = HouseholderMatrix(z);
 
-                Matrix h = Matrix.UnitMatrix(source.Row);
+                Matrix h = MatrixFactory.UnitMatrix(source.Row);
 
                 h = Matrix.Replace(h,temp, i, i);
 

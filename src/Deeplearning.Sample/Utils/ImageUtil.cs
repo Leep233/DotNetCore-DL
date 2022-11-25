@@ -16,13 +16,10 @@ namespace Deeplearning.Sample.Utils
             int pixelHeight = height;
 
             int stride = pixelWidth * 4;
-
-            
-
            return BitmapSource.Create(pixelWidth, pixelHeight, 
                dpiX, dpiY,
-               PixelFormats.Bgr24,
-               new BitmapPalette(new List<Color> { Colors.Blue, Colors.Green, Colors.Red }),
+               PixelFormats.Bgr32,
+               new BitmapPalette(new List<Color> { Colors.Blue, Colors.Green, Colors.Red,   }),
                colors, 
                stride);      
         }
