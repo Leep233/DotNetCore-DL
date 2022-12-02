@@ -1,5 +1,6 @@
 ﻿using Deeplearning.Core.Math;
 using Deeplearning.Core.Math.Linear;
+using Deeplearning.Core.Math.Probability;
 using Deeplearning.Sample.Utils;
 using Deeplearning.Sample.ViewModels.Components;
 using Prism.Commands;
@@ -175,7 +176,11 @@ namespace Deeplearning.Sample.ViewModels.Pages
 
         private void ExecuteCovarianceMatrixCommand()
         {
-           // throw new NotImplementedException();
+            Matrix matrix = GetSourceMatrix();
+
+            Matrix covMatrix = ProbabilityDistribution.Cov(matrix);
+
+            IOComponentContext.OutputContent = covMatrix.ToString();
         }
 
         private void ExecuteVarianceMatrixCommand()
@@ -190,11 +195,8 @@ namespace Deeplearning.Sample.ViewModels.Pages
             Matrix inv = Matrix.Inv(matrix);// .inverse;
 
             StringBuilder builder = new StringBuilder();
-
-            builder.AppendLine("Matrix.Inv");
-            builder.AppendLine(inv.ToString());
-            builder.AppendLine("MatrixInv * Source  = I");
-            builder.AppendLine((inv*matrix).ToString());
+   
+            builder.AppendLine(inv.ToString());   
 
             IOComponentContext.OutputContent = builder.ToString();
         }

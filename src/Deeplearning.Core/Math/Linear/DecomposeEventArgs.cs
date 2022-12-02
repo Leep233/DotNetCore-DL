@@ -7,6 +7,6 @@ namespace Deeplearning.Core.Math.Linear
 {
     public abstract class DecomposeEventArgs:EventArgs, IVerifiable
     {
-        public abstract object Validate();
+        public virtual object Validate() { return ""; }
     }
 }

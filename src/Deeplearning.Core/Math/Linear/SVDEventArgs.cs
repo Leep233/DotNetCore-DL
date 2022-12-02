@@ -33,12 +33,6 @@ namespace Deeplearning.Core.Math.Linear
             sb.AppendLine(V.ToString());   
             return sb.ToString();
         }
-
-        public override object Validate()
-        {
-           // Matrix matrix = Matrix.Inv();
-
-            return U * S * V.T;
-        }
+       
     }
 }

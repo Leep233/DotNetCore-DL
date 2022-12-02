@@ -144,7 +144,7 @@ namespace Deeplearning.Sample.ViewModels
 
             Matrix pInvMatrix = Algebra.PInv(Source);
 
-            Matrix ans2 = Source * pInvMatrix * Source;
+            Matrix ans2 = Matrix.Dot(Matrix.Dot(Source, pInvMatrix), Source);
 
             stringBuilder.AppendLine(Source.ToString());
 
@@ -170,9 +170,7 @@ namespace Deeplearning.Sample.ViewModels
 
             sb.AppendLine(result.ToString());
 
-            sb.AppendLine(matrix.ToString());
-
-            sb.AppendLine((result.U * result.S * result.V.T).ToString());
+            sb.AppendLine(matrix.ToString());    
 
             DecomposeCompleted?.Invoke(sb.ToString());
         }
@@ -219,15 +217,6 @@ namespace Deeplearning.Sample.ViewModels
             sb.AppendLine("========Source=========");
             sb.AppendLine(matrix.ToString());
             sb.AppendLine(result.ToString());
-            sb.AppendLine("检测");
-            sb.AppendLine("Matrix * EigenVectors");
-            sb.AppendLine((matrix * result.eigenVectors).ToString());
-            sb.AppendLine("EigenVectors * EigenMatrix");
-            sb.AppendLine((result.eigenVectors * MatrixFactory.DiagonalMatrix(result.eigens)).ToString());
-            sb.AppendLine("EigenVectors * EigenVectors * EigenVectors.Inv");
-
-
-
             sb.AppendLine(result.Validate().ToString());
 
             DecomposeCompleted?.Invoke(sb.ToString());

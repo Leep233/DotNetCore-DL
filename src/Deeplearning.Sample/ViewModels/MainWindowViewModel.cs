@@ -8,6 +8,7 @@ using OxyPlot.Series;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -122,7 +123,7 @@ namespace Deeplearning.Sample
 
             SampleMatrix = Matrix.Centralized(SampleMatrix).matrix;
 
-            Matrix cov = Matrix.Cov(SampleMatrix);
+            Matrix cov = ProbabilityDistribution.Cov(SampleMatrix);
             //3.对协方差矩阵求特征值特征向量
             EigenDecompositionEventArgs result = Algebra.Eig(cov);
 
@@ -139,7 +140,7 @@ namespace Deeplearning.Sample
 
             matrix = SampleMatrix;// matrix.T;
 
-            matrix = Matrix.Cov(matrix);
+            matrix = ProbabilityDistribution.Cov(matrix);
 
             Message = matrix.ToString();
 
@@ -148,17 +149,17 @@ namespace Deeplearning.Sample
 
         private void ExecuteMatrixCentralizedCommand()
         {
-          //  SampleMatrix = Matrix.Normalized(SampleMatrix);
+            //  SampleMatrix = Matrix.Normalized(SampleMatrix);
 
-           // var result  = Matrix.Centralized(SampleMatrix);
+            // var result  = Matrix.Centralized(SampleMatrix);
 
-            var result = Matrix.MeanNormalization(SampleMatrix);
+            //var result = Matrix.MeanNormalization(SampleMatrix);
 
-          //  
+            //  
 
-            SampleMatrix = result.matrix;
+            SampleMatrix = ProbabilityDistribution.MeanNormalization(SampleMatrix);// ProbabilityDistribution.MinMaxScaler(SampleMatrix);// result.matrix;
 
-            Message = result.avgs.ToString();
+           // Message = result.avgs.ToString();
 
             LeftPlotView.UpdatePointsToPlotView(SampleMatrix);
         }
@@ -235,9 +236,13 @@ namespace Deeplearning.Sample
             float step = 100;
             float e = 10E-8f;
 
-            Matrix matrix = Matrix.Inv( (net.transData.T * net.transData));
+            Matrix netT = net.transData.T;
 
-            Matrix m = matrix * net.transData.T ;
+            Matrix netMatrix = Matrix.Dot(netT, net.transData);
+
+            Matrix matrix = Matrix.Inv(netMatrix);
+
+            Matrix m = Matrix.Dot(matrix, netT);
 
             Vector w = m * net.realModel;
 
@@ -288,7 +293,7 @@ namespace Deeplearning.Sample
 
             Matrix matrix = new Matrix(vectors);
 
-            matrix = Matrix.Cov(matrix);
+            matrix = ProbabilityDistribution.Cov(matrix);
 
             Message = matrix.ToString();
         }
@@ -327,13 +332,7 @@ namespace Deeplearning.Sample
             sb.AppendLine(matrix.ToString());
             sb.AppendLine("========逆矩阵========");    
             
-            Matrix matrixInv = Matrix.Inv(matrix);
-
-            sb.AppendLine(matrixInv.ToString());
-            sb.AppendLine("========检测========");
-            sb.AppendLine((matrix * matrixInv).ToString());
-            sb.AppendLine("========检测========");
-            sb.AppendLine(sourceVector.ToString());
+            Matrix matrixInv = Matrix.Inv(matrix);     
             Vector v = matrix * sourceVector;
             sb.AppendLine((v).ToString());
             Vector v2 = matrixInv * v;
@@ -505,7 +504,7 @@ namespace Deeplearning.Sample
  
             Matrix diagMatrix = MatrixFactory.DiagonalMatrix(v);
 
-            Matrix matrixT = diagMatrix * SampleMatrix;
+            Matrix matrixT = Matrix.Dot(diagMatrix , SampleMatrix);
 
             LeftPlotView.UpdatePointsToPlotView(SampleMatrix);
 

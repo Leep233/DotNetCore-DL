@@ -23,8 +23,6 @@ namespace Deeplearning.Core.Math.Linear
   
         }
 
-
-
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -33,7 +31,6 @@ namespace Deeplearning.Core.Math.Linear
             sb.AppendLine(eigens.ToString());
             sb.AppendLine("特征向量（Vectors）");
             sb.AppendLine(eigenVectors.ToString()); 
-
             return sb.ToString();
         }
 

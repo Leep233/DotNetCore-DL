@@ -31,20 +31,9 @@ namespace Deeplearning.Sample
             InitializeComponent();
             viewModel = new MainWindowViewModel();
             this.DataContext = viewModel;
-        }
 
-        private void OnClickSVDDimensionReduction(object sender, RoutedEventArgs e)
-        {
-            ImageComparisonWindow window = new ImageComparisonWindow(imgPath,1);
-            window.Owner = this;
-            window.Show();
+          
         }
-
-        private void OnClickPCDDimensionReduction(object sender, RoutedEventArgs e)
-        {
-            ImageComparisonWindow window = new ImageComparisonWindow(imgPath, 1);
-            window.Owner = this;
-            window.Show();
-        }
+       
     }
 }

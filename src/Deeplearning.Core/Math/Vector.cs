@@ -9,6 +9,8 @@ namespace Deeplearning.Core.Math
     public struct Vector
     {
 
+        public const string STRING_FORMAT = "F4";
+
         private double[] scalars;
 
         public double this[int index] { get => scalars[index]; set => scalars[index] = value; }
@@ -85,7 +87,7 @@ namespace Deeplearning.Core.Math
 
             for (int i = 0; i < Length; i++)
             {
-                stringBuilder.Append($"{scalars[i].ToString("F4")} ");
+                stringBuilder.Append($"{scalars[i].ToString(STRING_FORMAT)} ");
             }
 
             stringBuilder.Append(" ]");
@@ -144,6 +146,7 @@ namespace Deeplearning.Core.Math
             return vector;
         }
 
+
         public static Vector Normalized(Vector vector) {
 
             double minValue = vector[0];
@@ -200,6 +203,8 @@ namespace Deeplearning.Core.Math
             return result;
         }
 
+        #region 运算符重载
+
         public static Matrix operator *(Vector vector, double [] array) 
         {
             int size = vector.Length;
@@ -213,6 +218,8 @@ namespace Deeplearning.Core.Math
             {
                 double temp = vector[r];
 
+                if (MathF.Abs((float)temp) <= MathFExtension.MIN_VALUE) continue;
+
                 for (int c = 0; c < size; c++)
                 {
                     matrix[r, c] = temp * array[c];
@@ -220,6 +227,7 @@ namespace Deeplearning.Core.Math
             }
             return matrix;
         }
+
         public static double operator *(double[] array,Vector vector)
         {
             if (vector.Length != array.Length)
@@ -278,17 +286,19 @@ namespace Deeplearning.Core.Math
         }
         public static Vector operator -(Vector vector, double scalar)
         {
-            Vector result = new Vector(vector.Length);
+            Vector result = vector;
+
+            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) return result;
 
             for (int i = 0; i < vector.Length; i++)
             {
-                result[i] = vector[i] - scalar;
+                result[i] -= scalar;
             }
             return result;
         }
         public static Vector operator -(double scalar, Vector vector)
         {
-            Vector result = new Vector(vector.Length);
+            Vector result = vector;
 
             for (int i = 0; i < vector.Length; i++)
             {
@@ -311,7 +321,9 @@ namespace Deeplearning.Core.Math
         }
         public static Vector operator +(Vector vector, double scalar)
         {
-            Vector result = new Vector(vector.Length);
+            Vector result = vector;
+
+            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) return result;
 
             for (int i = 0; i < vector.Length; i++)
             {
@@ -358,5 +370,7 @@ namespace Deeplearning.Core.Math
         {
             return !vector01.Equals(vector02);
         }
+
+        #endregion
     }
 }

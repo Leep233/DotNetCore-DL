@@ -63,15 +63,11 @@ namespace Deeplearning.Sample.ViewModels.Panels
         {
             if (pcaEventArgs is null) return;
 
-
-            Matrix matrix = pcaEventArgs.D * pcaEventArgs.X;
+            Matrix matrix =Matrix.Dot(pcaEventArgs.X,pcaEventArgs.D.T);
 
             for (int i = 0; i < matrix.Row; i++)
             {
-
-                Line.Points.Add(new DataPoint(matrix[i, 0], matrix[i, 1]));
-
-               // Scatter2.Points.Add(new ScatterPoint(matrix[i, 0], matrix[i, 1]));
+                Line.Points.Add(new DataPoint(matrix[i, 0],matrix[i,1]));
             }
             PlotModel.InvalidatePlot(true);
         }
@@ -80,9 +76,9 @@ namespace Deeplearning.Sample.ViewModels.Panels
         {
             PCA pca = new PCA();
 
-            pcaEventArgs = pca.EigFit(source,1);
+            int k = 1;
 
-            // pcaEventArgs = pca.EigFit(source, 1);
+            pcaEventArgs = pca.EigFit(source,k);
 
             ReductionCommand.Execute();
         }
@@ -95,21 +91,15 @@ namespace Deeplearning.Sample.ViewModels.Panels
 
             if (pcaEventArgs is null) return;
 
-
-            Matrix matrix = pcaEventArgs.D * pcaEventArgs.X;
+            Matrix matrix = Matrix.Dot(pcaEventArgs.X,pcaEventArgs.D.T);
 
             for (int i = 0; i < matrix.Row; i++)
             {
 
-                Line2.Points.Add(new DataPoint(matrix[i, 0], matrix[i, 1]));
+                Line2.Points.Add(new DataPoint(matrix[i,0],matrix[i,1]));
 
-                // Scatter2.Points.Add(new ScatterPoint(matrix[i, 0], matrix[i, 1]));
             }
             PlotModel.InvalidatePlot(true);
-
-            // pcaEventArgs = pca.EigFit(source, 1);
-
-            // ReductionCommand.Execute();
         }
 
         private void ExecuteLoadTestDataCommand()
@@ -123,6 +113,8 @@ namespace Deeplearning.Sample.ViewModels.Panels
 
              source =  ReadLinearRegressionData(Path, dataCount);
 
+           // source = Matrix.MeanNormalization(source).matrix;
+
             Scatter.Points?.Clear();
 
             for (int i = 0; i < source.Row; i++)
@@ -133,7 +125,7 @@ namespace Deeplearning.Sample.ViewModels.Panels
             PlotModel.InvalidatePlot(true);
         }
 
-        private Matrix  ReadLinearRegressionData(string path, int count)
+        private Matrix ReadLinearRegressionData(string path, int count)
         {
 
             string[] lines = File.ReadAllLines(path);
@@ -141,34 +133,33 @@ namespace Deeplearning.Sample.ViewModels.Panels
             int dataCount = count > 0 ? count : lines.Length - 1;
 
             Random r = new Random();
-            
+
 
             int startIndex = r.Next(0, lines.Length - dataCount);
 
             int endIndex = startIndex + dataCount;
 
-            Matrix data = new Matrix(dataCount,2);
+            Matrix data = new Matrix(dataCount, 2);
 
-            for (int i = startIndex,j=0 ; i < endIndex; i++,j++)
+            for (int i = startIndex, j = 0; i < endIndex; i++, j++)
             {
                 string content = lines[i + 1];
                 string[] words = content.Split(',');
                 // = 1;
 
-                data[j,0] = float.Parse(words[4]);//行程距离
-                data[j,1] = float.Parse(words[3]);//价格
-
-               // data[ 0,i] = float.Parse(words[1]);
-               // data[ 1,i] = float.Parse(words[2]);
-               // data[ 2,i] = float.Parse(words[3]);
-               // data[ 3,i] = float.Parse(words[4]);//行程距离
-               // data[ 4,i] = float.Parse(words[6]);//价格
+                data[j, 0] = float.Parse(words[4]);//行程距离
+                data[j, 1] = float.Parse(words[6]);//价格
+                                                   //data[j,2] = float.Parse(words[1]);
+                                                   //data[j,3] = float.Parse(words[2]);
+                                                   //data[j,4] = float.Parse(words[3]);
+                                                   // data[ 0,i] = float.Parse(words[1]);
+                                                   // data[ 1,i] = float.Parse(words[2]);
+                                                   // data[ 2,i] = float.Parse(words[3]);
+                                                   // data[ 3,i] = float.Parse(words[4]);//行程距离
+                                                   // data[ 4,i] = float.Parse(words[6]);//价格
 
             }
-            // var result = Matrix.MeanNormalization(data);
-
-            return data;// result.matrix;// data;
+            return data;
         }
-
     }
 }

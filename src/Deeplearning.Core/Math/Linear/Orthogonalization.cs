@@ -75,7 +75,7 @@ namespace Deeplearning.Core.Math.Linear
 
                 h = Matrix.Replace(h,temp, i, i);
 
-                R = h * R;
+                R = Matrix.Dot(h , R);
                 /*
      *人工校正 理论上与household 矩阵相乘的向量除了第一个元素  其余都会是0
      * 当时程序上而已 浮点型 本身就是不稳定的 所以需要人工进行校正
@@ -84,7 +84,7 @@ namespace Deeplearning.Core.Math.Linear
                 {
                     R[j, i] = 0;
                 }
-                Q = Q * h;
+                Q = Matrix.Dot(Q , h);
             }
 
 

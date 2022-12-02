@@ -31,7 +31,7 @@ namespace Deeplearning.Core.Math.Linear
 
         public override object Validate()
         {
-            return Q * R;
+            return Matrix.Dot(Q , R);
         }
     }
 }

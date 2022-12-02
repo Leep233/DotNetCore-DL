@@ -9,9 +9,9 @@ namespace Deeplearning.Core.Math
 {
     public struct Matrix 
     {
-        public const int MAX_TO_STRING_COUNT = 8;
+        public const int MAX_TO_STRING_COUNT = 99;
 
-        public const string STRINGFORMAT = "F4";
+        public const string STRING_FORMAT = "F4";
         public bool IsSquare => Row == Column;
 
         public double[,] scalars { get; private set; }
@@ -74,7 +74,9 @@ namespace Deeplearning.Core.Math
 
         public static double FrobeniusNorm(Matrix matrix)
         {
-            return MathF.Sqrt((float)Track(matrix * matrix.T));
+            Matrix m = Dot(matrix , matrix.T);
+
+            return MathF.Sqrt((float)Track(m));
         }
 
         public static double FrobeniusNorm(double[,] matrix)
@@ -146,7 +148,7 @@ namespace Deeplearning.Core.Math
                     }
                     else
                     {
-                        stringBuilder.Append(this[i, j].ToString(STRINGFORMAT));
+                        stringBuilder.Append(this[i, j].ToString(STRING_FORMAT));
                         stringBuilder.Append(" ");
                     }
 
@@ -197,8 +199,6 @@ namespace Deeplearning.Core.Math
             return result;
         }
 
-
-       
         public static Matrix Transpose(Matrix matrix)
         {
             int rows = matrix.Column;
@@ -216,29 +216,6 @@ namespace Deeplearning.Core.Math
             }
             return result;
         }
-
-
-
-
-        public static Matrix HadamardProduct(Matrix matrix01, Matrix matrix02)
-        {
-            if (matrix01.Row != matrix02.Row || matrix01.Column != matrix02.Column)
-                throw new ArgumentException("矩阵大小不一致，无法相加");
-
-            int row = matrix01.Row;
-            int col = matrix01.Column;
-            Matrix result = new Matrix(row, col);     
-
-            for (int i = 0; i < row; i++)
-            {
-                for (int j = 0; j < col; j++)
-                {
-                    result[i, j] = matrix01[i, j] * matrix02[i, j];
-                }
-            }
-            return result;
-        }
-
 
 
         /// <summary>
@@ -324,8 +301,6 @@ namespace Deeplearning.Core.Math
             return matrix;
         }
 
-
-
         /// <summary>
         /// 伴随矩阵
         /// </summary>
@@ -410,23 +385,50 @@ namespace Deeplearning.Core.Math
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static Vector Average(Matrix source)
+        public static Vector Average(Matrix source,int type=0)
         {
 
-            int vectorCount = source.Column;
+            int itemCount = 0;
 
-            int vectorLength = source.Row;
-           
-            Vector avgs = new Vector(vectorLength);
+            int dimension = 0;
 
-            for (int r = 0; r < vectorLength; r++)
+            if (type == 0) 
             {
-                double sum = 0;
-                for (int c = 0; c < vectorCount; c++)
+                itemCount = source.Column;
+
+                dimension = source.Row;
+            } else 
+            {
+                dimension  = source.Column;
+
+                itemCount = source.Row;
+            }           
+           
+            Vector avgs = new Vector(dimension);
+
+            if (type == 0)
+            {
+                for (int i = 0; i < dimension; i++)
                 {
-                    sum += source[r, c];
+                    double sum = 0;
+                    for (int j = 0; j < itemCount; j++)
+                    {
+                        sum += source[i, j];
+                    }
+                    avgs[i] = sum / itemCount;
                 }
-                avgs[r] = sum / vectorCount;
+            }
+            else
+            {
+                for (int i = 0; i < dimension; i++)
+                {
+                    double sum = 0;
+                    for (int j = 0; j < itemCount; j++)
+                    {
+                        sum += source[j,i];
+                    }
+                    avgs[i] = sum / itemCount;
+                }
             }
 
             return avgs;
@@ -451,18 +453,11 @@ namespace Deeplearning.Core.Math
         }
 
 
-        /// <summary>
-        /// 协方差
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static Matrix Cov(Matrix source)
+
+        public static Matrix Dot(Matrix m1, Matrix m2)
         {
-
-            float n = source.Column - 1;//;//
-
-            Matrix m1 = source;
-            Matrix m2 = source.T;
+            if (m1.Column != m2.Row)
+                throw new ArgumentException("矩阵大小不一致，无法相乘");
 
             int rows = m1.Row;
 
@@ -481,42 +476,124 @@ namespace Deeplearning.Core.Math
                     for (int k = 0; k < same; k++)
                     {
                         temp += m1[i, k] * m2[k, j];
+
                     }
-                    result[i, j] = temp/ n;
+                    result[i, j] = temp;
                 }
             }
+
             return result;
         }
+
+
+
 
         /// <summary>
         /// 均值归一化，
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public static (Matrix matrix, Vector avgs,Vector stds) MeanNormalization(Matrix matrix)
+        public static (Matrix matrix, double[] avgs, double[] stds) MeanNormalization(Matrix source,int axis=0)
         {
-            int row = matrix.Row;
 
-            int col = matrix.Column;
-
-            Matrix normMatrix = new Matrix(row, col);
-
-            var result = StandardDeviation(matrix);
-
-            for (int r = 0; r < row; r++)
+            if (axis == 0)
             {
-                double avg = result.avgs[r];
-                double std = result.stds[r];
-                for (int c = 0; c < col; c++)
+                int itemCount = source.Row;
+                int dimension = source.Column;
+                int n = itemCount - 1;
+
+                Matrix normMatrix = new Matrix(itemCount, dimension);
+
+                double[] avgs = new double[dimension];
+
+                double[] stds = new double[dimension];
+
+                for (int i = 0; i < dimension; i++)
                 {
-                    normMatrix[r, c] = (matrix[r, c] - avg) / std;
+                    double sum = 0;
+
+                    for (int j = 0; j < itemCount; j++)
+                    {
+                        sum += source[j, i];
+                    }
+
+                    double avg = sum / itemCount;
+
+                    avgs[i] = avg;
+
+                    sum = 0;
+
+                    for (int j = 0; j < itemCount; j++)
+                    {
+                        double value = source[j, i] - avg;
+
+                        normMatrix[j, i] = value;
+
+                        sum += MathF.Pow((float)value, 2);
+                    }
+
+                    double std = MathF.Sqrt((float)(sum / n));
+
+                    stds[i] = std;
+
+                    for (int j = 0; j < itemCount; j++)
+                    {
+                        normMatrix[j, i] /= std;
+                    }
                 }
+
+                return (normMatrix, avgs, stds);
+
+            } else 
+            {
+                int itemCount = source.Column;
+                int dimension = source.Row;
+                int n = itemCount - 1;
+
+                Matrix normMatrix = new Matrix(dimension, itemCount);
+
+                double[] avgs = new double[dimension];
+
+                double[] stds = new double[dimension];
+
+                for (int i = 0; i < dimension; i++)
+                {
+                    double sum = 0;
+
+                    for (int j = 0; j < itemCount; j++)
+                    {
+                        sum += source[i, j];
+                    }
+
+                    double avg = sum / itemCount;
+
+                    avgs[i] = avg;
+
+                    sum = 0;
+
+                    for (int j = 0; j < itemCount; j++)
+                    {
+                        double value = source[i, j] - avg;
+
+                        normMatrix[i, j] = value;
+
+                        sum += MathF.Pow((float)value, 2);
+                    }
+
+                    double std = MathF.Sqrt((float)(sum / n));
+
+                    stds[i] = std;
+
+                    for (int j = 0; j < itemCount; j++)
+                    {
+                        normMatrix[i, j] /= std;
+                    }
+                }
+
+                return (normMatrix, avgs, stds);
             }
-
-            return (normMatrix, result.avgs, result.stds);
-
         }
-     
+
         /// <summary>
         /// 方差
         /// </summary>
@@ -551,41 +628,7 @@ namespace Deeplearning.Core.Math
             return (vars, avgs);
         }
        
-        /// <summary>
-        /// 标准差
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static (Vector stds,Vector avgs) StandardDeviation(Matrix source)
-        {
 
-            int row = source.Row;
-
-            int col = source.Column;
-
-            Vector avgs = Average(source);
-
-            Vector stds = new Vector(row);
-
-            int n = row - 1;
-
-            for (int r = 0; r < row; r++)
-            {
-                double sum = 0;
-
-                double avg = avgs[r];
-
-                for (int c = 0; c < col; c++)
-                {
-                    double value = source[r, c];
-
-                    sum += MathF.Pow((float)(value - avg), 2);
-                }
-                stds[r] = MathF.Sqrt((float)(sum / n));
-            }
-
-            return (stds,avgs);
-        }
 
         public static Matrix Replace(Matrix source, Vector vector, int colIndex)
         {
@@ -782,6 +825,22 @@ namespace Deeplearning.Core.Math
                     }
                 }
             }
+            return matrix;
+        }
+
+        internal static Matrix Copy(Matrix source)
+        {
+            Matrix matrix = new Matrix(source.Row,source.Column);
+
+
+            for (int i = 0; i < matrix.Row; i++)
+            {
+                for (int j = 0; j < matrix.Column; j++)
+                {
+                    matrix[i,j] = source[i, j];
+                }
+            }
+
             return matrix;
         }
 
@@ -1028,7 +1087,8 @@ namespace Deeplearning.Core.Math
             return result;
         }
         public static Matrix operator -(Matrix m1, double scalar)
-        {
+        {         
+
             int rows = m1.Row;
 
             int cols = m1.Column;
@@ -1046,36 +1106,9 @@ namespace Deeplearning.Core.Math
             }
             return result;
         }
-        public static Matrix operator *(Matrix m1, Matrix m2)
-        {
-            if (m1.Column != m2.Row)
-                throw new ArgumentException("矩阵大小不一致，无法相乘");
 
-            int rows = m1.Row;
 
-            int same = m1.Column;
-
-            int cols = m2.Column;
-
-            Matrix result = new Matrix(m1.Row, m2.Column);
-
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    double temp = 0;
-
-                    for (int k = 0; k < same; k++)
-                    {
-                        temp += m1[i, k] * m2[k, j];
-
-                    }
-                    result[i, j] = temp;
-                }
-            }
-              
-            return result;
-        }
+     
 
 
         public static double[] operator *(double[] scalars, Matrix m1)
@@ -1100,6 +1133,32 @@ namespace Deeplearning.Core.Math
                 result[i] = temp;
             }
 
+            return result;
+        }
+
+        /// <summary>
+        /// 各个对应元素相乘
+        /// </summary>
+        /// <param name="matrix01"></param>
+        /// <param name="matrix02"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static Matrix operator *(Matrix matrix01, Matrix matrix02)
+        {
+            if (matrix01.Row != matrix02.Row || matrix01.Column != matrix02.Column)
+                throw new ArgumentException("矩阵大小不一致，无法相加");
+
+            int row = matrix01.Row;
+            int col = matrix01.Column;
+            Matrix result = new Matrix(row, col);
+
+            for (int i = 0; i < row; i++)
+            {
+                for (int j = 0; j < col; j++)
+                {
+                    result[i, j] = matrix01[i, j] * matrix02[i, j];
+                }
+            }
             return result;
         }
 

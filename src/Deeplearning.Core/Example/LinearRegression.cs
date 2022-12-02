@@ -43,9 +43,9 @@ namespace Deeplearning.Core.Example
 
             Matrix input_T = data.T;
 
-            Matrix matrix = Matrix.Inv( input_T * data);         
+            Matrix matrix = Matrix.Inv(Matrix.Dot(input_T , data));         
 
-            return matrix * input_T * vector; 
+            return Matrix.Dot(matrix , input_T) * vector; 
         }
 
     }

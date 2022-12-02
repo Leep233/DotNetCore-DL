@@ -19,7 +19,7 @@ namespace Deeplearning.Sample.Utils
            return BitmapSource.Create(pixelWidth, pixelHeight, 
                dpiX, dpiY,
                PixelFormats.Bgr32,
-               new BitmapPalette(new List<Color> { Colors.Blue, Colors.Green, Colors.Red,   }),
+               new BitmapPalette(new List<Color> { Colors.Blue, Colors.Green, Colors.Red}),
                colors, 
                stride);      
         }

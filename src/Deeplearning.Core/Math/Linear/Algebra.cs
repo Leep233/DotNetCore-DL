@@ -7,18 +7,18 @@ namespace Deeplearning.Core.Math.Linear
 {
     public static class Algebra
     {
-       
-        public static SVDEventArgs SVD(Matrix source,int k=-1)
+
+        public static SVDEventArgs SVD(Matrix source, int k = -1)
         {
 
             //1. A^T * A get matrix V
-            Matrix AT_A = source.T * source;
+            Matrix AT_A = Matrix.Dot(source.T, source);
 
             EigenDecompositionEventArgs eventArgs1 = Eig(AT_A, k);
 
             Matrix V = eventArgs1.eigenVectors;
 
-            Matrix A_AT = source * source.T;
+            Matrix A_AT = Matrix.Dot(source, source.T);
 
             EigenDecompositionEventArgs eventArgs2 = Eig(A_AT, k);
 
@@ -33,6 +33,13 @@ namespace Deeplearning.Core.Math.Linear
 
         private static (Matrix U, Matrix D, Matrix V) SVDFilter(Matrix u, Vector eigens, Matrix v, double threshold = 0.001)
         {
+
+            for (int i = 0; i < eigens.Length; i++)
+            {
+                double value = eigens[i];
+                eigens[i] = value == 0 ? 0 : MathF.Sqrt(MathF.Abs((float)value));
+            }
+
 
             return (u, MatrixFactory.DiagonalMatrix(eigens), v);
 
@@ -67,40 +74,83 @@ namespace Deeplearning.Core.Math.Linear
         /// <param name="source"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        public static EigenDecompositionEventArgs Eig(Matrix source,int k=-1)
+        public static EigenDecompositionEventArgs Eig(Matrix source, int k = -1)
         {
             Matrix matrix = source;
 
-            int vectorCount = k<=0? source.Column:k;
+            int vectorCount = k <= 0 ? source.Column : k;
 
-            List<double> eigens = new List<double>();
+            double[] eigens = new double[vectorCount];
 
-            List<Vector> vectors = new List<Vector>();
+            Vector[] eigVectors = new Vector[vectorCount];
 
-            for (int count = 0; count < vectorCount; count++)
+            Vector eigenVector = new Vector(matrix.Column);
+
+            for (int i = 0; i < eigenVector.Length; i++)
             {
-                EigenEventArgs mainEigen = PowerIteration(matrix);
+                eigenVector[i] = i + 1;
+            }
 
-                if (mainEigen != null)
-                {
-                    if (MathF.Abs((float)(mainEigen.eigen)) <= MathFExtension.MIN_VALUE) break;
+            eigenVector = Vector.Standardized(eigenVector);
 
-                    eigens.Add(mainEigen.eigen);
 
-                    vectors.Add(mainEigen.vector);
+            for (int i = 0; i < vectorCount; i++)
+            {
+                var temp = PowerIteration(eigenVector, matrix,3000);
 
-                    //去特征 A = A-λxx^T;
-                    Matrix eigenMatrix = mainEigen.eigen * mainEigen.vector * mainEigen.vector.T;
+                eigens[i] = temp.eigen;
 
-                    matrix = matrix - eigenMatrix;
-                }
-            }       
+                eigVectors[i] = temp.vector;
 
-            var sortedResult = EigenFilter(new Vector(eigens.ToArray()), vectors.ToArray());
+                //去特征 A = A-λxx^T;
+                Matrix eigenMatrix = temp.eigen * temp.vector * temp.vector.T;
+
+                matrix = matrix - eigenMatrix;           
+            }
+
+            var sortedResult = EigenFilter(eigens, eigVectors);
 
             EigenDecompositionEventArgs eventArgs = new EigenDecompositionEventArgs(sortedResult.eigens, sortedResult.vectors);
 
             return eventArgs;
+        }
+
+
+        /// <summary>
+        /// 特征过滤
+        /// </summary>
+        /// <param name="eigenValues">特征值</param>
+        /// <param name="vectors">特征向量</param>
+        /// <param name="quantity">保留的个数 -1表示保留全部</param>
+        /// <param name="threshold">绝对值小于或等于这个阈值的特征值与对应的特征向量将会被剔除</param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private static (Vector eigens, Vector[] vectors) EigenFilter(double[] eigenValues, Vector[] vectors)
+        {
+
+            //if (eigenValues.Length > quantity)
+            //{
+            //    var result = Sort(eigenValues, vectors, (a, b) => MathF.Abs((float)a) < MathF.Abs((float)b));
+
+            //    //剔除多余的特征值和特征向量
+
+            //    Vector eigens = new Vector(quantity);
+
+            //    Vector[] eigenVectors = new Vector[quantity];
+
+            //    for (int i = 0; i < quantity; i++)
+            //    {
+            //        eigens[i] = result.eigens[i];
+            //        eigenVectors[i] = result.vectors[i];
+            //    }
+
+            //    eigenValues = eigens;
+
+            //    vectors = eigenVectors;
+            //}
+            // return (eigenValues, vectors);
+            return Sort(eigenValues, vectors, (a, b) => a < b); //(new Vector(eigenValues), vectors);// 
+
         }
 
         /// <summary>
@@ -156,9 +206,9 @@ namespace Deeplearning.Core.Math.Linear
             {
                 var decResult = decompose.Invoke(Ak);
 
-                Ak = decResult.Q.T * Ak * decResult.Q;
+                Ak = Matrix.Dot(Matrix.Dot(decResult.Q.T, Ak), decResult.Q);
 
-                if (isSymmetry) Q = Q * decResult.Q;
+                if (isSymmetry) Q = Matrix.Dot(Q, decResult.Q);
             }
 
             Vector eigens = Matrix.DiagonalElements(Ak);
@@ -234,58 +284,40 @@ namespace Deeplearning.Core.Math.Linear
                 S[i, i] = (1 / value);
             }
 
-            return V * S * U.T;
+            return Matrix.Dot(Matrix.Dot(V, S), U.T);
         }
-     
-        public static EigenEventArgs PowerIteration(Matrix matrix, int iterations = 500)
+
+        public static (double eigen, Vector vector) PowerIteration(Vector eigenVector, Matrix matrix, int iterations = 500)
         {
-            
-            int length = matrix.Column;
 
-            Vector eigenVector = new Vector(length);
-
-            Random r = new Random();
-
-            for (int i = 0; i < length; i++)
-            {
-                eigenVector[i] = r.NextDouble();
-            }
 
             for (int i = 0; i < iterations; i++)
             {
                 Vector vector = matrix * eigenVector;
 
-                double norm = Vector.Norm(vector);
+                vector = Vector.Standardized(vector);
 
-                if (MathF.Abs((float)norm) <= MathFExtension.MIN_VALUE)
-                {
-                    for (int j = 0; j < length; j++)
-                    {
-                        eigenVector[j] = r.NextDouble();
-                    }
-                    continue;
-                }
+                Vector y1 = eigenVector - vector;
 
-                vector /= norm;
+                double norm1 = Vector.NoSqrtNorm(y1);
 
-                Vector y = eigenVector - vector;
+                Vector y2 = eigenVector + vector;
 
-                norm = Vector.NoSqrtNorm(y);
+                double norm2 = Vector.NoSqrtNorm(y2);
 
-                if (MathF.Abs((float)norm) <= MathFExtension.MIN_VALUE) break;
+                if (MathF.Abs((float)norm1) <= 0.01f || MathF.Abs((float)norm2) <= 0.01f) break;
 
                 eigenVector = vector;
             }
-
-            eigenVector = Vector.Standardized(eigenVector);
 
             double[] eigenVector_T = eigenVector.T;
 
             double eigenValue = eigenVector_T * matrix * eigenVector;
 
-            return new EigenEventArgs(eigenValue, eigenVector);
+            return (eigenValue, eigenVector);
         }
 
+       
 
         public static (Vector eigens, Matrix vectors) Sort(Vector eigens, Matrix vectors, Func<double, double, bool> conditions)
         {
@@ -328,6 +360,36 @@ namespace Deeplearning.Core.Math.Linear
             Func<double, double, bool> conditions = (a, b) => order == -1 ? (a < b) : (a > b);
 
             return Sort(eigens, vectors, conditions);
+        }
+        public static (Vector eigens, Vector[] vectors) Sort(double[] eigens, Vector[] vectors, int order = -1)
+        {
+            Func<double, double, bool> conditions = (a, b) => order == -1 ? (a < b) : (a > b);
+
+            return Sort(eigens, vectors, conditions);
+        }
+
+        public static (Vector eigens, Vector[] vectors) Sort(double[] eigens, Vector[] vectors, Func<double, double, bool> conditions)
+        {
+            int r = eigens.Length;
+
+            for (int i = 0; i < r - 1; i++)
+            {
+                for (int j = 0; j < r - 1 - i; j++)
+                {
+                    int nextIndex = j + 1;
+
+                    if (conditions(eigens[j], eigens[nextIndex]))
+                    {
+                        double temp = eigens[j];
+                        eigens[j] = eigens[nextIndex];
+                        eigens[nextIndex] = temp;
+                        Vector v1 = vectors[nextIndex];
+                        vectors[nextIndex] = vectors[j];
+                        vectors[j] = v1;
+                    }
+                }
+            }
+            return (new Vector(eigens), vectors);
         }
 
         public static (Vector eigens, Vector[] vectors) Sort(Vector eigens, Vector[] vectors, Func<double, double, bool> conditions)
