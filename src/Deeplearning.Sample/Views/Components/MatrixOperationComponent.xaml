@@ -1,0 +1,70 @@
+﻿<UserControl x:Class="Deeplearning.Sample.Views.Components.MatrixOperationComponent"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Deeplearning.Sample.Views.Components" xmlns:oxy="http://oxyplot.org/wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="960" d:DesignWidth="1440">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="30"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition Width="120"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+            <Border>
+            <local:IOComponent DataContext="{Binding IOComponent}"></local:IOComponent>
+        </Border>
+        <Border Width="512" Height="512" Grid.Row="1">
+            <oxy:PlotView Model="{Binding PlotView.PlotModel}"></oxy:PlotView>
+        </Border>
+        <Border Grid.RowSpan="3" Grid.Column="1">
+            <StackPanel>
+                <Button Command="{Binding UpdateMatrixCommand}">更新矩阵</Button>
+                <Button Command="{Binding MatrixTransposeCommand}">矩阵转置</Button>
+                <Button Command="{Binding MatrixDetCommand}">行列式</Button>
+                <Button Command="{Binding AdjointMatrixCommand}">伴随矩阵</Button>
+                <Button Command="{Binding MatrixInvCommand}">逆矩阵</Button>
+                <Button Command="{Binding MatrixCentralizedCommand}">去中心化</Button>
+                <Button Command="{Binding MatrixStandardizedCommand}">归一化</Button>              
+                <Button Command="{Binding MatrixCovCommand}">协方差矩阵</Button>
+
+                <Menu  HorizontalContentAlignment="Center">
+                    <MenuItem HorizontalAlignment="Stretch"  HorizontalContentAlignment="Center" Background="GhostWhite">
+                        <MenuItem.Header>正交分解（QR)</MenuItem.Header>
+                        <MenuItem Command="{Binding QRDecomposionCommand}" CommandParameter="0" Header="CGS"></MenuItem>
+                        <MenuItem Command="{Binding QRDecomposionCommand}" CommandParameter="1" Header="MGS"></MenuItem>
+                        <MenuItem Command="{Binding QRDecomposionCommand}" CommandParameter="2" Header="Householder"></MenuItem>
+                    </MenuItem>
+                </Menu>
+
+                <Button Command="{Binding EigenDecomposionCommand}">特征分解</Button>
+                <Button Command="{Binding SVDDecomposionCommand}">SVD分解</Button>
+               
+                <Menu  HorizontalContentAlignment="Center">
+                    <MenuItem HorizontalAlignment="Stretch"  HorizontalContentAlignment="Center" Background="GhostWhite">
+                        <MenuItem.Header>主成分分析（PCA）</MenuItem.Header>
+                        <MenuItem Command="{Binding PCACommand}" CommandParameter="eigen" Header="特征值"></MenuItem>
+                        <MenuItem Command="{Binding PCACommand}" CommandParameter="svd" Header="奇异值"></MenuItem>
+                    </MenuItem>
+                </Menu>
+    
+            </StackPanel>
+        </Border>
+        <Border Grid.Row="2">
+            <StatusBar>
+                <StatusBarItem Margin="10 0" Content="{Binding Message}"></StatusBarItem>
+                <StatusBarItem Margin="10 0" HorizontalAlignment="Right">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Foreground="Gray" Text="{Binding Status}"></TextBlock>
+                        <TextBlock Foreground="#AA000000" Text="{Binding Interval,StringFormat=({}{0})}"></TextBlock>
+                    </StackPanel>                   
+                </StatusBarItem>
+            </StatusBar>
+        </Border>
+    </Grid>
+</UserControl>

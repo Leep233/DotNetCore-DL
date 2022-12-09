@@ -23,7 +23,7 @@ namespace Deeplearning.Core.Example
         /// <returns></returns>
         public Vector Predice(Matrix input) {
 
-            return input * weights - bias;
+            return Matrix.Dot(input , weights) - bias;
         }
         
         public  double Fit(Matrix data,Vector predict) 
@@ -45,7 +45,7 @@ namespace Deeplearning.Core.Example
 
             Matrix matrix = Matrix.Inv(Matrix.Dot(input_T , data));         
 
-            return Matrix.Dot(matrix , input_T) * vector; 
+            return Matrix.Dot( Matrix.Dot(matrix , input_T) ,vector); 
         }
 
     }

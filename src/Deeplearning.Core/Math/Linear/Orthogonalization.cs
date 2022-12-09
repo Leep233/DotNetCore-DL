@@ -38,7 +38,7 @@ namespace Deeplearning.Core.Math.Linear
 
         public static Matrix HouseholderMatrix(Vector vector)
         {
-            Vector w = Vector.Standardized(vector);
+            Vector w = vector.Standardized();
 
             Matrix I = MatrixFactory.UnitMatrix(w.Length);
 
@@ -138,7 +138,7 @@ namespace Deeplearning.Core.Math.Linear
             {
                 Vector a = matrix.GetVector(i);
 
-                Vector e = Vector.Standardized(a);
+                Vector e = a.Standardized();
 
                 for (int j = i - 1; j >= 0; j--)
                 {
@@ -150,7 +150,7 @@ namespace Deeplearning.Core.Math.Linear
 
                     a = a - temp * e;
 
-                    e = Vector.Standardized(a);
+                    e = a.Standardized();
                 }
 
                 R[i, i] = Vector.Norm(a);// (float)a.Norm(2);
@@ -182,7 +182,7 @@ namespace Deeplearning.Core.Math.Linear
             {
                 Vector b = matrix.GetVector(i);
 
-                Vector e = Vector.Standardized(b);
+                Vector e = b.Standardized();
 
                 Q = Matrix.Replace(Q,e, i);
 

@@ -1,0 +1,43 @@
+﻿<UserControl x:Class="Deeplearning.Sample.Views.Panels.LinearRegressionPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Deeplearning.Sample.Views.Panels" xmlns:oxy="http://oxyplot.org/wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="40"></RowDefinition>
+            <RowDefinition Height="30"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition Width="120"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        
+        <Border>
+            <oxy:PlotView Model="{Binding PlotView.PlotModel}"></oxy:PlotView>
+        </Border>
+
+        <Border Grid.RowSpan="3" Grid.Column="1">
+            <StackPanel>
+                <ListBox SelectedIndex="{Binding SelectedIndex}">
+                    <ListBoxItem>正规方程线性回归</ListBoxItem>
+                    <ListBoxItem>贝叶斯线性回归</ListBoxItem>
+                </ListBox>
+                <Button Command="{Binding DistributionCommand}" Width="120" Margin="5">
+                    预测
+                </Button>
+            </StackPanel>      
+      
+        </Border>
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock Text="{Binding Status}"></TextBlock>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</UserControl>

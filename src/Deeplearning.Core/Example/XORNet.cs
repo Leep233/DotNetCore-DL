@@ -59,7 +59,7 @@ namespace Deeplearning.Core.Example
 
         private Vector ModelFunction(Matrix transData, Matrix θ)
         {
-            return transData.T * θ.GetVector(0) + θ.GetVector(1);
+            return Matrix.Dot( transData.T , θ.GetVector(0)) + θ.GetVector(1);
 
         }
     }

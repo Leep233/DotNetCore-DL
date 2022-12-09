@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deeplearning.Core", "Deeple
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deeplearning.Sample", "Deeplearning.Sample\Deeplearning.Sample.csproj", "{7FA67C9C-9931-452C-A8BA-466DD6B38EE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deeplearning.NUnitTest", "Deeplearning.NUnitTest\Deeplearning.NUnitTest.csproj", "{26E82059-F26C-408E-8602-A8D536990F62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deeplearning.NUnitTest", "Deeplearning.NUnitTest\Deeplearning.NUnitTest.csproj", "{26E82059-F26C-408E-8602-A8D536990F62}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

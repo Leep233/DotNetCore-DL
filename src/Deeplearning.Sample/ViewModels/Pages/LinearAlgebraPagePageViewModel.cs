@@ -93,7 +93,7 @@ namespace Deeplearning.Sample.ViewModels.Pages
 
             SVDEventArgs eventArgs = Algebra.SVD(matrix);
 
-           Matrix pInv_Matrix = Algebra.PInv(matrix);
+            Matrix pInv_Matrix = Algebra.PInv(matrix);
 
             StringBuilder sb = new StringBuilder();
 
@@ -176,11 +176,38 @@ namespace Deeplearning.Sample.ViewModels.Pages
 
         private void ExecuteCovarianceMatrixCommand()
         {
+            int k = 2;
+
             Matrix matrix = GetSourceMatrix();
 
-            Matrix covMatrix = ProbabilityDistribution.Cov(matrix);
+            Matrix centeredMatrix = matrix.Centralized(0).matrix;
+            /*
+2.5 2.4
+0.5 0.7
+2.2 2.9
+1.9 2.2
+3.1 3.0
+2.3 2.7
+2 1.6
+1 1.1
+1.5 1.6
+1.1 0.9
 
-            IOComponentContext.OutputContent = covMatrix.ToString();
+             */
+
+            string s = centeredMatrix.ToString();
+
+            Matrix covMatrix = centeredMatrix.Cov();
+            var result = Algebra.Eig(covMatrix);
+            string message = result.ToString();
+
+           Matrix D = Matrix.Clip(result.eigenVectors, 0, 0, result.eigenVectors.Row, k);
+
+            Matrix X = Matrix.Dot(centeredMatrix,D);
+
+            IOComponentContext.OutputContent = s + "\n" + covMatrix.ToString() + "\n" + message 
+                                            + "\n" + D.ToString()
+                                              + "\n" + X.ToString();
         }
 
         private void ExecuteVarianceMatrixCommand()
@@ -219,7 +246,7 @@ namespace Deeplearning.Sample.ViewModels.Pages
         private void ExecuteMatrixNormalizedCommand()
         {
             Matrix matrix = GetSourceMatrix();
-            IOComponentContext.OutputContent = Matrix.MeanNormalization(matrix).matrix.ToString();
+            IOComponentContext.OutputContent = matrix.Standardized().ToString();
         }
 
         private void ExecuteSelectedQRFunctionCommand(object type)

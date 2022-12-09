@@ -119,11 +119,11 @@ namespace Deeplearning.Sample
 
         private void ExecutePCACommand()
         {
-            SampleMatrix = Matrix.MeanNormalization(SampleMatrix).matrix;
+            SampleMatrix = SampleMatrix.Standardized().matrix;
 
-            SampleMatrix = Matrix.Centralized(SampleMatrix).matrix;
+           // SampleMatrix = Matrix.Centralized(SampleMatrix).matrix;
 
-            Matrix cov = ProbabilityDistribution.Cov(SampleMatrix);
+            Matrix cov = SampleMatrix.Cov();
             //3.对协方差矩阵求特征值特征向量
             EigenDecompositionEventArgs result = Algebra.Eig(cov);
 
@@ -140,11 +140,11 @@ namespace Deeplearning.Sample
 
             matrix = SampleMatrix;// matrix.T;
 
-            matrix = ProbabilityDistribution.Cov(matrix);
+            matrix = matrix.Cov();
 
             Message = matrix.ToString();
 
-            LeftPlotView.UpdatePointsToPlotView(Matrix.MeanNormalization(matrix).matrix);
+            LeftPlotView.UpdatePointsToPlotView(matrix.Standardized().matrix);
         }
 
         private void ExecuteMatrixCentralizedCommand()
@@ -157,9 +157,9 @@ namespace Deeplearning.Sample
 
             //  
 
-            SampleMatrix = ProbabilityDistribution.MeanNormalization(SampleMatrix);// ProbabilityDistribution.MinMaxScaler(SampleMatrix);// result.matrix;
+            SampleMatrix = SampleMatrix.Centralized().matrix;// Standardized();//SampleMatrix.MinMaxScaler(-1,1);//  ProbabilityDistribution.MinMaxScaler(SampleMatrix);// result.matrix;
 
-           // Message = result.avgs.ToString();
+            // Message = result.avgs.ToString();
 
             LeftPlotView.UpdatePointsToPlotView(SampleMatrix);
         }
@@ -244,7 +244,7 @@ namespace Deeplearning.Sample
 
             Matrix m = Matrix.Dot(matrix, netT);
 
-            Vector w = m * net.realModel;
+            Vector w = Matrix.Dot(m , net.realModel); 
 
             Message = w.ToString();
 
@@ -252,7 +252,7 @@ namespace Deeplearning.Sample
 
         private void ExecuteMatrixNormalizedCommand()
         {
-           Matrix normalMatrix = Matrix.MeanNormalization(SampleMatrix).matrix;
+           Matrix normalMatrix = SampleMatrix.Standardized().matrix;
 
             LeftPlotView.UpdatePointsToPlotView(normalMatrix);
 
@@ -293,7 +293,7 @@ namespace Deeplearning.Sample
 
             Matrix matrix = new Matrix(vectors);
 
-            matrix = ProbabilityDistribution.Cov(matrix);
+            matrix = matrix.Cov();
 
             Message = matrix.ToString();
         }
@@ -332,10 +332,10 @@ namespace Deeplearning.Sample
             sb.AppendLine(matrix.ToString());
             sb.AppendLine("========逆矩阵========");    
             
-            Matrix matrixInv = Matrix.Inv(matrix);     
-            Vector v = matrix * sourceVector;
+            Matrix matrixInv = Matrix.Inv(matrix);
+            Vector v = Matrix.Dot(matrix, sourceVector);
             sb.AppendLine((v).ToString());
-            Vector v2 = matrixInv * v;
+            Vector v2 = Matrix.Dot(matrixInv , v);
             sb.AppendLine(v2.ToString());
 
             Message = sb.ToString();
@@ -445,7 +445,17 @@ namespace Deeplearning.Sample
         {
             Func<Vector, float> original = new Func<Vector, float>(vector => MathF.Pow((float)vector[0], 2) + MathF.Pow((float)vector[1], 2));
 
-            Vector minVector = Gradient.GradientDescent(original,Vector.Random(2,-5,5), GradientParams.Default);
+            Vector vector = new Vector(2);
+
+            Random random = new Random();
+
+            for (int i = 0; i < vector.Length; i++)
+            {
+                vector[i] = random.Next(-5,5);
+            }
+
+
+            Vector minVector = Gradient.GradientDescent(original, vector, GradientParams.Default);
 
             Message = $"done...({minVector})";
         }  

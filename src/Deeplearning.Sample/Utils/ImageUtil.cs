@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -8,36 +9,24 @@ namespace Deeplearning.Sample.Utils
 {
     internal class ImageUtil
     {
-        public static BitmapSource Pixels2Image(int width,int height, double dpiX, double dpiY,params byte[] colors)
+        public static BitmapSource BitmapSourceFromArray(byte[] pixels, int width, int height)
         {
+            WriteableBitmap bitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr32, null);
 
-            int pixelWidth = width;
+            bitmap.WritePixels(new Int32Rect(0, 0, width, height), pixels, width * (bitmap.Format.BitsPerPixel >>3), 0);
 
-            int pixelHeight = height;
-
-            int stride = pixelWidth * 4;
-           return BitmapSource.Create(pixelWidth, pixelHeight, 
-               dpiX, dpiY,
-               PixelFormats.Bgr32,
-               new BitmapPalette(new List<Color> { Colors.Blue, Colors.Green, Colors.Red}),
-               colors, 
-               stride);      
+            return bitmap;
         }
 
-
-        public static byte[] ReadImagePixels(BitmapImage img)
+        public static byte[] BitmapSourceToArray(BitmapSource bitmapSource)
         {
+            // Stride = (width) x (bytes per pixel)
+            int stride = (int)bitmapSource.PixelWidth * (bitmapSource.Format.BitsPerPixel >> 3);
+            byte[] pixels = new byte[(int)bitmapSource.PixelHeight * stride];
 
-            int stride = img.PixelWidth * 4;
-
-            int size = img.PixelHeight * stride;
-
-            byte[] pixels = new byte[size];
-
-            img.CopyPixels(pixels, stride, 0);
+            bitmapSource.CopyPixels(pixels, stride, 0);
 
             return pixels;
-
         }
     }
 }

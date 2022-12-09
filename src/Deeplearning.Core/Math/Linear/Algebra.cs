@@ -8,19 +8,19 @@ namespace Deeplearning.Core.Math.Linear
     public static class Algebra
     {
 
-        public static SVDEventArgs SVD(Matrix source, int k = -1)
+        public static SVDEventArgs SVD(Matrix source)
         {
 
             //1. A^T * A get matrix V
             Matrix AT_A = Matrix.Dot(source.T, source);
 
-            EigenDecompositionEventArgs eventArgs1 = Eig(AT_A, k);
+            EigenDecompositionEventArgs eventArgs1 = Eig(AT_A);
 
             Matrix V = eventArgs1.eigenVectors;
 
             Matrix A_AT = Matrix.Dot(source, source.T);
 
-            EigenDecompositionEventArgs eventArgs2 = Eig(A_AT, k);
+            EigenDecompositionEventArgs eventArgs2 = Eig(A_AT);
 
             Matrix U = eventArgs2.eigenVectors;
 
@@ -40,32 +40,10 @@ namespace Deeplearning.Core.Math.Linear
                 eigens[i] = value == 0 ? 0 : MathF.Sqrt(MathF.Abs((float)value));
             }
 
-
             return (u, MatrixFactory.DiagonalMatrix(eigens), v);
 
-            //List<double> list = new List<double>();
-
-            //for (int i = eigens.Length - 1; i >= 0; i--)
-            //{
-            //    double value = eigens[i];
-
-            //    value = value == 0 ? 0 : MathF.Sqrt(MathF.Abs((float)value));
-
-            //    if (value >= threshold)
-            //    {
-            //        list.Insert(0, value);
-            //    }
-            //}
-            //double[] es = list.ToArray();
-
-            //Matrix D = MatrixFactory.DiagonalMatrix(es);
-
-            //Matrix U = Matrix.Clip(u, 0, 0, u.Row, es.Length);
-
-            //Matrix V = Matrix.Clip(v, 0, 0, v.Row, es.Length);
-
-            //return (U, D, V);
         }
+
 
 
         /// <summary>
@@ -74,41 +52,60 @@ namespace Deeplearning.Core.Math.Linear
         /// <param name="source"></param>
         /// <param name="k"></param>
         /// <returns></returns>
-        public static EigenDecompositionEventArgs Eig(Matrix source, int k = -1)
+        public static EigenDecompositionEventArgs Eig(Matrix source)
         {
             Matrix matrix = source;
 
-            int vectorCount = k <= 0 ? source.Column : k;
+            int vectorCount = matrix.Column;
 
             double[] eigens = new double[vectorCount];
 
             Vector[] eigVectors = new Vector[vectorCount];
 
-            Vector eigenVector = new Vector(matrix.Column);
+            Vector eigenVector = new Vector(vectorCount);
 
             for (int i = 0; i < eigenVector.Length; i++)
             {
                 eigenVector[i] = i + 1;
             }
+              eigenVector = eigenVector.Normalized();
 
-            eigenVector = Vector.Standardized(eigenVector);
+            int iteration = 300;
 
 
             for (int i = 0; i < vectorCount; i++)
             {
-                var temp = PowerIteration(eigenVector, matrix,3000);
 
-                eigens[i] = temp.eigen;
+                for (int j = 0; j < iteration; j++)
+                {
+                    Vector Av = Matrix.Dot(matrix, eigenVector);
 
-                eigVectors[i] = temp.vector;
+                    Vector v_new = Av.Normalized();
+
+                    double value = Vector.Norm(eigenVector - v_new);
+
+                    if (value < 0.001) break;
+
+                    eigenVector = v_new;
+                }
+
+               eigenVector = eigenVector.Normalized();
+
+                double[] eigenVector_T = eigenVector.T;
+
+                double eigen = eigenVector_T * Matrix.Dot(matrix , eigenVector);
+
+                eigens[i] = eigen;
+
+                eigVectors[i] = eigenVector;
 
                 //去特征 A = A-λxx^T;
-                Matrix eigenMatrix = temp.eigen * temp.vector * temp.vector.T;
+                Matrix eigenMatrix = eigen * eigenVector * eigenVector_T;
 
-                matrix = matrix - eigenMatrix;           
+                matrix -= eigenMatrix;
             }
 
-            var sortedResult = EigenFilter(eigens, eigVectors);
+            var sortedResult = Sort(eigens, eigVectors, (a, b) => a < b);
 
             EigenDecompositionEventArgs eventArgs = new EigenDecompositionEventArgs(sortedResult.eigens, sortedResult.vectors);
 
@@ -116,79 +113,6 @@ namespace Deeplearning.Core.Math.Linear
         }
 
 
-        /// <summary>
-        /// 特征过滤
-        /// </summary>
-        /// <param name="eigenValues">特征值</param>
-        /// <param name="vectors">特征向量</param>
-        /// <param name="quantity">保留的个数 -1表示保留全部</param>
-        /// <param name="threshold">绝对值小于或等于这个阈值的特征值与对应的特征向量将会被剔除</param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        private static (Vector eigens, Vector[] vectors) EigenFilter(double[] eigenValues, Vector[] vectors)
-        {
-
-            //if (eigenValues.Length > quantity)
-            //{
-            //    var result = Sort(eigenValues, vectors, (a, b) => MathF.Abs((float)a) < MathF.Abs((float)b));
-
-            //    //剔除多余的特征值和特征向量
-
-            //    Vector eigens = new Vector(quantity);
-
-            //    Vector[] eigenVectors = new Vector[quantity];
-
-            //    for (int i = 0; i < quantity; i++)
-            //    {
-            //        eigens[i] = result.eigens[i];
-            //        eigenVectors[i] = result.vectors[i];
-            //    }
-
-            //    eigenValues = eigens;
-
-            //    vectors = eigenVectors;
-            //}
-            // return (eigenValues, vectors);
-            return Sort(eigenValues, vectors, (a, b) => a < b); //(new Vector(eigenValues), vectors);// 
-
-        }
-
-        /// <summary>
-        /// 特征过滤
-        /// </summary>
-        /// <param name="eigenValues">特征值</param>
-        /// <param name="vectors">特征向量</param>
-        /// <param name="quantity">保留的个数 -1表示保留全部</param>
-        /// <param name="threshold">绝对值小于或等于这个阈值的特征值与对应的特征向量将会被剔除</param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        private static (Vector eigens, Vector[] vectors) EigenFilter(Vector eigenValues, Vector[] vectors)
-        {
-
-            //if (eigenValues.Length > quantity)
-            //{
-            //    var result = Sort(eigenValues, vectors, (a, b) => MathF.Abs((float)a) < MathF.Abs((float)b));
-
-            //    //剔除多余的特征值和特征向量
-
-            //    Vector eigens = new Vector(quantity);
-
-            //    Vector[] eigenVectors = new Vector[quantity];
-
-            //    for (int i = 0; i < quantity; i++)
-            //    {
-            //        eigens[i] = result.eigens[i];
-            //        eigenVectors[i] = result.vectors[i];
-            //    }
-
-            //    eigenValues = eigens;
-
-            //    vectors = eigenVectors;
-            //}
-            // return (eigenValues, vectors);
-            return Sort(eigenValues, vectors, (a, b) => a < b);
-
-        }
 
         [Obsolete("特征值无法算全")]
         public static EigenDecompositionEventArgs Eig(Matrix source, Func<Matrix, QREventArgs> decompose, int k = 300)
@@ -287,37 +211,6 @@ namespace Deeplearning.Core.Math.Linear
             return Matrix.Dot(Matrix.Dot(V, S), U.T);
         }
 
-        public static (double eigen, Vector vector) PowerIteration(Vector eigenVector, Matrix matrix, int iterations = 500)
-        {
-
-
-            for (int i = 0; i < iterations; i++)
-            {
-                Vector vector = matrix * eigenVector;
-
-                vector = Vector.Standardized(vector);
-
-                Vector y1 = eigenVector - vector;
-
-                double norm1 = Vector.NoSqrtNorm(y1);
-
-                Vector y2 = eigenVector + vector;
-
-                double norm2 = Vector.NoSqrtNorm(y2);
-
-                if (MathF.Abs((float)norm1) <= 0.01f || MathF.Abs((float)norm2) <= 0.01f) break;
-
-                eigenVector = vector;
-            }
-
-            double[] eigenVector_T = eigenVector.T;
-
-            double eigenValue = eigenVector_T * matrix * eigenVector;
-
-            return (eigenValue, eigenVector);
-        }
-
-       
 
         public static (Vector eigens, Matrix vectors) Sort(Vector eigens, Matrix vectors, Func<double, double, bool> conditions)
         {

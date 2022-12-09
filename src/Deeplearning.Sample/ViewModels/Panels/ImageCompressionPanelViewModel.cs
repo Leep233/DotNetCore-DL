@@ -11,20 +11,21 @@ using DLMath = Deeplearning.Core.Math;
 using Deeplearning.Core.Example;
 using System.Threading.Tasks;
 using Deeplearning.Core.Math.Linear;
+using Deeplearning.Core.Math;
+using System.Windows;
+
 
 namespace Deeplearning.Sample.ViewModels.Panels
 {
-    public class ImageCompressionPanelViewModel:BindableBase
+    public class ImageCompressionPanelViewModel : BindableBase
     {
-
-       
 
         private ImageSource soureImage;
 
         public ImageSource SourceImage
         {
             get { return soureImage; }
-            set { soureImage = value;RaisePropertyChanged("SourceImage"); }
+            set { soureImage = value; RaisePropertyChanged("SourceImage"); }
         }
 
         private ImageSource compressedImage;
@@ -35,7 +36,7 @@ namespace Deeplearning.Sample.ViewModels.Panels
             set { compressedImage = value; RaisePropertyChanged("CompressedImage"); }
         }
 
-        private int eigenCount=100;
+        private int eigenCount = 100;
 
         public int EigenCount
         {
@@ -50,12 +51,13 @@ namespace Deeplearning.Sample.ViewModels.Panels
 
         private string imagePath;
 
-        private byte[] pixels;
+        private byte [] pixels;
+
         private BitmapImage sourceBitMap;
 
         public ImageCompressionPanelViewModel()
         {
-            imagePath =Path.Combine(System.Environment.CurrentDirectory, "Resources/img01.png");
+            imagePath = Path.Combine(System.Environment.CurrentDirectory, "Resources/img01.jpeg");
 
             LoadImageCommand = new DelegateCommand<string>(ExecuteLoadImageCommand);
 
@@ -70,50 +72,76 @@ namespace Deeplearning.Sample.ViewModels.Panels
         {
             if (pixels is null || pixels.Length <= 0 || sourceBitMap is null || compressing) return;
 
-             compressing = true;
+            compressing = true;
 
-                CompressedImage = null;
+            CompressedImage = null;
 
-              DLMath.Matrix matrix = Pixels2Matrix(pixels, 400);   
+            int r = 400;
 
-                PCA pca = new PCA();
+            DLMath.Matrix matrix = Pixels2Matrix(pixels, r);
 
-              PCAEventArgs eventArgs = await Task.Factory.StartNew(() => pca.EigFit(matrix, EigenCount));
+            var result = matrix.Standardized();
 
-              DLMath.Matrix compressMatrix = DLMath.Matrix.Dot(eventArgs.D, eventArgs.X.T);
+            DLMath.Matrix source = result.matrix; // matrix;// 
 
-            byte[] ps = Matrix2Pixels(compressMatrix);
+            DLMath.Matrix D = await Task.Factory.StartNew(() => {
+                //2.协方差矩阵
+                //  DLMath.Matrix covMatrix = source.Cov();
 
-             CompressedImage = ImageUtil.Pixels2Image(sourceBitMap.PixelWidth, sourceBitMap.PixelHeight,
-             sourceBitMap.DpiX, sourceBitMap.DpiY, ps);
+                //3.对协方差矩阵求特征值特征向量
+                //    EigenDecompositionEventArgs result = Algebra.Eig(covMatrix);
+
+                SVDEventArgs result = Algebra.SVD(source);
+
+                DLMath.Matrix eigenVectors = result.V;// result.eigenVectors;// 
+
+                int dimension = eigenVectors.Row;      
+
+                //4.选取有效的特征值
+                DLMath.Matrix D = DLMath.Matrix.Clip(eigenVectors, 0, 0, dimension, EigenCount);
+
+                return D;
+
+            });
+
+            DLMath.Matrix X = DLMath.Matrix.Dot(source, D);
+
+            DLMath.Matrix compressMatrix = (DLMath.Matrix.Dot(D, X.T) + result.means[0]) * result.stds[0];
+
+            byte[] ps = Matrix2Pixels(compressMatrix, r);
+
+            CompressedImage = ImageUtil.BitmapSourceFromArray(ps,sourceBitMap.PixelWidth, sourceBitMap.PixelHeight);
 
             compressing = false;
         }
 
-        private byte[]  Matrix2Pixels(DLMath.Matrix matrix)
+
+
+        private byte[] Matrix2Pixels(DLMath.Matrix matrix, int r)
         {
             int length = matrix.Row * matrix.Column;
 
             byte[] pixels = new byte[length];
 
-            for (int r = 0; r < matrix.Row; r++)
+
+            for (int i = 0; i < length; i++)
             {
-                for (int c = 0; c < matrix.Column; c++)
-                {
-                    pixels[r * matrix.Column + c] = (byte)matrix[r, c];
-                }
+                int x = i / r;
+                int y = i % r;
+
+                pixels[i] = (byte)matrix[y, x];
             }
-            //*255.0
+
             return pixels;
         }
 
-        private DLMath.Matrix Pixels2Matrix(byte[] pixels,int r)
+        private DLMath.Matrix Pixels2Matrix(byte [] pixels, int r)
         {
-           int length = pixels.Length;
+            int length = pixels.Length;
 
-           int count = length / r;//1600*100
+            int count = length / r;//1600*100
 
-            DLMath.Matrix matrix = new DLMath.Matrix(count,r);
+            DLMath.Matrix matrix = new DLMath.Matrix(count, r);
 
             for (int i = 0; i < count; i++)
             {
@@ -123,17 +151,7 @@ namespace Deeplearning.Sample.ViewModels.Panels
                 }
             }
 
-            
-
-            return matrix;//DLMath.Matrix.MeanNormalization(matrix).matrix;// ;
-        }
-
-        public void T1() {
-
-            BitmapImage bitmapImage = new BitmapImage();
-
-            ImageBrush brush = new ImageBrush(bitmapImage);
-          
+            return matrix;
         }
 
 
@@ -141,19 +159,19 @@ namespace Deeplearning.Sample.ViewModels.Panels
         {
             if (!File.Exists(path)) return;
 
-             byte[] imgBytes =  File.ReadAllBytes(path);
+            byte[] imgBytes = File.ReadAllBytes(path);
 
             sourceBitMap = new BitmapImage();
 
             sourceBitMap.BeginInit();
 
             sourceBitMap.StreamSource = new MemoryStream(imgBytes);
+
             sourceBitMap.EndInit();
 
             SourceImage = sourceBitMap;
-        
-            pixels =  ImageUtil.ReadImagePixels(sourceBitMap);     
-        }
 
+            pixels = ImageUtil.BitmapSourceToArray(sourceBitMap);
+        }       
     }
 }

@@ -14,7 +14,7 @@ namespace Deeplearning.Sample.ViewModels.Panels
     public class PCAExamplePanelsViewModel:BindableBase
     {
 
-        public static string Path = "./resources/testdata/taxi-fare-train.csv";       
+        public static string Path = "./resources/testdata/iris_training.csv";       
 
         public Matrix source;// { get; set; }
 
@@ -28,7 +28,6 @@ namespace Deeplearning.Sample.ViewModels.Panels
         public DelegateCommand LoadTestDataCommand { get; set; }
         public DelegateCommand PCACommand { get; set; }
         public DelegateCommand SVDPCACommand { get; set; }
-        public DelegateCommand ReductionCommand { get; set; }
 
      
         public PCAExamplePanelsViewModel()
@@ -52,52 +51,73 @@ namespace Deeplearning.Sample.ViewModels.Panels
 
             PCACommand = new DelegateCommand(ExecutePCACommand);
 
-            ReductionCommand = new DelegateCommand(ExecuteReductionCommand);
-
             SVDPCACommand = new DelegateCommand(ExecuteSVDPCACommand);
         }
 
-        private PCAEventArgs pcaEventArgs = null;
+     
 
         private void ExecuteReductionCommand()
         {
-            if (pcaEventArgs is null) return;
-
-            Matrix matrix =Matrix.Dot(pcaEventArgs.X,pcaEventArgs.D.T);
-
-            for (int i = 0; i < matrix.Row; i++)
-            {
-                Line.Points.Add(new DataPoint(matrix[i, 0],matrix[i,1]));
-            }
-            PlotModel.InvalidatePlot(true);
+   
         }
 
         private void ExecutePCACommand()
         {
-            PCA pca = new PCA();
-
             int k = 1;
 
-            pcaEventArgs = pca.EigFit(source,k);
+             var centralizedResult  = source.Standardized(0);
+            //1.中心化
+            Matrix centralizedMatrix = centralizedResult.matrix;
 
-            ReductionCommand.Execute();
+            //2.协方差矩阵
+            Matrix covMatrix = centralizedMatrix.Cov();// Matrix.Dot(centralizedMatrix.T,centralizedMatrix) / (centralizedMatrix.Row)-1;// centralizedMatrix.Cov();
+
+            //3.对协方差矩阵求特征值特征向量
+            EigenDecompositionEventArgs result = Algebra.Eig(covMatrix);
+
+            Matrix eigenVectors = result.eigenVectors;
+
+            int dimension = eigenVectors.Row;
+
+            //4.选取有效的特征值
+            Matrix D = Matrix.Clip(eigenVectors, 0, 0, dimension, k);
+
+            Matrix X = Matrix.Dot(centralizedMatrix, D);
+
+            Matrix matrix = Matrix.Dot(X, D.T) + centralizedResult.means.T;         
+        
+
+            for (int i = 0; i < matrix.Row; i++)
+            {
+                Line.Points.Add(new DataPoint(matrix[i, 0], matrix[i, 1]));
+            }
+            PlotModel.InvalidatePlot(true);
         }
 
         private void ExecuteSVDPCACommand()
         {
-            PCA pca = new PCA();
+            int k = 1;
 
-            pcaEventArgs = pca.SVDFit(source, 1);
+            var standardResult = source.Standardized(0); //  centralInfo.matrix; //matrix;//
 
-            if (pcaEventArgs is null) return;
+            Matrix standardMatrix = standardResult.matrix;
+            //3.SVD
+            SVDEventArgs result = Algebra.SVD(standardMatrix);
 
-            Matrix matrix = Matrix.Dot(pcaEventArgs.X,pcaEventArgs.D.T);
+            Matrix eigenVectors = result.V;
+
+            int dimension = eigenVectors.Row;
+
+            //4.选取有效的特征值
+            Matrix D = Matrix.Clip(eigenVectors, 0, 0, dimension, k);
+
+            Matrix X = Matrix.Dot(standardMatrix, D);
+
+            Matrix matrix = Matrix.Dot(X,D.T)+ standardResult.means.T;
 
             for (int i = 0; i < matrix.Row; i++)
             {
-
                 Line2.Points.Add(new DataPoint(matrix[i,0],matrix[i,1]));
-
             }
             PlotModel.InvalidatePlot(true);
         }
@@ -109,11 +129,9 @@ namespace Deeplearning.Sample.ViewModels.Panels
             Line.Points.Clear();
             Line2.Points.Clear();
 
-            int dataCount = 20;
+            int dataCount = -1;
 
              source =  ReadLinearRegressionData(Path, dataCount);
-
-           // source = Matrix.MeanNormalization(source).matrix;
 
             Scatter.Points?.Clear();
 
@@ -132,6 +150,8 @@ namespace Deeplearning.Sample.ViewModels.Panels
 
             int dataCount = count > 0 ? count : lines.Length - 1;
 
+            int dimension = 5;
+
             Random r = new Random();
 
 
@@ -139,7 +159,7 @@ namespace Deeplearning.Sample.ViewModels.Panels
 
             int endIndex = startIndex + dataCount;
 
-            Matrix data = new Matrix(dataCount, 2);
+            Matrix data = new Matrix(dataCount, dimension);
 
             for (int i = startIndex, j = 0; i < endIndex; i++, j++)
             {
@@ -147,17 +167,29 @@ namespace Deeplearning.Sample.ViewModels.Panels
                 string[] words = content.Split(',');
                 // = 1;
 
-                data[j, 0] = float.Parse(words[4]);//行程距离
-                data[j, 1] = float.Parse(words[6]);//价格
-                                                   //data[j,2] = float.Parse(words[1]);
-                                                   //data[j,3] = float.Parse(words[2]);
-                                                   //data[j,4] = float.Parse(words[3]);
-                                                   // data[ 0,i] = float.Parse(words[1]);
-                                                   // data[ 1,i] = float.Parse(words[2]);
-                                                   // data[ 2,i] = float.Parse(words[3]);
-                                                   // data[ 3,i] = float.Parse(words[4]);//行程距离
-                                                   // data[ 4,i] = float.Parse(words[6]);//价格
+                data[j, 0] = float.Parse(words[0]);
+                data[j, 1] = float.Parse(words[1]);
+                data[j, 2] = float.Parse(words[2]);
+                data[j, 3] = float.Parse(words[3]);
 
+                int tpye = 0;
+
+                switch (words[4])
+                {
+                    case "setosa":
+                        tpye = 0;
+                        break;
+                    case "versicolor":
+                        tpye = 1;
+                        break;
+                    case "virginica":
+                        tpye = 2;
+                        break;
+                    default:
+                        break;
+                }
+
+                data[j, 4] = tpye;
             }
             return data;
         }

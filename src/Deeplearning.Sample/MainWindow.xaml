@@ -55,7 +55,7 @@
             </Grid>
         </Border>
 
-        <Frame  Visibility="Collapsed" Background="Wheat" Grid.RowSpan="3" Grid.ColumnSpan="3">
+        <Frame  Visibility="Visible" Background="Wheat" Grid.RowSpan="3" Grid.ColumnSpan="3">
             <Frame.Content>
                 <pages:LinearAlgebraPagePage></pages:LinearAlgebraPagePage>
             </Frame.Content>

@@ -44,6 +44,8 @@ namespace Deeplearning.Core.Math.Common
             return vector;
         }
 
+
+
         public static Matrix Softplus(Matrix matrix) { 
         
             Matrix m = matrix;
@@ -60,6 +62,38 @@ namespace Deeplearning.Core.Math.Common
 
         public static float Softplus(float x) { 
             return MathF.Log(1+ MathF.Exp(x));
+        }
+
+
+        public static Vector Softmax(Vector vector) {
+
+            double maxvalue = vector[0];
+
+            for (int i = 1; i < vector.Length; i++)
+            {
+                double temp = vector[i];
+
+                if (temp > maxvalue) maxvalue = temp;
+            }
+
+            double sum = 0;
+
+            Vector result = new Vector(vector.Length);
+
+            for (int i = 0; i < vector.Length; i++)
+            {
+                double exp = MathF.Exp((float)(vector[i] - maxvalue));
+
+                result[i] = exp;
+
+                sum += exp;
+            }
+
+            for (int i = 0; i < vector.Length; i++)
+            {
+                result[i] /= sum;
+            }
+            return result;
         }
 
         public static Matrix Softmax(Matrix matrix) {

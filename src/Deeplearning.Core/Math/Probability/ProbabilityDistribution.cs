@@ -58,9 +58,49 @@ namespace Deeplearning.Core.Math.Probability
 
             Vector vector = x - u;
 
-            double m = vector.T * β * vector;
+            double m = vector.T * Matrix.Dot(β , vector);
 
             return f * MathF.Exp((float)(m / -2));
+        }
+
+
+        /// <summary>
+        /// 正态分布
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="u"></param>
+        /// <param name="β"></param>
+        /// <returns></returns>
+        public static Vector NormalDistriution(Matrix x, Matrix u, Matrix β)
+        {
+            float pi2 = MathF.PI * 2;
+
+            int count = x.Row;
+
+            int n = x.Column;
+
+            double det = Matrix.Det(β);//.det;
+
+            float f = MathF.Sqrt(((float)det) / MathF.Pow(pi2, n));
+
+            Vector result = new Vector(count);
+
+            Vector vector = new Vector(n);
+
+            for (int i = 0; i < count; i++)
+            {
+
+                for (int j = 0; j < n; j++)
+                {
+                    vector[j] = x[i, j] - u[i, j];
+                }
+
+                double m = vector.T * Matrix.Dot(β, vector);
+
+                result[i] = f* MathF.Exp((float)(m / -2));
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -616,388 +656,5 @@ namespace Deeplearning.Core.Math.Probability
             return covValue;
         }
 
-        /// <summary>
-        /// 矩阵协方差
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="axis">0:每一行表示一个样本，1： 每一列表示一个样本</param>
-        /// <returns></returns>
-        public static Matrix Cov(Matrix source, int axis = 0) 
-        {
-            if (axis == 0) 
-            {
-                int dimension = source.Column;
-
-                int itemCount = source.Row;
-
-                int n = itemCount - 1;
-
-                Matrix covMatrix = new Matrix(dimension, dimension);
-
-                Matrix avgMatrix = Matrix.Copy(source);
-
-                //1.计算每列的平均值
-
-                for (int i = 0; i < dimension; i++)
-                {
-                    double sum = 0;
-                    for (int j = 0; j < itemCount; j++)
-                    {
-                        sum += source[j, i];
-                    }
-                    double avg = sum / itemCount;
-
-                    if (MathF.Abs((float)avg) > MathFExtension.MIN_VALUE)
-                    {
-                        for (int j = 0; j < itemCount; j++)
-                        {
-                            avgMatrix[j, i] = source[j, i] - avg;
-                        }
-                    }
-                }
-
-                for (int i = 0; i < dimension; i++)
-                {
-                    for (int j = 0; j < dimension; j++)
-                    {
-                        double temp = 0;
-
-                        for (int k = 0; k < itemCount; k++)
-                        {
-                            temp += avgMatrix[k, i] * avgMatrix[k, j];
-                        }
-                        covMatrix[i, j] = temp / n;
-                    }
-                }
-
-                return covMatrix;
-
-            }
-            else {
-
-                int dimension = source.Row;
-                int itemCount = source.Column;
-                int n = itemCount - 1;
-
-                Matrix covMatrix = new Matrix(dimension, dimension);
-                Matrix avgMatrix = Matrix.Copy(source);
-
-                //1.计算每列的平均值
-
-                for (int i = 0; i < dimension; i++)
-                {
-                    double sum = 0;
-                    for (int j = 0; j < itemCount; j++)
-                    {
-                        sum += source[i,j];
-                    }
-                    double avg = sum / itemCount;
-
-                    if (MathF.Abs((float)avg) > MathFExtension.MIN_VALUE)
-                    {
-                        for (int j = 0; j < itemCount; j++)
-                        {
-                            avgMatrix[i,j] = source[i,j] - avg;
-                        }
-                    }
-                }
-
-                for (int i = 0; i < dimension; i++)
-                {
-                    for (int j = 0; j < dimension; j++)
-                    {
-                        double temp = 0;
-
-                        for (int k = 0; k < itemCount; k++)
-                        {
-                            temp += avgMatrix[i,k] * avgMatrix[j,k];
-                        }
-                        covMatrix[i,j] = temp / n;
-                    }
-                }
-
-                return covMatrix;
-
-
-            }
-        }
-
-        /// <summary>
-        /// Min-Max 归一化
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="axis">0:表示每一个样本是列向量，1：表示每一个样本是行向量</param>
-        /// <returns></returns>
-        public static Matrix MinMaxScaler(Matrix source,int axis=0) 
-        {
-            Matrix matrix = new Matrix(source.Row, source.Column);
-
-            if (axis == 0) 
-            {
-                int dimension = source.Column;
-
-                int itemCount = source.Row;
-
-
-                for (int i = 0; i < dimension; i++)
-                {
-                    double min = 0;
-
-                    double max = 1;
-
-                    for (int j = 0; j < itemCount; j++)
-                    {
-                        double value = source[j,i];
-
-                        if (min > value) min = value;
-
-                        if (max < value) max = value;
-                    }
-
-                    for (int j = 0; j < itemCount; j++)
-                    {
-                        double value = source[j, i];
-
-                        matrix[j, i] = (value - min) / (max - min);
-                    }
-                }
-
-
-            }
-            else 
-            {
-                int dimension = source.Row;
-
-                int itemCount = source.Column;
-
-
-                for (int i = 0; i < dimension; i++)
-                {
-
-                    double min = 0;
-
-                    double max = 1;
-
-                    for (int j = 0; j < itemCount; j++)
-                    {
-                        double value = source[i, j];
-
-                        if (min > value) min = value;
-
-                        if (max < value) max = value;
-                    }
-
-                    for (int j = 0; j < itemCount; j++)
-                    {
-                        double value = source[i, j];
-
-                        matrix[i, j] = (value - min) / (max - min);
-                    }
-                }
-
-            }
-
-
-
-
-            return matrix;
-        
-        }
-
-        /// <summary>
-        /// 均值
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="axis">默认-1，所有数的均值 ，0：每列均值，1：每行均值</param>
-        /// <returns></returns>
-        public static Vector Mean(Matrix source, int axis = -1) 
-        {
-            Vector avgs = new Vector();
-
-            switch (axis)
-            {
-                case -1:
-                    {
-
-                        avgs = new Vector(1);
-
-                        double sum = 0;
-
-                        for (int i = 0; i < source.Row; i++)
-                        {
-                            for (int j = 0; j < source.Column; j++)
-                            {
-                                sum += source[i, j];
-                            }
-                        }
-                        avgs[0] = sum / (source.Row * source.Column);
-                    }
-                    break;
-                case 0:
-                    {
-                        avgs = new Vector(source.Column);
-
-                        for (int i = 0; i < source.Column; i++)
-                        {
-                            double sum = 0;
-                            for (int j = 0; j < source.Row; j++)
-                            {
-                                sum += source[j, i];
-                            }
-                            avgs[i] = sum / source.Row;
-                        }
-
-                    }
-
-                    break;
-                case 1:       
-                default:
-                    {
-
-                        avgs = new Vector(source.Row);
-
-                        for (int i = 0; i < source.Row; i++)
-                        {
-                            double sum = 0;
-                            for (int j = 0; j < source.Column; j++)
-                            {
-                                sum += source[i, j];
-                            }
-                            avgs[i] = sum / source.Column;
-                        }
-
-                       
-                    }
-                    break;
-            }
-            return avgs;
-        }
-
-        /// <summary>
-        /// 均值归一化
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="axis">0:表示每列一个样本，1：表示每行一个样本</param>
-        /// <returns></returns>
-        public static Matrix MeanNormalization(Matrix source, int axis = 0) 
-        { 
-
-        }
-
-        /// <summary>
-        /// 标准差
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="axis">默认-1：整体方差，0：每列方差，1：每行方差</param>
-        /// <returns></returns>
-        public static Vector StandardDeviation(Matrix source, int axis = -1) 
-        {
-            Vector stds = new Vector();
-
-            Matrix matrix = new Matrix(source.Row, source.Column);
-
-            switch (axis)
-            {
-                case -1:
-                    {
-                         stds = new Vector(1);
-
-                        int length = (source.Row * source.Column);
-
-                        int n = length;// - 1;
-
-                        double sum = 0;
-
-                        for (int i = 0; i < source.Row; i++)
-                        {
-                            for (int j = 0; j < source.Column; j++)
-                            {
-                                sum += source [i, j];
-                            }
-                        }
-                        double avg = sum / length;
-
-                        sum = 0;
-                        for (int i = 0; i < source.Row; i++)
-                        {
-                            for (int j = 0; j < source.Column; j++)
-                            {
-                                sum += MathF.Pow( MathF.Abs((float)(source[i, j]-avg)),2);
-                            }
-                        }
-                        stds[0] = MathF.Sqrt((float)(sum/n));
-                    }
-                    break;
-                case 0:
-                    {
-
-                        stds = new Vector(source.Column);
-
-                        int n = source.Row;//- 1;
-
-                        for (int i = 0; i < source.Column; i++)
-                        {
-                            double sum = 0;
-
-                            for (int j = 0; j < source.Row; j++)
-                            {
-                                sum += source[j,i];
-                            }
-
-                            double avg = sum / source.Row;
-
-                            sum = 0;
-
-                            for (int j = 0; j < source.Row; j++)
-                            {
-                                double value = source[j, i] - avg;
-
-                                matrix[j, i] = value;
-
-                                sum += MathF.Pow((float)value, 2);
-                            }
-
-                            stds[i] = MathF.Sqrt((float)(sum / n));
-
-                        }
-                    }
-                    break;
-                default:
-                    {
-                        stds = new Vector(source.Row);
-
-                        int n = source.Column;// - 1;
-
-                        for (int i = 0; i < source.Row; i++)
-                        {
-                            double sum = 0;
-
-                            for (int j = 0; j < source.Column; j++)
-                            {
-                                sum += source[i, j];
-                            }
-
-                            double avg = sum / source.Column;
-
-                            sum = 0;
-
-                            for (int j = 0; j < source.Column; j++)
-                            {
-                               double value  = source[i, j]-avg;
-
-                                matrix[i, j] = value;
-
-                                sum += MathF.Pow((float)value,2);
-                            }
-
-                            stds[i] = MathF.Sqrt((float)(sum / n));
-
-                        }
-                    }
-                    break;
-            }
-            return stds;
-        }
-    
     }
 }

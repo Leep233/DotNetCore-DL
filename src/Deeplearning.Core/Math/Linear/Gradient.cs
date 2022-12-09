@@ -44,7 +44,7 @@ namespace Deeplearning.Core.Math.Linear
                     if (norm <= @params.e) break;
 
                     vector -= (k_Vector * learningRate);
-                   await Task.Delay(1000);
+                  // await Task.Delay(1000);
                 }
 
             });
@@ -142,25 +142,13 @@ namespace Deeplearning.Core.Math.Linear
             return new Vector((float)x, (float)y);
         }
 
-        public static float SGD(Vector[] inputs, GradientParams @params)
-        {
-            //样本数
-            int m = 0;
 
-            //线性组合函数
-            Func<Vector, Matrix, Vector> linearFunction = (x,w) => {
-                Vector v =  w.T * x ;
+        /// <summary>
+        /// 随机梯度下降
+        /// </summary>
+        /// <returns></returns>
+        public static async Task<Vector> SGD() { throw new NotImplementedException(); }
 
-              return v;
-            };
-            //权重
-            Vector w = new Vector(inputs.Length);
-
-          //  linearFunction(inputs,);
-
-            return 0;
-
-        }
     }
 
     public struct GradientParams

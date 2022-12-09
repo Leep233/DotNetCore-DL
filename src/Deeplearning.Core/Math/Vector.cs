@@ -9,7 +9,7 @@ namespace Deeplearning.Core.Math
     public struct Vector
     {
 
-        public const string STRING_FORMAT = "F4";
+        public string Format;
 
         private double[] scalars;
 
@@ -23,12 +23,14 @@ namespace Deeplearning.Core.Math
         {
             Length = length;
             scalars = new double[Length];
+            Format = "F4";
         }
 
         public Vector(params double[] scalar)
         {
             Length = scalar.Length;
-            scalars = scalar;          
+            scalars = scalar;
+            Format = "F4";
         }
 
         public static double Norm(Vector vector, float p = 2) 
@@ -87,7 +89,7 @@ namespace Deeplearning.Core.Math
 
             for (int i = 0; i < Length; i++)
             {
-                stringBuilder.Append($"{scalars[i].ToString(STRING_FORMAT)} ");
+                stringBuilder.Append($"{scalars[i].ToString(Format)} ");
             }
 
             stringBuilder.Append(" ]");
@@ -133,54 +135,7 @@ namespace Deeplearning.Core.Math
             return result;
         }
 
-        public static Vector Random(int length,int min, int max) {
-
-            Vector vector = new Vector(length);
-
-            Random r = new Random(DateTime.Now.GetHashCode());
-
-            for (int i = 0; i < vector.Length; i++)
-            {
-                vector[i] = r.Next(min, max);
-            }
-            return vector;
-        }
-
-
-        public static Vector Normalized(Vector vector) {
-
-            double minValue = vector[0];
-
-            double maxValue = minValue;
-
-            for (int i = 1; i < vector.Length; i++)
-            {
-                double temp = vector[i];
-
-                if (temp > minValue)
-                {
-                    maxValue = temp;
-                }
-                if (temp < minValue)
-                {
-                    minValue = temp;
-                }
-            }
-            return (vector - minValue) / (maxValue - minValue);
-        }
-
-        /// <summary>
-        /// 向量标准化
-        /// </summary>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public static Vector Standardized(Vector vector) 
-        {
-            double m = Norm(vector,2);
-
-            return vector / m;
-        }
-     
+  
         public static Vector Transpose(double[] row_vector)
         {
             Vector result = new Vector(row_vector.Length);
@@ -257,9 +212,7 @@ namespace Deeplearning.Core.Math
         public static Vector operator *(Vector vector, double scalar)
         {
             Vector result = new Vector(vector.Length);
-            //这里做个判断，如果scalar太小了 我们可以视作为0，这样我们直接返回0向量即可，不必去做循环
-            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) return result;
-
+    
             for (int i = 0; i < vector.Length; i++) 
             {
                 result[i] = vector[i] * scalar;    
@@ -286,10 +239,7 @@ namespace Deeplearning.Core.Math
         }
         public static Vector operator -(Vector vector, double scalar)
         {
-            Vector result = vector;
-
-            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) return result;
-
+            Vector result = new Vector(vector.Length);
             for (int i = 0; i < vector.Length; i++)
             {
                 result[i] -= scalar;
@@ -298,7 +248,7 @@ namespace Deeplearning.Core.Math
         }
         public static Vector operator -(double scalar, Vector vector)
         {
-            Vector result = vector;
+            Vector result = new Vector(vector.Length);
 
             for (int i = 0; i < vector.Length; i++)
             {
@@ -321,9 +271,7 @@ namespace Deeplearning.Core.Math
         }
         public static Vector operator +(Vector vector, double scalar)
         {
-            Vector result = vector;
-
-            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) return result;
+            Vector result = new Vector(vector.Length) ;
 
             for (int i = 0; i < vector.Length; i++)
             {
@@ -339,8 +287,6 @@ namespace Deeplearning.Core.Math
         {
             Vector result = new Vector(vector.Length);
 
-            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE) throw new ArgumentException("被除数不能为0");
-
             for (int i = 0; i < vector.Length; i++)
             {
                 result[i] = vector[i] / scalar;
@@ -352,9 +298,6 @@ namespace Deeplearning.Core.Math
         {
             Vector result = new Vector(vector.Length);
 
-            if (MathF.Abs((float)scalar) <= MathFExtension.MIN_VALUE)
-                return result;
-
             for (int i = 0; i < vector.Length; i++)
             {
                 result[i] = scalar / vector[i];
@@ -362,6 +305,20 @@ namespace Deeplearning.Core.Math
    
             return result;
         }
+
+        public static Vector operator /(Vector v1, Vector v2)
+        {
+            int length = (int)MathF.Min(v1.Length, v2.Length);
+
+            Vector vector = new Vector(length);
+
+            for (int i = 0; i < length; i++)
+            {
+                vector[i] = v1[i] / v2[i];
+            }
+            return vector;
+        }
+
         public static bool operator ==(Vector vector01, Vector vector02) 
         {
             return vector01.Equals(vector02);
