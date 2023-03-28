@@ -25,18 +25,19 @@ namespace Deeplearning.Sample
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
         }
 
         public static IrisData GetIrisTrainData() { 
             if(IrisTrainData is null)
-                IrisTrainData = IrisHelper.LoadIrisData(irisTrainingPath);
+                IrisTrainData = Dataset.LoadIrisData(irisTrainingPath);
             return IrisTrainData;
         }
 
         public static IrisData GetIrisTestData()
         {
             if (IrisTestData is null)
-                IrisTestData = IrisHelper.LoadIrisData(irisTestingPath);
+                IrisTestData = Dataset.LoadIrisData(irisTestingPath);
             return IrisTestData;
         }
     }

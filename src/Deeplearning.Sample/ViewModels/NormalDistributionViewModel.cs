@@ -39,7 +39,7 @@ namespace Deeplearning.Sample.ViewModels
         {
             double dx = 0.01;
 
-            FunctionSeries newSeries = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, U, A), A - 2, A + 2, dx)
+            FunctionSeries newSeries = new FunctionSeries(x => Distribution.NormalDistriution((float)x, U, A), A - 2, A + 2, dx)
             {
                 Color = OxyColors.Orange,
                 Title = $"正态分布(u={U.ToString("F2")},a={A.ToString("F2")})"

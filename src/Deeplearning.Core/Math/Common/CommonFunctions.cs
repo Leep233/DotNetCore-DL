@@ -67,22 +67,22 @@ namespace Deeplearning.Core.Math.Common
 
         public static Vector Softmax(Vector vector) {
 
-            double maxvalue = vector[0];
+            float maxValue = vector[0];
 
             for (int i = 1; i < vector.Length; i++)
             {
-                double temp = vector[i];
+                float temp = vector[i];
 
-                if (temp > maxvalue) maxvalue = temp;
+                if (temp > maxValue) maxValue = temp;
             }
 
-            double sum = 0;
+            float sum = 0;
 
             Vector result = new Vector(vector.Length);
 
             for (int i = 0; i < vector.Length; i++)
             {
-                double exp = MathF.Exp((float)(vector[i] - maxvalue));
+                float exp = MathF.Exp(vector[i] - maxValue);
 
                 result[i] = exp;
 
@@ -100,15 +100,15 @@ namespace Deeplearning.Core.Math.Common
 
             Matrix m = matrix;
 
-            double MaxValue = MathFExtension.Max(m);
+            float MaxValue = MathFExtension.Max(m);
 
-            double sum = 0;
+            float sum = 0;
 
             for (int i = 0; i < matrix.Row; i++)
             {
                 for (int j = 0; j < matrix.Column; j++)
                 {
-                    double exp = MathF.Exp((float)(m[i, j] - MaxValue));
+                    float exp = MathF.Exp((m[i, j] - MaxValue));
 
                     m[i, j] = exp;
 

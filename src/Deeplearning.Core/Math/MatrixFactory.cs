@@ -9,7 +9,7 @@ namespace Deeplearning.Core.Math
 
         public static Matrix Random(int row, int col)
         {
-            double[,] scalers = new double[row, col];
+            float[,] scalers = new float[row, col];
 
             Random r = new Random(DateTime.Now.GetHashCode());
 
@@ -17,7 +17,7 @@ namespace Deeplearning.Core.Math
             {
                 for (int j = 0; j < col; j++)
                 {
-                    scalers[i, j] = r.NextDouble();
+                    scalers[i, j] = (float)r.NextDouble();
                 }
             }
             return new Matrix(scalers);
@@ -60,7 +60,7 @@ namespace Deeplearning.Core.Math
             return matrix;
         }
 
-        public static Matrix DiagonalMatrix(int size, params double[] scalars)
+        public static Matrix DiagonalMatrix(int size, params float[] scalars)
         {
             Matrix matrix = new Matrix(size, size);
 
@@ -74,7 +74,7 @@ namespace Deeplearning.Core.Math
             return matrix;
         }
         
-        public static Matrix DiagonalMatrix(params double[] array)
+        public static Matrix DiagonalMatrix(params float[] array)
         {
             int size = array.Length;
 

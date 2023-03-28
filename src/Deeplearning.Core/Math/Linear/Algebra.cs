@@ -58,7 +58,7 @@ namespace Deeplearning.Core.Math.Linear
 
             int vectorCount = matrix.Column;
 
-            double[] eigens = new double[vectorCount];
+            float[] eigens = new float[vectorCount];
 
             Vector[] eigVectors = new Vector[vectorCount];
 
@@ -91,9 +91,9 @@ namespace Deeplearning.Core.Math.Linear
 
                eigenVector = eigenVector.Normalized();
 
-                double[] eigenVector_T = eigenVector.T;
+                float[] eigenVector_T = eigenVector.T;
 
-                double eigen = eigenVector_T * Matrix.Dot(matrix , eigenVector);
+                float eigen = eigenVector_T * Matrix.Dot(matrix , eigenVector);
 
                 eigens[i] = eigen;
 
@@ -165,13 +165,13 @@ namespace Deeplearning.Core.Math.Linear
             {
                 Matrix coefficientMatrix = source;
 
-                double eigenValue = eigenValues[i];
+                float eigenValue = eigenValues[i];
 
                 for (int j = 0; j < eigenCount; j++)
                 {
-                    double s1 = source[j, j];
+                    float s1 = source[j, j];
 
-                    double value = s1 - eigenValue;
+                    float value = s1 - eigenValue;
 
                     coefficientMatrix[j, j] = value;
                 }
@@ -203,7 +203,7 @@ namespace Deeplearning.Core.Math.Linear
 
             for (int i = 0; i < r; i++)
             {
-                double value = D[i, i];
+                float value = D[i, i];
                 if (value == 0) continue;
                 S[i, i] = (1 / value);
             }
@@ -212,7 +212,7 @@ namespace Deeplearning.Core.Math.Linear
         }
 
 
-        public static (Vector eigens, Matrix vectors) Sort(Vector eigens, Matrix vectors, Func<double, double, bool> conditions)
+        public static (Vector eigens, Matrix vectors) Sort(Vector eigens, Matrix vectors, Func<float, float, bool> conditions)
         {
             int r = eigens.Length;
 
@@ -224,7 +224,7 @@ namespace Deeplearning.Core.Math.Linear
 
                     if (conditions(eigens[j], eigens[nextIndex]))
                     {
-                        double temp = eigens[j];
+                        float temp = eigens[j];
                         eigens[j] = eigens[nextIndex];
                         eigens[nextIndex] = temp;
                         Vector v1 = vectors.GetVector(nextIndex);
@@ -242,7 +242,7 @@ namespace Deeplearning.Core.Math.Linear
         {
             int r = eigens.Length;
 
-            Func<double, double, bool> conditions = (a, b) => order == -1 ? (a < b) : (a > b);
+            Func<float, float, bool> conditions = (a, b) => order == -1 ? (a < b) : (a > b);
 
             return Sort(eigens, vectors, conditions);
 
@@ -254,14 +254,14 @@ namespace Deeplearning.Core.Math.Linear
 
             return Sort(eigens, vectors, conditions);
         }
-        public static (Vector eigens, Vector[] vectors) Sort(double[] eigens, Vector[] vectors, int order = -1)
+        public static (Vector eigens, Vector[] vectors) Sort(float[] eigens, Vector[] vectors, int order = -1)
         {
-            Func<double, double, bool> conditions = (a, b) => order == -1 ? (a < b) : (a > b);
+            Func<float, float, bool> conditions = (a, b) => order == -1 ? (a < b) : (a > b);
 
             return Sort(eigens, vectors, conditions);
         }
 
-        public static (Vector eigens, Vector[] vectors) Sort(double[] eigens, Vector[] vectors, Func<double, double, bool> conditions)
+        public static (Vector eigens, Vector[] vectors) Sort(float[] eigens, Vector[] vectors, Func<float, float, bool> conditions)
         {
             int r = eigens.Length;
 
@@ -273,7 +273,7 @@ namespace Deeplearning.Core.Math.Linear
 
                     if (conditions(eigens[j], eigens[nextIndex]))
                     {
-                        double temp = eigens[j];
+                        float temp = eigens[j];
                         eigens[j] = eigens[nextIndex];
                         eigens[nextIndex] = temp;
                         Vector v1 = vectors[nextIndex];
@@ -297,7 +297,7 @@ namespace Deeplearning.Core.Math.Linear
 
                     if (conditions(eigens[j], eigens[nextIndex]))
                     {
-                        double temp = eigens[j];
+                        float temp = eigens[j];
                         eigens[j] = eigens[nextIndex];
                         eigens[nextIndex] = temp;
                         Vector v1 = vectors[nextIndex];
@@ -322,22 +322,22 @@ namespace Deeplearning.Core.Math.Linear
 
             vector[size - 1] = 1;
 
-            double mid = 1;
+            float mid = 1;
             //从下往上求解
             for (int r = size - 2; r >= 0; r--)
             {
-                double sum = 0;
+                float sum = 0;
 
                 for (int c = col - 1; c > r; c--)
                 {
-                    double x = vector[c];
+                    float x = vector[c];
 
-                    double d1 = matrix[r, c];
+                    float d1 = matrix[r, c];
 
                     sum += d1 * x;
                 }
 
-                double d2 = matrix[r, r];
+                float d2 = matrix[r, r];
 
                 d2 = (d2 == 0) ? 0 : -sum / d2;
 
@@ -346,7 +346,7 @@ namespace Deeplearning.Core.Math.Linear
                 mid += sum * sum;
             }
 
-            mid = MathF.Sqrt((float)mid);
+            mid = MathF.Sqrt(mid);
 
             for (int i = 0; i < vector.Length; i++)
             {

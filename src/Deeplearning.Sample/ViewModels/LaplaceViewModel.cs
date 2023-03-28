@@ -35,7 +35,7 @@ namespace Deeplearning.Sample.ViewModels
         {
             double dx = 0.01;
 
-            FunctionSeries newSeries = new FunctionSeries(x => ProbabilityDistribution.Laplace((float)x, U, Y),  - 2,  + 2, dx)
+            FunctionSeries newSeries = new FunctionSeries(x => Distribution.Laplace((float)x, U, Y),  - 2,  + 2, dx)
             {
                 Color = OxyColors.Lavender,
                 Title = $"正态分布(u={U.ToString("F2")},a={Y.ToString("F2")})"

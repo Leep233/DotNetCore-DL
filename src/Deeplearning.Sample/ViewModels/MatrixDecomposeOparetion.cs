@@ -57,7 +57,7 @@ namespace Deeplearning.Sample.ViewModels
 
         private void ExecuteElementaryTransformationCommand(object type)
         {
-            double[,] scales = new double[3, 3] {
+            float[,] scales = new float[3, 3] {
             {1, 2,3 },
             {3, 7, 10 },
            // {2, 5, 7 },
@@ -70,20 +70,20 @@ namespace Deeplearning.Sample.ViewModels
             //{5,4,3,3,-1 }
             //};
 
-            scales = new double[3, 3] {
+            scales = new float[3, 3] {
             {1,3,-3 },
             {0,-1,2 },
             {2,1,3 }
             };
 
 
-            scales = new double[3, 3] {
+            scales = new float[3, 3] {
             {0,1,1 },
             {0,-1,-1 },
             {0,0,0 },           
             };
 
-            scales = new double[3, 3] {
+            scales = new float[3, 3] {
             {0,1,1 },
             {0,1,0 },
             {1,-1,-1 } 
@@ -182,7 +182,7 @@ namespace Deeplearning.Sample.ViewModels
         private void ExecuteEigenDecompositionCommand(object decType)
         {
 
-            double[,] vectors = new double[3, 3] {
+            float[,] vectors = new float[3, 3] {
             {5,-3,2 },
             {6,-4,4 },
             {4,-4,5 }

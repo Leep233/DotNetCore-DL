@@ -2,6 +2,7 @@
 using Deeplearning.Core.Math;
 using Deeplearning.Core.Math.Linear;
 using Deeplearning.Core.Math.Probability;
+using Deeplearning.Sample.Utils;
 using Deeplearning.Sample.ViewModels;
 using OxyPlot;
 using OxyPlot.Series;
@@ -11,6 +12,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Deeplearning.Sample
 {
@@ -269,15 +271,15 @@ namespace Deeplearning.Sample
             Vector x = new Vector(10, 9, 8);
             Vector p = new Vector(0.1f, 0.8f, 0.1f);
             Vector p2 = new Vector(0.3f, 0.4f, 0.3f);
-            stringBuilder.AppendLine($"exp={ ProbabilityDistribution.Exp(x, p)}");
-            stringBuilder.AppendLine($"Var1={ ProbabilityDistribution.Var(x, p, RandomVariableType.Discrete)}");
-            stringBuilder.AppendLine($"Var2={ ProbabilityDistribution.Var(x, p2, RandomVariableType.Discrete)}");
+            stringBuilder.AppendLine($"exp={ Distribution.Exp(x, p)}");
+            stringBuilder.AppendLine($"Var1={ Distribution.Var(x, p, RandomVariableType.Discrete)}");
+            stringBuilder.AppendLine($"Var2={ Distribution.Var(x, p2, RandomVariableType.Discrete)}");
 
             x = new Vector(5, 20, 40, 80, 100);
             Vector y = new Vector(10, 24, 33, 54, 10);
 
 
-            stringBuilder.AppendLine($"Cov={ ProbabilityDistribution.Cov(x, y)}"); 
+            stringBuilder.AppendLine($"Cov={ Distribution.Cov(x, y)}"); 
 
             Message = stringBuilder.ToString();
         }
@@ -371,7 +373,7 @@ namespace Deeplearning.Sample
         {
 
 
-            double[,] scalars = new double[3, 3] {
+            float[,] scalars = new float[3, 3] {
             { 1,1,1},
             { 2,1,3},
             { 1,1,4}
@@ -391,7 +393,7 @@ namespace Deeplearning.Sample
 
         private void ExecuteMatrixDetCommand()
         {
-            double[,] scalars = new double[3, 3] {
+            float[,] scalars = new float[3, 3] {
             {6,1,1 },
             {4,-2,5 },
             {2,8,7 }
@@ -406,7 +408,7 @@ namespace Deeplearning.Sample
         {
             double dx = 0.5f;
 
-            FunctionSeries series1 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 0.5f, 0.5f), -3, 3, dx)
+            FunctionSeries series1 = new FunctionSeries(x => Distribution.NormalDistriution((float)x, 0.5f, 0.5f), -3, 3, dx)
             {
                 Color = OxyColors.Red,
                 Title = "正态分布(u=0.5,a=0.5)",
@@ -414,19 +416,19 @@ namespace Deeplearning.Sample
 
 
 
-            FunctionSeries series2 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 1, 0.5f), -3, 3, dx)
+            FunctionSeries series2 = new FunctionSeries(x => Distribution.NormalDistriution((float)x, 1, 0.5f), -3, 3, dx)
             {
                 Color = OxyColors.Orange,
                 Title = "正态分布(u=1,a=0.5f)"
             };
 
-            FunctionSeries series3 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 0.5f, 1f), -3, 3, dx)
+            FunctionSeries series3 = new FunctionSeries(x => Distribution.NormalDistriution((float)x, 0.5f, 1f), -3, 3, dx)
             {
                 Color = OxyColors.DeepSkyBlue,
                 Title = "正态分布(u=0.5,a=1f)"
             };
 
-            FunctionSeries series4 = new FunctionSeries(x => ProbabilityDistribution.NormalDistriution((float)x, 0, 1), -3, 3, dx)
+            FunctionSeries series4 = new FunctionSeries(x => Distribution.NormalDistriution((float)x, 0, 1), -3, 3, dx)
             {
                 Color = OxyColors.Green,
                 Title = "标准正态分布(u=0,a=1)"
@@ -463,27 +465,7 @@ namespace Deeplearning.Sample
         ~MainWindowViewModel() {
            
         }
-
-        /// <summary>
-        /// 获取切线上的两个点
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="range"></param>
-        /// <returns></returns>
-        public (DataPoint p1, DataPoint p2) GetTangentLinePoints(GradientEventArgs info, float range)
-        {
-
-            float x1 = info.x + range;
-            float y1 = info.k * (x1 - info.x) + info.y;
-            DataPoint p1 = new DataPoint(x1, y1);
-
-            float x2 = info.x - range;
-            float y2 = info.k * (x2 - info.x) + info.y;
-            DataPoint p2 = new DataPoint(x2, y2);
-
-            return (p1, p2);
-        }
-     
+  
         private async void ExecuteGradientCommand()
         {
             // y = x^2 +3x -8
@@ -544,10 +526,12 @@ namespace Deeplearning.Sample
             SourceMatrix = SampleMatrix.ToString();
         }
        
-        private void OnGradientChangedCallback(GradientEventArgs eventArgs)
+        private async Task OnGradientChangedCallback(GradientEventArgs eventArgs)
         {
 
-           var points = GetTangentLinePoints(eventArgs, 3);
+            await Task.Delay(30);
+
+           var points = OxyPlotHelper.GetTangentLinePoints(eventArgs, 3);
 
            LeftPlotView. UpdateLineToPlotView(points.p1, points.p2);
 

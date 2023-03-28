@@ -4,7 +4,9 @@ using System;
 
 namespace Deeplearning.Core.Math.Probability
 {
-
+    /// <summary>
+    /// 随机变量类型
+    /// </summary>
     public enum RandomVariableType
     {
         /// <summary>
@@ -17,10 +19,13 @@ namespace Deeplearning.Core.Math.Probability
         Successive
     }
 
-    public class ProbabilityDistribution
+    public class Distribution
     {
 
         public const float MIN_VALUE = 1E-3F;
+
+
+        
 
         /// <summary>
         /// 正态分布

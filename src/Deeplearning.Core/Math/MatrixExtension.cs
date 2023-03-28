@@ -27,7 +27,7 @@ namespace Deeplearning.Core.Math
 
                         for (int i = 0; i < matrix.Column; i++)
                         {
-                            double sum = 0;
+                            float sum = 0;
                             for (int j = 0; j < matrix.Row; j++)
                             {
                                 sum += matrix[j, i];
@@ -43,7 +43,7 @@ namespace Deeplearning.Core.Math
 
                         for (int i = 0; i < matrix.Row; i++)
                         {
-                            double sum = 0;
+                            float sum = 0;
                             for (int j = 0; j < matrix.Column; j++)
                             {
                                 sum += matrix[i, j];
@@ -60,7 +60,7 @@ namespace Deeplearning.Core.Math
 
                         int length = matrix.Row * matrix.Column;
 
-                        double sum = 0;
+                        float sum = 0;
 
                         for (int i = 0; i < matrix.Row; i++)
                         {
@@ -96,18 +96,18 @@ namespace Deeplearning.Core.Math
 
                         for (int i = 0; i < matrix.Column; i++)
                         {
-                            double sum = 0;
+                            float sum = 0;
                             for (int j = 0; j < matrix.Row; j++)
                             {
                                 sum += matrix[j, i];
                             }
-                            double avg = sum / matrix.Row;
+                            float avg = sum / matrix.Row;
 
                             sum = 0;
 
                             for (int j = 0; j < matrix.Row; j++)
                             {
-                                sum += MathF.Pow((float)(matrix[j, i]-avg),2);
+                                sum += MathF.Pow((matrix[j, i]-avg),2);
                             }
                             vector[i] = sum/matrix.Row;
                         }
@@ -119,13 +119,13 @@ namespace Deeplearning.Core.Math
 
                         for (int i = 0; i < matrix.Row; i++)
                         {
-                            double sum = 0;
+                            float sum = 0;
                             for (int j = 0; j < matrix.Column; j++)
                             {
                                 sum += matrix[i, j];
                             }
 
-                            double avg = sum / matrix.Column;
+                            float avg = sum / matrix.Column;
 
                             sum = 0;
 
@@ -144,7 +144,7 @@ namespace Deeplearning.Core.Math
 
                         int length = matrix.Row * matrix.Column;
 
-                        double sum = 0;
+                        float sum = 0;
 
                         for (int i = 0; i < matrix.Row; i++)
                         {
@@ -154,7 +154,7 @@ namespace Deeplearning.Core.Math
                             }
                         }
 
-                        double avg = sum / length;
+                        float avg = sum / length;
 
                         sum = 0;
 
@@ -162,7 +162,7 @@ namespace Deeplearning.Core.Math
                         {
                             for (int j = 0; j < matrix.Column; j++)
                             {
-                                sum += MathF.Pow((float)(matrix[i, j] - avg), 2);
+                                sum += MathF.Pow((matrix[i, j] - avg), 2);
                             }
                         }
 
@@ -197,12 +197,12 @@ namespace Deeplearning.Core.Math
 
                         for (int i = 0; i < matrix.Column; i++)
                         {
-                            double sum = 0;
+                            float sum = 0;
                             for (int j = 0; j < matrix.Row; j++)
                             {
                                 sum += matrix[j, i];
                             }
-                            double avg = sum / matrix.Row;
+                            float avg = sum / matrix.Row;
 
                             means[i] = avg;
 
@@ -210,9 +210,9 @@ namespace Deeplearning.Core.Math
 
                             for (int j = 0; j < matrix.Row; j++)
                             {
-                                sum += MathF.Pow((float)(matrix[j, i] - avg), 2);
+                                sum += MathF.Pow((matrix[j, i] - avg), 2);
                             }
-                            stds[i] = MathF.Sqrt((float)(sum / matrix.Row));
+                            stds[i] = MathF.Sqrt((sum / matrix.Row));
                         }
                     }
                     break;
@@ -224,13 +224,13 @@ namespace Deeplearning.Core.Math
 
                         for (int i = 0; i < matrix.Row; i++)
                         {
-                            double sum = 0;
+                            float sum = 0;
                             for (int j = 0; j < matrix.Column; j++)
                             {
                                 sum += matrix[i, j];
                             }
 
-                            double avg = sum / matrix.Column;
+                            float avg = sum / matrix.Column;
 
                             means[i] = avg;
 
@@ -238,9 +238,9 @@ namespace Deeplearning.Core.Math
 
                             for (int j = 0; j < matrix.Column; j++)
                             {
-                                sum += MathF.Pow((float)(matrix[i, j] - avg), 2);
+                                sum += MathF.Pow((matrix[i, j] - avg), 2);
                             }
-                            stds[i] = MathF.Sqrt((float)(sum / matrix.Column));
+                            stds[i] = MathF.Sqrt((sum / matrix.Column));
                         }
                     }
                     break;
@@ -253,7 +253,7 @@ namespace Deeplearning.Core.Math
 
                         int length = (matrix.Row * matrix.Column)-1;
 
-                        double sum = 0;
+                        float sum = 0;
 
                         for (int i = 0; i < matrix.Row; i++)
                         {
@@ -263,7 +263,7 @@ namespace Deeplearning.Core.Math
                             }
                         }
 
-                        double avg = sum / length;
+                        float avg = sum / length;
 
                         means [0] = avg;
 
@@ -273,11 +273,11 @@ namespace Deeplearning.Core.Math
                         {
                             for (int j = 0; j < matrix.Column; j++)
                             {
-                                sum += MathF.Pow((float)(matrix[i, j] - avg), 2);
+                                sum += MathF.Pow((matrix[i, j] - avg), 2);
                             }
                         }
 
-                        stds[0] =  MathF.Sqrt((float)(sum /length));
+                        stds[0] =  MathF.Sqrt((sum /length));
                     }
                     break;
             }
@@ -304,14 +304,14 @@ namespace Deeplearning.Core.Math
 
             for (int i = 0; i < dimension; i++)
             {
-                double sum = 0;
+                float sum = 0;
 
                 for (int j = 0; j < itemCount; j++)
                 {
                     sum += matrix[j,i];
                 }
 
-                double mean = sum / itemCount;       
+                float mean = sum / itemCount;       
 
                 for (int j = 0; j < itemCount; j++)
                 {
@@ -323,7 +323,7 @@ namespace Deeplearning.Core.Math
             {
                 for (int j = 0; j < dimension; j++)
                 {
-                    double sum = 0;
+                    float sum = 0;
 
                     for (int k = 0; k < itemCount; k++)
                     {
@@ -349,14 +349,14 @@ namespace Deeplearning.Core.Math
 
             int s = (max - min);
 
-            double minValue = 0;
-            double maxValue = 0;
+            float minValue = 0;
+            float maxValue = 0;
 
             for (int i = 0; i < matrix.Row; i++)
             {
                 for (int j = 0; j < matrix.Column; j++)
                 {
-                    double temp = matrix[i, j];
+                    float temp = matrix[i, j];
 
                     if (minValue > temp) minValue = temp;
 
@@ -368,7 +368,7 @@ namespace Deeplearning.Core.Math
             {
                 for (int j = 0; j < matrix.Column; j++)
                 {
-                    double temp = matrix[i, j];
+                    float temp = matrix[i, j];
 
                     tempMatrix[i, j] = min + (temp - minValue) / (maxValue - minValue) * s;
                 }
@@ -406,13 +406,13 @@ namespace Deeplearning.Core.Math
 
                         for (int j = 0; j < col; j++)
                         {
-                            double sum = 0;
+                            float sum = 0;
                             //1.求每列均值
                             for (int i = 0; i < row; i++)
                             {
                                 sum += matrix[i, j];
                             }
-                            double mean = sum / row;
+                            float mean = sum / row;
 
                             means[j] = mean;
                             //2.求每列标准差
@@ -425,7 +425,7 @@ namespace Deeplearning.Core.Math
                                 sum += MathF.Pow((float)strandardMatrix[i, j], 2);
                             }
 
-                            double std = MathF.Sqrt((float)(sum / n));
+                            float std = MathF.Sqrt((float)(sum / n));
 
                             stds[j] = std;
 
@@ -447,13 +447,13 @@ namespace Deeplearning.Core.Math
 
                         for (int i = 0; i < row; i++)
                         {
-                            double sum = 0;
+                            float sum = 0;
                             //1.求每列均值
                             for (int j = 0; j < col; j++)
                             {
                                 sum += matrix[i, j];
                             }
-                            double mean = sum / col;
+                            float mean = sum / col;
 
                             means[i] = mean;
                             //2.求每列标准差
@@ -466,7 +466,7 @@ namespace Deeplearning.Core.Math
                                 sum += MathF.Pow((float)strandardMatrix[i, j], 2);
                             }
 
-                            double std = MathF.Sqrt((float)(sum / n));
+                            float std = MathF.Sqrt((float)(sum / n));
 
                             stds[i] = std;
 
@@ -488,9 +488,9 @@ namespace Deeplearning.Core.Math
 
                         means= stdResult.means;
 
-                        double mean = means[0];
+                        float mean = means[0];
 
-                        double std = stds[0];     
+                        float std = stds[0];     
 
                         for (int i = 0; i < matrix.Row; i++)
                         {
@@ -529,9 +529,7 @@ namespace Deeplearning.Core.Math
 
                         for (int i = 0; i < matrix.Column; i++)
                         {
-                            double avg = means[i];
-
-                           
+                            float avg = means[i];                           
 
                             for (int j = 0; j < matrix.Row; j++)
                             {
@@ -547,7 +545,7 @@ namespace Deeplearning.Core.Math
 
                         for (int i = 0; i < matrix.Row; i++)
                         {
-                            double avg = means[i];
+                            float avg = means[i];
 
                             for (int j = 0; j < matrix.Column; j++)
                             {

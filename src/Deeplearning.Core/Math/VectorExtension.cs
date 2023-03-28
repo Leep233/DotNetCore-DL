@@ -12,11 +12,11 @@ namespace Deeplearning.Core.Math
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static double Mean(this Vector vector) { 
+        public static float Mean(this Vector vector) { 
         
             int length = vector.Length;
 
-            double sum = 0;
+            float sum = 0;
 
             for (int i = 0; i < length; i++) { 
             
@@ -31,16 +31,16 @@ namespace Deeplearning.Core.Math
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static double Var(this Vector vector) {
+        public static float Var(this Vector vector) {
             int length = vector.Length;
 
-            double mean = vector.Mean();
+            float mean = vector.Mean();
 
-            double sum = 0;
+            float sum = 0;
 
             for (int i = 0; i < length; i++) {
 
-                sum += MathF.Pow((float)(vector[i]-mean),2);
+                sum += MathF.Pow((vector[i]-mean),2);
             }
         
             return sum/length;
@@ -51,13 +51,13 @@ namespace Deeplearning.Core.Math
         /// </summary>
         /// <param name="vector"></param>
         /// <returns></returns>
-        public static (double std,double mean) StandardDeviation(this Vector vector)
+        public static (float std, float mean) StandardDeviation(this Vector vector)
         {
             int length = vector.Length;
 
-            double mean = vector.Mean();
+            float mean = vector.Mean();
 
-            double sum = 0;
+            float sum = 0;
 
             for (int i = 0; i < length; i++)
             {
@@ -82,15 +82,15 @@ namespace Deeplearning.Core.Math
         { 
             int length = vector.Length;
 
-            double minScaler = vector[0];
+            float minScaler = vector[0];
 
-            double maxScaler = minScaler;
+            float maxScaler = minScaler;
 
             Vector scaleVector = new Vector(length);
 
             for (int i = 1; i < length; i++)
             {
-                double temp = vector[i];
+                float temp = vector[i];
 
                 if(minScaler> temp) minScaler= temp;
 

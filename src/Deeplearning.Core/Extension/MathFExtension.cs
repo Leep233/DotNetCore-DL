@@ -197,9 +197,9 @@ namespace Deeplearning.Core.Extension
             }
             return value;
         }
-        public static double Max(Matrix matrix)
+        public static float Max(Matrix matrix)
         {
-            double result = matrix[0, 0];
+            float result = matrix[0, 0];
 
             for (int i = 1; i < matrix.Row; i++)
             {

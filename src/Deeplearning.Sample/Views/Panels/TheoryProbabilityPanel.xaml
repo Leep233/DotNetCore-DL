@@ -18,6 +18,9 @@
 
         <Border Grid.Column="1">
             <StackPanel>
+
+                <Button Command="{Binding FlipCoinCommand}">抛硬币</Button>
+                
                 <Border x:Name="normalDistributionBorder" BorderBrush="Gray" BorderThickness="1" CornerRadius="3" Margin="5">
                     <StackPanel>
                         <StackPanel Margin="3" Orientation="Horizontal" HorizontalAlignment="Center">

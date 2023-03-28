@@ -53,6 +53,8 @@ namespace Deeplearning.Core.Math.Linear
             return vector;
         }
 
+   
+
         public static Vector GradientDescent(Func<Vector, float> LinearEquation, Vector initValue, GradientParams @params)
         {
             Vector vector = initValue;
@@ -96,7 +98,7 @@ namespace Deeplearning.Core.Math.Linear
             return vector;
         }
 
-        public static async Task<Vector> GradientDescent(Func<double, double> LinearEquation, double initValue, GradientParams @params, Action<GradientEventArgs> gradientChanged = null)
+        public static async Task<Vector> GradientDescent(Func<double, double> LinearEquation, double initValue, GradientParams @params, Func<GradientEventArgs,Task> gradientChanged = null)
         {
 
             //随机出 开始进行下降的初始点         
@@ -128,10 +130,8 @@ namespace Deeplearning.Core.Math.Linear
 
                     eventArgs.y = (float)y;
 
-                    gradientChanged.Invoke(eventArgs);
+                   await gradientChanged.Invoke(eventArgs);
                 }
-
-                await Task.Delay(30);
 
                 //到达可以接受的阈值 跳出函数 说明已经找到了极值
                 if (MathF.Abs((float)k) <= @params.e) break;

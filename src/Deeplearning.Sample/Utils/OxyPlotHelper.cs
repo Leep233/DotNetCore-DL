@@ -9,6 +9,27 @@ namespace Deeplearning.Sample.Utils
     public static class OxyPlotHelper
     {
 
+        /// <summary>
+        /// 获取切线上的两个点
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="range"></param>
+        /// <returns></returns>
+        public static (DataPoint p1, DataPoint p2) GetTangentLinePoints(GradientEventArgs info, float range)
+        {
+
+            float x1 = info.x + range;
+            float y1 = info.k * (x1 - info.x) + info.y;
+            DataPoint p1 = new DataPoint(x1, y1);
+
+            float x2 = info.x - range;
+            float y2 = info.k * (x2 - info.x) + info.y;
+            DataPoint p2 = new DataPoint(x2, y2);
+
+            return (p1, p2);
+        }
+
+
         public static LineSeries LineThroughOrigin(double minimum, double maximum, string typeName = "x") {
 
 

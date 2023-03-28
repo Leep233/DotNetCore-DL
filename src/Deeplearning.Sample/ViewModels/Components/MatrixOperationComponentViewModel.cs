@@ -104,7 +104,7 @@ namespace Deeplearning.Sample.ViewModels.Components
 
             UpdateMatrixCommand.Execute();
 
-            Matrix m = new Matrix(new double[,]{ {1,2,3,4 },{2,3,4,1 },{3,4,1,2 },{4,1,2,3 } });
+            Matrix m = new Matrix(new float[,]{ {1,2,3,4 },{2,3,4,1 },{3,4,1,2 },{4,1,2,3 } });
 
             IOComponent.InputContent = m.ToString();
         }
@@ -329,9 +329,9 @@ namespace Deeplearning.Sample.ViewModels.Components
         {
             Random random = new Random();
 
-            double min = 0;
-            double max = 1;
-            double s = max- min;
+            float min = 0;
+            float max = 1;
+            float s = max- min;
 
             poltMatrix = new Matrix(2, VectorCount);
 
@@ -341,7 +341,7 @@ namespace Deeplearning.Sample.ViewModels.Components
                 {
                     double x = random.NextDouble();
 
-                    poltMatrix[i, j] = min + x  * s;
+                    poltMatrix[i, j] = (float)(min + x * s);
  
                 }
             }

@@ -45,9 +45,13 @@ namespace Deeplearning.Sample.ViewModels.Pages
             // MatrixDetCommand = new DelegateCommand(Execute);
 
             MatrixRandomCommand = new DelegateCommand(ExecuteMatrixRandomCommand);
+
             TestCommand = new DelegateCommand(ExecuteTextCommand);
+
             MatrixNormalizedCommand = new DelegateCommand(ExecuteMatrixNormalizedCommand);
-            MatrixTransposeCommand = new DelegateCommand(ExecuteMatrixTransposeCommand);      
+
+            MatrixTransposeCommand = new DelegateCommand(ExecuteMatrixTransposeCommand); 
+            
             MatrixDetCommand = new DelegateCommand(ExecuteMatrixDetCommand);
             MatrixAdjugateCommand = new DelegateCommand(ExecuteMatrixAdjugateCommand);
             MatrixInverseCommand = new DelegateCommand(ExecuteMatrixInverseCommand);

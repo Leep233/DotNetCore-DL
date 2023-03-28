@@ -144,9 +144,9 @@ namespace Deeplearning.Core.Math.Linear
                 {
                     e = Q.GetVector(j);
 
-                    double temp = a.T * e;
+                    float temp = a.T * e;
 
-                    R[j, i] = (float)temp;
+                    R[j, i] = temp;
 
                     a = a - temp * e;
 
@@ -192,7 +192,7 @@ namespace Deeplearning.Core.Math.Linear
                 {
                     b = matrix.GetVector(j);
 
-                    double temp = b.T * e;
+                    float temp = b.T * e;
 
                     R[i, j] = temp;
 

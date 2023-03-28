@@ -11,7 +11,7 @@ namespace Deeplearning.NUnitTest
     [TestFixture]
     public class MatrixUnitTests
     {
-        Matrix matrix = new Matrix(new double[,] { { 1, 2, 3 }, { 2, 3, 1 }, { 3, 1, 2 } });
+        Matrix matrix = new Matrix(new float[,] { { 1, 2, 3 }, { 2, 3, 1 }, { 3, 1, 2 } });
 
         [Test]
         public void Test01() {

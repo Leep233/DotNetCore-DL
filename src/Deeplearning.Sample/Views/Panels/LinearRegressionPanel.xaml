@@ -19,18 +19,21 @@
         </Grid.ColumnDefinitions>
         
         <Border>
-            <oxy:PlotView Model="{Binding PlotView.PlotModel}"></oxy:PlotView>
+            <oxy:PlotView Model="{Binding PlotModel}"></oxy:PlotView>
         </Border>
 
         <Border Grid.RowSpan="3" Grid.Column="1">
-            <StackPanel>
-                <ListBox SelectedIndex="{Binding SelectedIndex}">
-                    <ListBoxItem>正规方程线性回归</ListBoxItem>
-                    <ListBoxItem>贝叶斯线性回归</ListBoxItem>
+            <StackPanel> 
+                <ListBox SelectedIndex="{Binding SelectedIndex}">                    
+                    <ListBoxItem>最小二乘估计</ListBoxItem>
+                    <ListBoxItem>极大似然估计</ListBoxItem>
                 </ListBox>
                 <Button Command="{Binding DistributionCommand}" Width="120" Margin="5">
-                    预测
+                    线性回归
                 </Button>
+                
+                
+                
             </StackPanel>      
       
         </Border>

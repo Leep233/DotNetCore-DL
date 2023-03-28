@@ -78,6 +78,16 @@
 
                     <TabItem>
                         <TabItem.Header>
+                            <TextBlock>微积分-梯度</TextBlock>
+                        </TabItem.Header>
+                        <Grid>
+                            <panels:GradientPanel></panels:GradientPanel>
+                        </Grid>
+                    </TabItem>
+                    
+
+                    <TabItem>
+                        <TabItem.Header>
                             <TextBlock>示例:线性回归</TextBlock>
                         </TabItem.Header>
                         <Grid>

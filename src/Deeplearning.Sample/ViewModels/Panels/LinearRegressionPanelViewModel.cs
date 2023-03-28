@@ -25,7 +25,7 @@ namespace Deeplearning.Sample.ViewModels.Panels
         }
 
 
-        public OxyPlotView PlotView { get; set; }
+        public PlotModel PlotModel { get; set; }
 
         private string status;
 
@@ -35,19 +35,27 @@ namespace Deeplearning.Sample.ViewModels.Panels
             set { status = value; RaisePropertyChanged("Status"); }
         }
 
+        /// <summary>
+        /// 最小二乘
+        /// </summary>
+        public DelegateCommand OrdinaryLeastSquaresCommand { get; set; }
 
         public LinearRegressionPanelViewModel()
         {
-            PlotView = new OxyPlotView(OxyColors.Blue, OxyColors.Red, 1);
+            PlotModel = new PlotModel();
+            OrdinaryLeastSquaresCommand = new DelegateCommand(ExecuteOrdinaryLeastSquaresCommand);
         }
 
-      
+        private void ExecuteOrdinaryLeastSquaresCommand()
+        {
+        }
+
         protected override void ExecuteDistributionCommand()
         {
             switch (SelectedIndex)
             {
                 case 1:
-                    Bayesian();
+                    MaximumLikelihoodEstimate();
                     break;
                 case 0:
                 default:
@@ -56,27 +64,129 @@ namespace Deeplearning.Sample.ViewModels.Panels
             }
         }
 
+
+        public void ShowIris(IrisData data) 
+        {
+            PlotModel.Series.Clear();
+
+            ScatterSeries SetosaScatter = new ScatterSeries() { 
+            MarkerFill = OxyColors.Blue
+            
+            };
+            ScatterSeries VersicolorScatter = new ScatterSeries()
+            {
+                MarkerFill = OxyColors.CadetBlue
+
+            };
+            ScatterSeries VirginicaScatter = new ScatterSeries()
+            {
+                MarkerFill = OxyColors.Olive
+
+            };
+
+            for (int i = 0; i < data.Types.Length; i++)
+            {
+                ScatterPoint point = new ScatterPoint(data.Iris[i, 0], data.Iris[i, 1]);
+
+                switch (data.Types[i])
+                {                 
+                    case IrisType.Setosa:
+                        SetosaScatter.Points.Add(point);
+                        break;
+                    case IrisType.Versicolor:
+                        VersicolorScatter.Points.Add(point);
+                        break;
+                    case IrisType.Virginica:
+                        VirginicaScatter.Points.Add(point);
+                        break;
+                    case IrisType.Unknown:
+                    default:
+                        break;
+                }
+            }
+
+            PlotModel.Series.Add(SetosaScatter);
+
+            PlotModel.Series.Add(VersicolorScatter);
+
+            PlotModel.Series.Add(VirginicaScatter);
+
+            PlotModel.InvalidatePlot(true);
+
+        }
+
+        private (Matrix x, Matrix y) GetMatrixData() {
+
+            IrisData irisData = App.GetIrisTrainData();
+
+            ShowIris(irisData);
+
+            Matrix matrix = irisData.Iris;
+
+
+            Matrix X = new Matrix(matrix.GetVector(0));
+
+            Matrix Y = new Matrix(matrix.GetVector(1));
+
+            return (X,Y);
+
+        }
+
         /// <summary>
         /// 正规方程学习W
         /// </summary>
         private void RegularExpression()
         {
 
-            IrisData irisData = App.GetIrisTrainData();
+           var data = GetMatrixData();
 
-            Matrix X = irisData.Iris.Standardized().matrix; //m *n
+            Matrix X = data.x;
 
-            Matrix XT = X.T; //n*m
+            Matrix Y = data.y;
 
-            Matrix XT_X = Matrix.Dot(XT, X); //n x m * m x n = nxn
+            Matrix XT = X.T;
+
+            Matrix XT_X = Matrix.Dot(XT,X);
 
             Matrix XT_X_INV = Matrix.Inv(XT_X); //nxn
 
-            //data -> m*n;   y -> m * 4   w -> n * 4
+            Matrix XT_X_INV_XT = Matrix.Dot(XT_X_INV, XT);
 
-            Matrix weight = Matrix.Dot(Matrix.Dot(XT_X_INV, XT), irisData.Y.T); // nxn * n x m = nxm * 4  x m = n x 4
+            Matrix weight = Matrix.Dot( XT_X_INV_XT, Y);
 
-            Verified(irisData.Iris, irisData.Y, weight);
+            int startNum = 0;
+            int endNum = 10;
+
+            Matrix x1 = new Matrix(1,1);
+            x1[0, 0] = startNum;
+            Matrix x2 = new Matrix(1, 1);
+            x2[0, 0] = endNum;
+
+            Matrix m1 = Matrix.Dot(weight.T, x1);
+            Matrix m2 = Matrix.Dot(weight.T, x2);
+
+            LineSeries lineSeries = new LineSeries();
+
+            lineSeries.Points.Add(new DataPoint(startNum, m1[0, 0]));
+
+            lineSeries.Points.Add(new DataPoint(endNum, m2[0, 0]));
+
+            PlotModel.Series.Add(lineSeries);
+
+            PlotModel.InvalidatePlot(true);
+
+        }
+
+
+
+
+        private void MaximumLikelihoodEstimate() 
+        {
+            var data = GetMatrixData();
+
+            Matrix X = data.x;
+
+            Matrix Y = data.y;
         }
 
 
@@ -84,24 +194,37 @@ namespace Deeplearning.Sample.ViewModels.Panels
 
             int randomIndex = new Random(DateTime.Now.GetHashCode()).Next(0, testData.Row);
 
-            Vector x = new Vector(testData.Column);
+            Matrix matrix = new Matrix(testData.Row, 2);
 
-            for (int i = 0; i < x.Length; i++)
+
+            Vector start = new Vector(testData.Column);
+
+            Vector end = new Vector(testData.Column);
+
+            for (int j = 0; j < testData.Column; j++)
             {
-                x[i] = testData[randomIndex, i];
+                start[j] = 0;
+                end[j] = 10;
             }
+                       
+
             //n x 4    n * 1  
-            Vector predictValue = Matrix.Dot(weight.T, x);
+            Vector p1 = Matrix.Dot(weight.T, start);
 
-            predictValue = CommonFunctions.Softmax(predictValue);
+            Vector p2 = Matrix.Dot(weight.T, end);
 
-            predictValue.Format = "P2";
+            //PlotView.UpdateLineToPlotView(new DataPoint(0, p1[0]), new DataPoint(10, p2[0]));
 
-            Vector realValue = real.GetVector(randomIndex);
 
-            double loss = Loss(predictValue, realValue);
 
-            Status = ($"第[{randomIndex + 1}]数据 => 预测值：{predictValue},真实值：{realValue},损失值:{loss}");
+
+
+            //  
+
+            // predictValue.Format = "P2";
+
+            //  Vector realValue = real.GetVector(randomIndex);
+         
         }
 
         /// <summary>
@@ -122,18 +245,32 @@ namespace Deeplearning.Sample.ViewModels.Panels
 
             Matrix b = MatrixFactory.UnitMatrix((int)MathF.Max(predictY.Row, predictY.Column));
 
-           Vector y = ProbabilityDistribution.NormalDistriution(Y, predictY, b);
+           Vector y = Distribution.NormalDistriution(Y, predictY, b);
 
             Verified(irisData.Iris, Y, weight);
 
         }
 
-        private double Loss(Vector predict, Vector real) {
+        private Vector Loss(Matrix predict, Matrix real) {
 
-            int m = predict.Length;
+            int m = predict.Row;
 
-            return Vector.Norm(predict - real);// m;
-        
+            Vector vector = new Vector(predict.Column);
+
+
+            for (int i = 0; i < predict.Column; i++)
+            {
+                float sum = 0;
+
+                for (int j = 0; j < m; j++)
+                {
+                    sum +=MathF.Pow(predict[j,i] - real[j,i],2);
+                }
+
+                vector[i] = sum/m;
+            }
+
+            return vector;
         }
 
     }

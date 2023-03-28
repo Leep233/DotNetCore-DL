@@ -129,9 +129,7 @@ namespace Deeplearning.Sample.ViewModels.Panels
             Line.Points.Clear();
             Line2.Points.Clear();
 
-            int dataCount = -1;
-
-             source =  ReadLinearRegressionData(Path, dataCount);
+            source = App.GetIrisTrainData().Iris; //;ReadLinearRegressionData(Path, dataCount);
 
             Scatter.Points?.Clear();
 
@@ -143,55 +141,5 @@ namespace Deeplearning.Sample.ViewModels.Panels
             PlotModel.InvalidatePlot(true);
         }
 
-        private Matrix ReadLinearRegressionData(string path, int count)
-        {
-
-            string[] lines = File.ReadAllLines(path);
-
-            int dataCount = count > 0 ? count : lines.Length - 1;
-
-            int dimension = 5;
-
-            Random r = new Random();
-
-
-            int startIndex = r.Next(0, lines.Length - dataCount);
-
-            int endIndex = startIndex + dataCount;
-
-            Matrix data = new Matrix(dataCount, dimension);
-
-            for (int i = startIndex, j = 0; i < endIndex; i++, j++)
-            {
-                string content = lines[i + 1];
-                string[] words = content.Split(',');
-                // = 1;
-
-                data[j, 0] = float.Parse(words[0]);
-                data[j, 1] = float.Parse(words[1]);
-                data[j, 2] = float.Parse(words[2]);
-                data[j, 3] = float.Parse(words[3]);
-
-                int tpye = 0;
-
-                switch (words[4])
-                {
-                    case "setosa":
-                        tpye = 0;
-                        break;
-                    case "versicolor":
-                        tpye = 1;
-                        break;
-                    case "virginica":
-                        tpye = 2;
-                        break;
-                    default:
-                        break;
-                }
-
-                data[j, 4] = tpye;
-            }
-            return data;
-        }
     }
 }
